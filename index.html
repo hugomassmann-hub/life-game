@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Life Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="theme-color" content="#0b0d12">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+
+<div id="homePage">
+
+    <h1>🎮 LIFE GAME</h1>
+
+    <h2>Your Character</h2>
+
+    <div class="character-card">
+
+       <div class="character" id="character">
+
+    <img src="Level 1.png" alt="Your character">
+
+</div>
+
+        <div class="character-info">
+            <h2 id="characterLevel">
+                Level 7
+            </h2>
+
+            <p>
+                Your journey is just beginning.
+            </p>
+        </div>
+
+        <button id="customizeButton">
+    Customize
+</button>
+
+    </div>
+
+
+    <div class="character-unlocks">
+
+        <h2>Character Unlocks</h2>
+
+        <div class="unlock unlocked">
+            🧙 Starter Character
+        </div>
+
+        <div class="unlock" id="ninjaUnlock">
+            🔒 🥷 Shadow — Level 2
+        </div>
+
+        <div class="unlock">
+            🔒 🐺 Wolf Companion — Level 5
+        </div>
+
+        <div class="unlock">
+            🔒 👑 Crown — Level 10
+        </div>
+
+    </div>
+
+
+    <h2 id="levelText">Level 1</h2>
+
+    <p id="xpText">XP: 0 / 350</p>
+
+    <div class="xp">
+        <div class="xp-bar"></div>
+    </div>
+
+    <p id="streakText">🔥 0 Day Streak</p>
+
+
+    <h2>Today's Quests</h2>
+
+    <div class="quest" id="commonQuest"></div>
+
+    <div class="quest" id="uncommonQuest"></div>
+
+    <div class="quest" id="rareQuest"></div>
+
+</div>
+
+
+<!-- CUSTOMIZE PAGE -->
+
+<div id="customizePage" class="customize-page">
+
+    <button id="backButton" onclick="closeCustomize()">
+        ← Back
+    </button>
+
+    <h1>Customize</h1>
+
+   <div class="customize-character">
+
+    <img src="Level 1.png" alt="Your character">
+
+</div>
+
+    <div class="customize-items">
+
+        <div class="customize-items">
+
+    <h2>Items</h2>
+
+    <div id="itemsContainer"></div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
