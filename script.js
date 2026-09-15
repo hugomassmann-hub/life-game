@@ -535,6 +535,12 @@ function updateGame() {
         xpIntoLevel +
         " / 350";
 
+        document.getElementById("mobileLevel").textContent =
+    "Level " + level;
+
+    document.getElementById("mobileXP").textContent =
+    "XP: " + xpIntoLevel + " / 350";
+
 
     xpBar.style.width =
         percentage + "%";
@@ -748,3 +754,23 @@ document.getElementById("customizeButton").addEventListener(
 // START GAME
 
 updateGame();
+
+const map = L.map("map").setView([37.7749, -122.4194], 13);
+
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        map.setView([latitude, longitude], 15);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup("You are here")
+            .openPopup();
+    });
+}
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+}).addTo(map);

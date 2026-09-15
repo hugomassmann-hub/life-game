@@ -199,7 +199,7 @@ border-color: #7c5cff;
 #customizeButton {
 background: #171a24;
 color: white;
-border: 1px solid #7c5cff;
+border: 1px solid #303544;
 border-radius: 14px;
 padding: 14px 22px;
 font-size: 16px;
@@ -302,11 +302,14 @@ transform: translateY(-2px);
 
 /* MOBILE */
 
-@media (max-width: 1000px) {
+@media (max-width: 600px) {
 
     body {
-        padding: 20px 15px 40px;
-    }
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+}
 
     h1 {
         font-size: 34px;
@@ -318,24 +321,24 @@ transform: translateY(-2px);
     }
 
     .character-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
+    min-height: 75vh;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+    padding: 20px;
+}
 
     .character-card .character {
         padding: 10px;
     }
 
-    .character-card .character img {
-        width: 160px;
-    }
+   .character-card .character img {
+    width: 75vw;
+    max-width: none;
+}
 
     .character-info {
-        width: 100%;
-    }
-
-    #customizeButton {
         width: 100%;
     }
 
@@ -362,4 +365,193 @@ transform: translateY(-2px);
         width: 240px;
     }
 
+    html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#homePage > h1,
+#homePage > h2,
+.character-info,
+#levelText,
+#xpText,
+.xp,
+#streakText,
+#commonQuest,
+#uncommonQuest,
+#rareQuest {
+    display: none;
+}
+
+.mobile-top {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding-top: 25px;
+}
+
+#mobileLevel {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#mobileXP {
+    color: #aaa;
+    font-size: 15px;
+    margin-top: 4px;
+}
+#homePage {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+#homePage > h1,
+#homePage > h2 {
+    display: none;
+}
+
+.character-card {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    box-sizing: border-box;
+
+    background: linear-gradient(145deg, #171a24, #0b0d12);
+    border: none;
+    border-radius: 0;
+
+    padding: 0;
+    margin: 0;
+
+    display: block;
+}
+
+.character-card .character {
+    position: absolute;
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.character-card .character img {
+    width: 85vw;
+    max-width: none;
+    height: auto;
+}
+
+.character-info {
+    display: none;
+}
+
+.xp {
+    display: block;
+    position: absolute;
+    top: 92px;
+    left: 8%;
+    width: 84%;
+    height: 12px;
+    margin: 0;
+    z-index: 10;
+}
+
+.xp-bar {
+    height: 100%;
+}
+
+.mobile-buttons {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.mobile-buttons button {
+    position: absolute;
+    pointer-events: auto;
+
+    background: rgba(23, 26, 36, 0.95);
+    color: white;
+    border: 1px solid #303544;
+    border-radius: 16px;
+
+    width: 120px;
+    height: 52px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Customize */
+.mobile-buttons button:nth-child(2) {
+    top: 24%;
+    left: 4%;
+}
+
+/* Feed */
+.mobile-buttons button:nth-child(3) {
+    top: 24%;
+    right: 4%;
+}
+
+/* Quests */
+.mobile-buttons button:nth-child(1) {
+    top: 72%;
+    left: 15%;
+    width: 70%;
+    height: 52px;
+    border: 1px solid #7c5cff;
+}
+
+/* Items */
+.mobile-buttons button:nth-child(4) {
+    bottom: 3%;
+    left: 5%;
+}
+
+/* Achievements */
+.mobile-buttons button:nth-child(5) {
+    bottom: 3%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Settings */
+.mobile-buttons button:nth-child(6) {
+    bottom: 3%;
+    right: 5%;
+}
+
+#map {
+    position: absolute;
+    width: 70%;
+    height: 123px;
+    left: 15%;
+    top: 78%;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #171a24;
+    border: 1px solid #303544;
+}
 }

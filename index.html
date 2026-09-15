@@ -3,8 +3,13 @@
 <head>
     <title>Life Game</title>
     <link rel="stylesheet" href="style.css">
+    <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
     <link rel="manifest" href="manifest.json">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b0d12">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,10 +19,14 @@
 
 <div id="homePage">
 
+    <div class="mobile-top">
+    <div id="mobileLevel">Level 1</div>
+    <div id="mobileXP">XP: 0</div>
+</div>
+
     <h1>🎮 LIFE GAME</h1>
 
     <h2>Your Character</h2>
-
     <div class="character-card">
 
        <div class="character" id="character">
@@ -36,35 +45,27 @@
             </p>
         </div>
 
-        <button id="customizeButton">
-    Customize
-</button>
+        <div class="mobile-buttons">
+
+    <button>🎯 Quests</button>
+    
+    <button id="customizeButton">
+        👕 Customize
+    </button>
+
+    <button>👥 Feed</button>
+
+    <button>🎒 Items</button>
+
+    <button>🏆 Achievements</button>
+
+    <button>⚙️ Settings</button>
+
+</div>
+
+<div id="map"></div>
 
     </div>
-
-
-    <div class="character-unlocks">
-
-        <h2>Character Unlocks</h2>
-
-        <div class="unlock unlocked">
-            🧙 Starter Character
-        </div>
-
-        <div class="unlock" id="ninjaUnlock">
-            🔒 🥷 Shadow — Level 2
-        </div>
-
-        <div class="unlock">
-            🔒 🐺 Wolf Companion — Level 5
-        </div>
-
-        <div class="unlock">
-            🔒 👑 Crown — Level 10
-        </div>
-
-    </div>
-
 
     <h2 id="levelText">Level 1</h2>
 
@@ -114,6 +115,7 @@
 
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="script.js"></script>
 
 </body>
