@@ -247,12 +247,10 @@ margin: 0 auto;
 /* EQUIPPED ITEMS */
 
 .equipped-item {
-position: absolute;
-width: 25px;
-height: auto;
-top: 17px;
-left: 50%;
-transform: translateX(-50%);
+    position: absolute;
+    height: auto;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* CUSTOMIZE ITEMS */
@@ -300,57 +298,181 @@ background: #7c5cff;
 transform: translateY(-2px);
 }
 
-/* MOBILE */
-
 @media (max-width: 600px) {
 
+    html,
     body {
-    padding: 0;
-    margin: 0;
-    height: 100vh;
-    overflow: hidden;
-}
-
-    h1 {
-        font-size: 34px;
-        margin-bottom: 30px;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
 
-    h2 {
-        font-size: 22px;
+    #homePage {
+        position: relative;
+        width: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    #homePage > h1,
+    #homePage > h2,
+    .character-info,
+    #levelText,
+    #xpText,
+    #streakText,
+    #commonQuest,
+    #uncommonQuest,
+    #rareQuest {
+        display: none;
+    }
+
+    .mobile-top {
+        position: relative;
+        z-index: 30;
+        text-align: center;
+        padding-top: 24px;
+    }
+
+    #mobileLevel {
+        font-size: clamp(26px, 7vw, 34px);
+        font-weight: bold;
+    }
+
+    #mobileXP {
+        color: #aaa;
+        font-size: clamp(14px, 4vw, 18px);
+        margin-top: 4px;
     }
 
     .character-card {
-    min-height: 75vh;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    gap: 10px;
-    padding: 20px;
-}
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100dvh;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        display: block;
+        background: linear-gradient(145deg, #171a24, #0b0d12);
+        border: none;
+        border-radius: 0;
+    }
 
     .character-card .character {
-        padding: 10px;
-    }
-
-   .character-card .character img {
-    width: 75vw;
-    max-width: none;
-}
-
-    .character-info {
+        position: absolute;
+        top: 43dvh;
+        left: 50%;
+        transform: translate(-50%, -50%);
         width: 100%;
+        padding: 0;
+        margin: 0;
+        text-align: center;
     }
 
-    .quest {
-        padding: 18px;
-        font-size: 16px;
+    .character-card .character img {
+        width: min(72vw, 43dvh);
+        max-width: none;
+        height: auto;
     }
 
-    .xp-text {
-        float: none;
+    .xp {
         display: block;
-        margin-top: 8px;
+        position: absolute;
+        top: 10dvh;
+        left: 8%;
+        width: 84%;
+        height: 12px;
+        margin: 0;
+        z-index: 30;
+    }
+
+    .xp-bar {
+        height: 100%;
+    }
+
+    .mobile-buttons {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        z-index: 40;
+        pointer-events: none;
+    }
+
+    .mobile-buttons button {
+        position: absolute;
+        pointer-events: auto;
+        width: 120px;
+        height: 52px;
+        padding: 0;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(23, 26, 36, 0.95);
+        color: white;
+        border: 1px solid #303544;
+        border-radius: 16px;
+        font-size: clamp(12px, 3.5vw, 15px);
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Customize */
+    .mobile-buttons button:nth-child(2) {
+        top: 29dvh;
+        left: 4%;
+    }
+
+    /* Feed */
+    .mobile-buttons button:nth-child(3) {
+        top: 29dvh;
+        right: 4%;
+    }
+
+    /* Quests */
+    .mobile-buttons button:nth-child(1) {
+        top: 66dvh;
+        left: 15%;
+        width: 70%;
+        height: 52px;
+        border: 1px solid #7c5cff;
+    }
+
+    /* Items */
+    .mobile-buttons button:nth-child(4) {
+        bottom: 2dvh;
+        left: 5%;
+    }
+
+    /* Achievements */
+    .mobile-buttons button:nth-child(5) {
+        bottom: 2dvh;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Settings */
+    .mobile-buttons button:nth-child(6) {
+        bottom: 2dvh;
+        right: 5%;
+    }
+
+    #map {
+        position: absolute;
+        z-index: 25;
+        width: 70%;
+        height: clamp(100px, 15dvh, 150px);
+        left: 15%;
+        top: calc(66dvh + 64px);
+        border-radius: 18px;
+        overflow: hidden;
+        background: #171a24;
+        border: 1px solid #303544;
     }
 
     .customize-page {
@@ -364,194 +486,50 @@ transform: translateY(-2px);
     .customize-character > img:first-child {
         width: 240px;
     }
-
-    html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
 }
 
-#homePage > h1,
-#homePage > h2,
-.character-info,
-#levelText,
-#xpText,
-.xp,
-#streakText,
-#commonQuest,
-#uncommonQuest,
-#rareQuest {
-    display: none;
-}
-
-.mobile-top {
-    position: relative;
-    z-index: 10;
-    text-align: center;
-    padding-top: 25px;
-}
-
-#mobileLevel {
-    font-size: 28px;
-    font-weight: bold;
-}
-
-#mobileXP {
-    color: #aaa;
-    font-size: 15px;
-    margin-top: 4px;
-}
-#homePage {
-    position: relative;
-    width: 100%;
-    height: 100dvh;
-    overflow: hidden;
-}
-
-#homePage > h1,
-#homePage > h2 {
-    display: none;
-}
-
-.character-card {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100dvh;
-    min-height: 0;
-    box-sizing: border-box;
-
-    background: linear-gradient(145deg, #171a24, #0b0d12);
-    border: none;
-    border-radius: 0;
-
-    padding: 0;
-    margin: 0;
-
-    display: block;
-}
-
-.character-card .character {
-    position: absolute;
-    top: 46%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    width: 100%;
-    padding: 0;
-    margin: 0;
-}
-
-.character-card .character img {
-    width: 85vw;
-    max-width: none;
-    height: auto;
-}
-
-.character-info {
-    display: none;
-}
-
-.xp {
-    display: block;
-    position: absolute;
-    top: 92px;
-    left: 8%;
-    width: 84%;
-    height: 12px;
-    margin: 0;
-    z-index: 10;
-}
-
-.xp-bar {
-    height: 100%;
-}
-
-.mobile-buttons {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 20;
-    pointer-events: none;
-}
-
-.mobile-buttons button {
-    position: absolute;
-    pointer-events: auto;
-
-    background: rgba(23, 26, 36, 0.95);
+.quest-page > button {
+    background: #171a24;
     color: white;
     border: 1px solid #303544;
-    border-radius: 16px;
-
-    width: 120px;
-    height: 52px;
-    padding: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-
-    font-size: 14px;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-size: 15px;
     font-weight: bold;
-
     cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
-/* Customize */
-.mobile-buttons button:nth-child(2) {
-    top: 24%;
-    left: 4%;
+.quest-page > button:hover {
+    border-color: #7c5cff;
 }
 
-/* Feed */
-.mobile-buttons button:nth-child(3) {
-    top: 24%;
-    right: 4%;
-}
-
-/* Quests */
-.mobile-buttons button:nth-child(1) {
-    top: 72%;
-    left: 15%;
-    width: 70%;
-    height: 52px;
-    border: 1px solid #7c5cff;
-}
-
-/* Items */
-.mobile-buttons button:nth-child(4) {
-    bottom: 3%;
-    left: 5%;
-}
-
-/* Achievements */
-.mobile-buttons button:nth-child(5) {
-    bottom: 3%;
+#characterStreak {
+    position: absolute;
+    top: -45px;
     left: 50%;
     transform: translateX(-50%);
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-weight: 600;
+    color: #aaa;
+    z-index: 10;
+}
+.character-image-wrap {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
 }
 
-/* Settings */
-.mobile-buttons button:nth-child(6) {
-    bottom: 3%;
-    right: 5%;
+.character-image-wrap img {
+    display: block;
 }
 
-#map {
-    position: absolute;
-    width: 70%;
-    height: 123px;
-    left: 15%;
-    top: 78%;
-    border-radius: 18px;
-    overflow: hidden;
-    background: #171a24;
-    border: 1px solid #303544;
+.customize-character .character-image-wrap {
+    width: 240px;
 }
+
+.customize-character .character-image-wrap img {
+    width: 100%;
+    height: auto;
 }

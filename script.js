@@ -1,36 +1,44 @@
 let xp = Number(localStorage.getItem("xp")) || 0;
 
-
 const items = [
-   {
-    id: "beanie",
-    name: "Beanie",
-    image: "beanie.png",
-    unlockLevel: 2,
+    {
+        id: "beanie",
+        name: "Beanie",
+        image: "beanie.png",
+        unlockLevel: 2,
 
-    homeWidth: 28,
-    homeTop: 3,
+        homeWidth: 24,
+        homeTop: -4,
 
-    customizeWidth: 28,
-    customizeTop: 17
-},
+        customizeWidth: 24,
+        customizeTop: -4
+    },
 
+    {
+        id: "glasses",
+        name: "Cool Glasses",
+        image: "glasses.png",
+        unlockLevel: 3,
 
-{
-    id: "glasses",
-    name: "Cool Glasses",
-    image: "glasses.png",
-    unlockLevel: 3,
+        homeWidth: 20,
+        homeTop: 14,
 
-    homeWidth: 28,
-    homeTop: 50,
+        customizeWidth: 20,
+        customizeTop: 14
+    },
 
-    customizeWidth: 28,
-    customizeTop: 85
-}
+    {
+        id: "sword",
+        name: "Sword",
+        image: "sword.png",
+        unlockLevel: 4,
+        homeWidth: 61,
+        homeTop: 47,
+
+        customizeWidth: 61,
+        customizeTop: 47
+    }
 ];
-
-
 const itemsContainer =
     document.getElementById("itemsContainer");
 
@@ -47,8 +55,8 @@ let equippedItems =
     JSON.parse(
         localStorage.getItem("equippedItems")
     ) || [];
-
-
+    
+    
 function createEquippedItem(
     item,
     character,
@@ -58,43 +66,45 @@ function createEquippedItem(
     const image =
         document.createElement("img");
 
-
     image.src =
         item.image;
-
 
     image.className =
         "equipped-item";
 
+        if (item.id === "sword") {
+    image.style.transform =
+        "translateX(-44%) rotate(180deg)";
+}
 
     image.dataset.itemId =
         item.id;
 
+    const imageWrap =
+        character.querySelector(".character-image-wrap");
+
+    if (!imageWrap) return;
 
     if (isHome) {
 
         image.style.width =
-            item.homeWidth + "px";
+            item.homeWidth + "%";
 
         image.style.top =
-            item.homeTop + "px";
+            item.homeTop + "%";
 
     } else {
 
         image.style.width =
-            item.customizeWidth + "px";
+            item.customizeWidth + "%";
 
         image.style.top =
-            item.customizeTop + "px";
+            item.customizeTop + "%";
 
     }
 
-
-    character.appendChild(
-        image
-    );
+    imageWrap.appendChild(image);
 }
-
 function renderEquippedItems() {
 
     document
@@ -511,6 +521,24 @@ displayQuest(
     "rare"
 );
 
+displayQuest(
+    document.getElementById("pageCommonQuest"),
+    todaysQuests.common,
+    "common"
+);
+
+displayQuest(
+    document.getElementById("pageUncommonQuest"),
+    todaysQuests.uncommon,
+    "uncommon"
+);
+
+displayQuest(
+    document.getElementById("pageRareQuest"),
+    todaysQuests.rare,
+    "rare"
+);
+
 
 function updateGame() {
 
@@ -550,6 +578,9 @@ function updateGame() {
         "🔥 " +
         streak +
         " Day Streak";
+
+        document.getElementById("characterStreak").textContent =
+    "🔥 " + streak + " Day Streak";
 }
 
 
@@ -730,6 +761,9 @@ function openCustomize() {
     document.getElementById("homePage").style.display =
         "none";
 
+    document.getElementById("questPage").style.display =
+        "none";
+
     document.getElementById("customizePage").style.display =
         "block";
 }
@@ -758,19 +792,90 @@ updateGame();
 const map = L.map("map").setView([37.7749, -122.4194], 13);
 
 if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
 
-        map.setView([latitude, longitude], 15);
+    navigator.permissions.query({ name: "geolocation" }).then(function(permission) {
 
-        L.marker([latitude, longitude])
-            .addTo(map)
-            .bindPopup("You are here")
-            .openPopup();
+        if (permission.state === "granted") {
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                map.setView([latitude, longitude], 15);
+
+                L.marker([latitude, longitude])
+                    .addTo(map)
+                    .bindPopup("You are here")
+                    .openPopup();
+
+            });
+
+        } else if (permission.state === "prompt") {
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                map.setView([latitude, longitude], 15);
+
+                L.marker([latitude, longitude])
+                    .addTo(map)
+                    .bindPopup("You are here")
+                    .openPopup();
+
+            });
+
+        }
+
     });
+
 }
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
 }).addTo(map);
+
+function openQuests() {
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("questPage").style.display = "block";
+}
+function closeQuests() {
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("homePage").style.display = "block";
+}
+
+document.getElementById("pageCommonQuest").addEventListener(
+    "click",
+    function() {
+        completeQuest(
+            document.getElementById("pageCommonQuest"),
+            todaysQuests.common,
+            "common-" + todaysQuests.common.name
+        );
+    }
+);
+
+document.getElementById("pageUncommonQuest").addEventListener(
+    "click",
+    function() {
+        completeQuest(
+            document.getElementById("pageUncommonQuest"),
+            todaysQuests.uncommon,
+            "uncommon-" + todaysQuests.uncommon.name
+        );
+    }
+);
+
+document.getElementById("pageRareQuest").addEventListener(
+    "click",
+    function() {
+        completeQuest(
+            document.getElementById("pageRareQuest"),
+            todaysQuests.rare,
+            "rare-" + todaysQuests.rare.name
+        );
+    }
+);

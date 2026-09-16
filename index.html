@@ -2,11 +2,14 @@
 <html>
 <head>
     <title>Life Game</title>
+
     <link rel="stylesheet" href="style.css">
+
     <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
     <link rel="manifest" href="manifest.json">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,22 +23,28 @@
 <div id="homePage">
 
     <div class="mobile-top">
-    <div id="mobileLevel">Level 1</div>
-    <div id="mobileXP">XP: 0</div>
-</div>
+        <div id="mobileLevel">Level 1</div>
+        <div id="mobileXP">XP: 0</div>
+    </div>
 
     <h1>🎮 LIFE GAME</h1>
 
     <h2>Your Character</h2>
+
     <div class="character-card">
 
-       <div class="character" id="character">
+        <div class="character" id="character">
 
-    <img src="Level 1.png" alt="Your character">
+            <div id="characterStreak">🔥 0 Day Streak</div>
 
-</div>
+            <div class="character-image-wrap">
+                <img src="Level 1.png" alt="Your character">
+            </div>
+
+        </div>
 
         <div class="character-info">
+
             <h2 id="characterLevel">
                 Level 7
             </h2>
@@ -43,29 +52,30 @@
             <p>
                 Your journey is just beginning.
             </p>
+
         </div>
 
         <div class="mobile-buttons">
 
-    <button>🎯 Quests</button>
-    
-    <button id="customizeButton">
-        👕 Customize
-    </button>
+            <button onclick="openQuests()">🎯 Quests</button>
 
-    <button>👥 Feed</button>
+            <button id="customizeButton">
+                👕 Customize
+            </button>
 
-    <button>🎒 Items</button>
+            <button>👥 Feed</button>
 
-    <button>🏆 Achievements</button>
+            <button>🎒 Items</button>
 
-    <button>⚙️ Settings</button>
+            <button>🏆 Achievements</button>
 
-</div>
+            <button>⚙️ Settings</button>
 
-<div id="map"></div>
+        </div>
 
     </div>
+
+    <div id="map"></div>
 
     <h2 id="levelText">Level 1</h2>
 
@@ -77,7 +87,6 @@
 
     <p id="streakText">🔥 0 Day Streak</p>
 
-
     <h2>Today's Quests</h2>
 
     <div class="quest" id="commonQuest"></div>
@@ -85,6 +94,23 @@
     <div class="quest" id="uncommonQuest"></div>
 
     <div class="quest" id="rareQuest"></div>
+
+</div>
+
+
+<div id="questPage" class="quest-page">
+
+    <button onclick="closeQuests()">
+        ← Back
+    </button>
+
+    <h1>🎯 Quests</h1>
+
+    <div class="quest" id="pageCommonQuest"></div>
+
+    <div class="quest" id="pageUncommonQuest"></div>
+
+    <div class="quest" id="pageRareQuest"></div>
 
 </div>
 
@@ -99,23 +125,30 @@
 
     <h1>Customize</h1>
 
-   <div class="customize-character">
+    <div class="customize-character">
 
-    <img src="Level 1.png" alt="Your character">
+        <div class="character-image-wrap" id="customizeCharacter">
 
-</div>
+            <img src="Level 1.png" alt="Your character">
+
+        </div>
+
+    </div>
+
 
     <div class="customize-items">
 
-        <div class="customize-items">
+        <h2>Items</h2>
 
-    <h2>Items</h2>
+        <div id="itemsContainer"></div>
 
-    <div id="itemsContainer"></div>
+    </div>
 
 </div>
 
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script src="script.js"></script>
 
 </body>
