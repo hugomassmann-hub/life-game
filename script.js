@@ -481,11 +481,14 @@ function displayQuest(
 
     if (completedQuests.includes(questName)) {
 
-        element.innerHTML =
-            "✅ Quest completed!";
+       element.innerHTML =
+    "✅ Quest completed! +" +
+    quest.xp +
+    " XP";
 
-        element.classList.add("completed");
-
+element.classList.add(
+    "completed"
+);
         return;
     }
 
@@ -539,36 +542,38 @@ displayQuest(
     "rare"
 );
 
+    function updateGame() {
 
-function updateGame() {
+    let level = 1;
+    let xpNeeded = 350;
+    let xpIntoLevel = xp;
 
-    let level =
-        Math.floor(xp / 350) + 1;
+    while (xpIntoLevel >= xpNeeded) {
 
+        xpIntoLevel -= xpNeeded;
+        level++;
 
-    let xpIntoLevel =
-        xp % 350;
-
+        xpNeeded += 150;
+    }
 
     let percentage =
-        (xpIntoLevel / 350) * 100;
+        (xpIntoLevel / xpNeeded) * 100;
 
 
     levelText.textContent =
         "Level " + level;
 
-
-    xpText.textContent =
-        "XP: " +
-        xpIntoLevel +
-        " / 350";
+xpText.textContent =
+    "XP: " +
+    xpIntoLevel +
+    " / " +
+    xpNeeded;
 
         document.getElementById("mobileLevel").textContent =
     "Level " + level;
 
-    document.getElementById("mobileXP").textContent =
-    "XP: " + xpIntoLevel + " / 350";
-
+document.getElementById("mobileXP").textContent =
+    "XP: " + xpIntoLevel + " / " + xpNeeded;
 
     xpBar.style.width =
         percentage + "%";
@@ -583,23 +588,23 @@ function updateGame() {
     "🔥 " + streak + " Day Streak";
 }
 
-
 function updateStreak() {
 
-    if (lastStreakDate === today) {
+    const todayDate =
+        new Date().toDateString();
+
+    if (lastStreakDate === todayDate) {
         return;
     }
 
-
     if (lastStreakDate) {
 
-        let yesterday =
+        const yesterday =
             new Date();
 
         yesterday.setDate(
             yesterday.getDate() - 1
         );
-
 
         if (
             lastStreakDate ===
@@ -612,36 +617,36 @@ function updateStreak() {
         } else {
 
             streak = 1;
+
         }
 
     } else {
 
         streak = 1;
+
     }
 
+    lastStreakDate =
+        todayDate;
 
     localStorage.setItem(
         "streak",
         streak
     );
 
-
     localStorage.setItem(
         "lastStreakDate",
-        today
+        lastStreakDate
     );
-
 
     updateGame();
 }
-
 
 function completeQuest(
     element,
     quest,
     questName
 ) {
-
     if (
         completedQuests.includes(
             questName
@@ -650,64 +655,21 @@ function completeQuest(
         return;
     }
 
+    document.getElementById("questPopup").style.display =
+        "flex";
 
-    let oldLevel =
-        Math.floor(xp / 350) + 1;
+    document.getElementById("popupQuestName").textContent =
+        quest.emoji + " " + quest.name;
 
+    document.getElementById("questPopup").dataset.questName =
+        questName;
 
-    xp =
-        xp + quest.xp;
+    document.getElementById("questPopup").dataset.questXP =
+        quest.xp;
 
-
-    completedQuests.push(
-        questName
-    );
-
-
-    localStorage.setItem(
-        "xp",
-        xp
-    );
-
-
-    localStorage.setItem(
-        "completedQuests",
-        JSON.stringify(
-            completedQuests
-        )
-    );
-
-
-    updateStreak();
-
-    updateGame();
-
-
-    element.innerHTML =
-        "✅ Quest completed! +" +
-        quest.xp +
-        " XP";
-
-
-    element.classList.add(
-        "completed"
-    );
-
-
-    let newLevel =
-        Math.floor(xp / 350) + 1;
-
-
-    if (newLevel > oldLevel) {
-
-        alert(
-            "🎉 LEVEL UP! You reached Level " +
-            newLevel +
-            "!"
-        );
-    }
+    document.getElementById("questPopup").dataset.elementId =
+        element.id;
 }
-
 
 commonQuest.addEventListener(
     "click",
@@ -719,10 +681,8 @@ commonQuest.addEventListener(
             "common-" +
             todaysQuests.common.name
         );
-
     }
 );
-
 
 uncommonQuest.addEventListener(
     "click",
@@ -879,3 +839,320 @@ document.getElementById("pageRareQuest").addEventListener(
         );
     }
 );
+
+document.getElementById("closeQuestPopup").onclick = function() {
+    document.getElementById("questPopup").style.display = "none";
+};
+
+document.getElementById("pastQuestsPage").style.display = "none";
+document.getElementById("feedPage").style.display = "none";
+
+document.getElementById("pastQuestsButton").onclick = function() {
+
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("pastQuestsPage").style.display = "block";
+
+    loadPastQuests();
+
+};
+
+document.getElementById("feedButton").onclick = function() {
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("pastQuestsPage").style.display = "none";
+    document.getElementById("feedPage").style.display = "block";
+    loadFeed();
+};
+
+document.getElementById("feedBackButton").onclick = function() {
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("homePage").style.display = "block";
+};
+
+document.getElementById("questPhoto").addEventListener(
+    "change",
+    function() {
+
+        if (this.files.length > 0) {
+
+            console.log(
+                "Photo selected:",
+                this.files[0].name
+            );
+
+        }
+
+    }
+);
+
+document.getElementById("pastQuestsBackButton").onclick = function() {
+
+    document.getElementById("pastQuestsPage").style.display = "none";
+    document.getElementById("questPage").style.display = "block";
+
+};
+
+document.getElementById("postQuestButton").onclick = function() {
+
+    const popup =
+        document.getElementById("questPopup");
+
+    const questName =
+        popup.dataset.questName;
+
+    const questXP =
+        Number(popup.dataset.questXP);
+
+    const elementId =
+        popup.dataset.elementId;
+
+    const description =
+        document.getElementById("questDescription").value;
+
+    const photo =
+        document.getElementById("questPhoto").files[0];
+
+    const element =
+        document.getElementById(elementId);
+
+    const pastQuests =
+        JSON.parse(localStorage.getItem("pastQuests")) || [];
+
+
+    function finishQuest(photoData) {
+
+        const newQuest = {
+            quest: questName,
+            description: description,
+            date: new Date().toLocaleString(),
+            photo: photoData
+        };
+
+        pastQuests.push(newQuest);
+
+        localStorage.setItem(
+            "pastQuests",
+            JSON.stringify(pastQuests)
+        );
+
+        xp = xp + questXP;
+
+        completedQuests.push(
+            questName
+        );
+
+        localStorage.setItem(
+            "xp",
+            xp
+        );
+
+        localStorage.setItem(
+            "completedQuests",
+            JSON.stringify(
+                completedQuests
+            )
+        );
+
+        updateStreak();
+        updateGame();
+
+        element.innerHTML =
+            "✅ Quest completed! +" +
+            questXP +
+            " XP";
+
+        element.classList.add(
+            "completed"
+        );
+
+        displayQuest(
+    document.getElementById("pageCommonQuest"),
+    todaysQuests.common,
+    "common"
+);
+
+displayQuest(
+    document.getElementById("pageUncommonQuest"),
+    todaysQuests.uncommon,
+    "uncommon"
+);
+
+displayQuest(
+    document.getElementById("pageRareQuest"),
+    todaysQuests.rare,
+    "rare"
+);
+
+        popup.style.display = "none";
+    }
+
+
+    if (photo) {
+
+        const reader =
+            new FileReader();
+
+        reader.onload = function() {
+
+            finishQuest(
+                reader.result
+            );
+
+        };
+
+        reader.readAsDataURL(photo);
+
+    } else {
+
+        finishQuest("");
+
+    }
+
+};
+
+function loadPastQuests() {
+
+    const container =
+        document.getElementById("pastQuestsContainer");
+
+    const pastQuests =
+        JSON.parse(localStorage.getItem("pastQuests")) || [];
+
+    container.innerHTML = "";
+
+    pastQuests.slice().reverse().forEach(function(quest) {
+
+        const questElement =
+            document.createElement("div");
+
+        questElement.className = "past-quest";
+
+if (quest.photo) {
+    
+questElement.innerHTML =
+    "<strong>" + quest.quest + "</strong><br>" +
+    "<div class='past-quest-photo'>" +
+    "<img src='" + quest.photo + "'>" +
+    "</div>" +
+    "<br>" +
+    quest.description + "<br>" +
+    "<small>" + quest.date + "</small>";
+
+} else {
+
+    questElement.innerHTML =
+        "<strong>" + quest.quest + "</strong><br>" +
+        quest.description + "<br>" +
+        "<small>" + quest.date + "</small>";
+
+}
+        container.appendChild(questElement);
+
+    });
+}
+
+function loadFeed() {
+    const container =
+        document.getElementById("feedContainer");
+
+    const pastQuests =
+        JSON.parse(localStorage.getItem("pastQuests")) || [];
+
+    container.innerHTML = "";
+
+    pastQuests.slice().reverse().forEach(function(quest) {
+
+        const post =
+            document.createElement("div");
+
+        post.className = "feed-post";
+
+        if (quest.photo) {
+            post.innerHTML =
+                "<strong>" + quest.quest + "</strong>" +
+                "<div class='feed-photo'>" +
+                "<img src='" + quest.photo + "'>" +
+                "</div>" +
+                "<p>" + quest.description + "</p>" +
+                "<small>" + quest.date + "</small>";
+        } else {
+            post.innerHTML =
+                "<strong>" + quest.quest + "</strong>" +
+                "<p>" + quest.description + "</p>" +
+                "<small>" + quest.date + "</small>";
+        }
+
+        container.appendChild(post);
+    });
+}
+
+function resetQuests() {
+
+    localStorage.removeItem("completedQuests");
+    localStorage.removeItem("todaysQuests");
+
+    completedQuests = [];
+
+    todaysQuests = {
+        common: getRandomQuest("common"),
+        uncommon: getRandomQuest("uncommon"),
+        rare: getRandomQuest("rare")
+    };
+
+    localStorage.setItem(
+        "todaysQuests",
+        JSON.stringify(todaysQuests)
+    );
+
+    commonQuest.classList.remove("completed");
+uncommonQuest.classList.remove("completed");
+rareQuest.classList.remove("completed");
+
+document.getElementById("pageCommonQuest").classList.remove("completed");
+document.getElementById("pageUncommonQuest").classList.remove("completed");
+document.getElementById("pageRareQuest").classList.remove("completed");
+
+    displayQuest(
+        commonQuest,
+        todaysQuests.common,
+        "common"
+    );
+
+    displayQuest(
+        uncommonQuest,
+        todaysQuests.uncommon,
+        "uncommon"
+    );
+
+    displayQuest(
+        rareQuest,
+        todaysQuests.rare,
+        "rare"
+    );
+
+    displayQuest(
+        document.getElementById("pageCommonQuest"),
+        todaysQuests.common,
+        "common"
+    );
+
+    displayQuest(
+        document.getElementById("pageUncommonQuest"),
+        todaysQuests.uncommon,
+        "uncommon"
+    );
+
+    displayQuest(
+        document.getElementById("pageRareQuest"),
+        todaysQuests.rare,
+        "rare"
+    );
+
+}
+
+document.getElementById("resetQuestsButton").onclick = function() {
+    resetQuests();
+};

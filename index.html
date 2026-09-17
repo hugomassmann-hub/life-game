@@ -63,7 +63,7 @@
                 👕 Customize
             </button>
 
-            <button>👥 Feed</button>
+            <button id="feedButton">👥 Feed</button>
 
             <button>🎒 Items</button>
 
@@ -100,9 +100,9 @@
 
 <div id="questPage" class="quest-page">
 
-    <button onclick="closeQuests()">
-        ← Back
-    </button>
+<button id="questsBackButton" onclick="closeQuests()">
+    ← Back
+</button>
 
     <h1>🎯 Quests</h1>
 
@@ -112,8 +112,43 @@
 
     <div class="quest" id="pageRareQuest"></div>
 
+    <button id="pastQuestsButton">
+    📜 Past Quests
+</button>
+
+<button id="resetQuestsButton">
+    🔄 Reset Quests
+</button>
+
 </div>
 
+<!-- PAST QUESTS PAGE -->
+
+<div id="pastQuestsPage" class="quest-page">
+
+    <button id="pastQuestsBackButton">
+        ← Back
+    </button>
+
+    <h1>📜 Past Quests</h1>
+
+    <div id="pastQuestsContainer"></div>
+
+</div>
+
+<!-- FEED PAGE -->
+
+<div id="feedPage" class="quest-page">
+
+    <button id="feedBackButton">
+        ← Back
+    </button>
+
+    <h1>📰 Feed</h1>
+
+    <div id="feedContainer"></div>
+
+</div>
 
 <!-- CUSTOMIZE PAGE -->
 
@@ -146,10 +181,72 @@
 
 </div>
 
+<!-- QUEST COMPLETE POPUP -->
+
+<div id="questPopup" class="quest-popup">
+
+    <div class="quest-popup-box">
+
+        <button id="closeQuestPopup" class="close-popup">
+            ×
+        </button>
+
+        <h2>🎉 Quest Complete!</h2>
+
+        <p id="popupQuestName"></p>
+
+        <label>
+            📸 Add a photo
+        </label>
+
+        <input
+            type="file"
+            id="questPhoto"
+            accept="image/*"
+        >
+
+        <label>
+            ✍️ Description
+        </label>
+
+        <textarea
+            id="questDescription"
+            placeholder="What did you do?"
+        ></textarea>
+
+        <button id="postQuestButton">
+            Post Quest
+        </button>
+
+    </div>
+
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script src="script.js"></script>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCG1vkx_y6Wdc0aKbq-rGLAJNxvtlzDvgs",
+    authDomain: "lifegame-fe372.firebaseapp.com",
+    projectId: "lifegame-fe372",
+    storageBucket: "lifegame-fe372.firebasestorage.app",
+    messagingSenderId: "761567655956",
+    appId: "1:761567655956:web:3f14a60c26d381cf164f01"
+  };
+  // Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+window.firebaseAuth = auth;
+</script>
 
 </body>
 </html>
