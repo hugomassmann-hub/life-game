@@ -1302,3 +1302,28 @@ async function saveCompletedQuestsToCloud() {
         { merge: true }
     );
 }
+async function loadCompletedQuestsFromCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const userSnapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        )
+    );
+
+    if (userSnapshot.exists()) {
+
+        const data = userSnapshot.data();
+
+        if (data.completedQuests !== undefined) {
+            completedQuests = data.completedQuests;
+        }
+
+        updateGame();
+    }
+}
