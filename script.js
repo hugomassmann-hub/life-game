@@ -930,6 +930,8 @@ saveQuestToCloud(newQuest);
             questName
         );
 
+        saveCompletedQuestsToCloud();
+
         localStorage.setItem(
             "xp",
             xp
@@ -1281,4 +1283,22 @@ window.loadXPFromCloud = async function() {
 
         updateGame();
     }
+}
+async function saveCompletedQuestsToCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        ),
+        {
+            completedQuests: completedQuests
+        },
+        { merge: true }
+    );
 }
