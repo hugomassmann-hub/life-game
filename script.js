@@ -1009,45 +1009,68 @@ displayQuest(
 
 };
 
-function loadPastQuests() {
+async function loadPastQuests() {
 
     const container =
         document.getElementById("pastQuestsContainer");
 
-    const pastQuests =
-        JSON.parse(localStorage.getItem("pastQuests")) || [];
+    const user =
+        window.firebaseAuth.currentUser;
+
+    if (!user) {
+        container.innerHTML =
+            "<p>Please sign in to view your past quests.</p>";
+        return;
+    }
+
+    const snapshot = await window.firebaseGetDocs(
+        window.firebaseCollection(
+            window.firebaseDB,
+            "users",
+            user.uid,
+            "pastQuests"
+        )
+    );
 
     container.innerHTML = "";
 
-    pastQuests.slice().reverse().forEach(function(quest) {
+    const quests = [];
+
+    snapshot.forEach(function(doc) {
+        quests.push(doc.data());
+    });
+
+    quests.reverse().forEach(function(quest) {
 
         const questElement =
             document.createElement("div");
 
         questElement.className = "past-quest";
 
-if (quest.photo) {
-    
-questElement.innerHTML =
-    "<strong>" + quest.quest + "</strong><br>" +
-    "<div class='past-quest-photo'>" +
-    "<img src='" + quest.photo + "'>" +
-    "</div>" +
-    "<br>" +
-    quest.description + "<br>" +
-    "<small>" + quest.date + "</small>";
+        if (quest.photo) {
 
-} else {
+            questElement.innerHTML =
+                "<strong>" + quest.quest + "</strong><br>" +
+                "<div class='past-quest-photo'>" +
+                "<img src='" + quest.photo + "'>" +
+                "</div>" +
+                "<br>" +
+                quest.description + "<br>" +
+                "<small>" + quest.date + "</small>";
 
-    questElement.innerHTML =
-        "<strong>" + quest.quest + "</strong><br>" +
-        quest.description + "<br>" +
-        "<small>" + quest.date + "</small>";
+        } else {
 
-}
+            questElement.innerHTML =
+                "<strong>" + quest.quest + "</strong><br>" +
+                quest.description + "<br>" +
+                "<small>" + quest.date + "</small>";
+
+        }
+
         container.appendChild(questElement);
 
     });
+
 }
 
 function loadFeed() {
