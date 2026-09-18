@@ -1256,3 +1256,29 @@ async function loadStreakFromCloud() {
         updateGame();
     }
 }
+
+async function loadXPFromCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const userSnapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        )
+    );
+
+    if (userSnapshot.exists()) {
+
+        const data = userSnapshot.data();
+
+        if (data.xp !== undefined) {
+            xp = data.xp;
+        }
+
+        updateGame();
+    }
+}

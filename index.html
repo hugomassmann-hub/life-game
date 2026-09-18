@@ -352,9 +352,9 @@ onAuthStateChanged(auth, (user) => {
     const signInSection = document.getElementById("signInSection");
 
     if (user) {
-
-    loadStreakFromCloud();  
-
+    loadStreakFromCloud();
+    loadXPFromCloud();
+    
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;
     signInSection.style.display = "none";
