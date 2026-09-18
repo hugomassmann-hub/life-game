@@ -753,43 +753,32 @@ const map = L.map("map").setView([37.7749, -122.4194], 13);
 
 if (navigator.geolocation) {
 
-    navigator.permissions.query({ name: "geolocation" }).then(function(permission) {
+    navigator.geolocation.getCurrentPosition(
 
-        if (permission.state === "granted") {
+        function(position) {
 
-            navigator.geolocation.getCurrentPosition(function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
+            map.setView([latitude, longitude], 15);
 
-                map.setView([latitude, longitude], 15);
+            L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup("You are here")
+                .openPopup();
 
-                L.marker([latitude, longitude])
-                    .addTo(map)
-                    .bindPopup("You are here")
-                    .openPopup();
+        },
 
-            });
+        function(error) {
 
-        } else if (permission.state === "prompt") {
-
-            navigator.geolocation.getCurrentPosition(function(position) {
-
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
-                map.setView([latitude, longitude], 15);
-
-                L.marker([latitude, longitude])
-                    .addTo(map)
-                    .bindPopup("You are here")
-                    .openPopup();
-
-            });
+            console.log(
+                "Location permission or location error:",
+                error.message
+            );
 
         }
 
-    });
+    );
 
 }
 
