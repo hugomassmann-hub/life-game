@@ -135,6 +135,30 @@
 
 <p id="signedInMessage"></p>
 
+<div id="signInSection">
+
+    <h2>Sign in</h2>
+
+    <input
+        type="email"
+        id="signInEmailInput"
+        placeholder="Email"
+    >
+
+    <input
+        type="password"
+        id="signInPasswordInput"
+        placeholder="Password"
+    >
+
+    <button id="signInButton">
+        Sign In
+    </button>
+
+    <p id="signInMessage"></p>
+
+</div>
+
 <p id="usernameDisplay"></p>
 
 <div id="usernameSection">
@@ -287,7 +311,7 @@
 <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
@@ -305,6 +329,9 @@
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+window.firebaseDB = db;
+window.firebaseDoc = doc;
+window.firebaseSetDoc = setDoc;
 window.firebaseAuth = auth;
 window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 window.onAuthStateChanged = onAuthStateChanged;
@@ -312,11 +339,13 @@ onAuthStateChanged(auth, (user) => {
 
     const signedInMessage = document.getElementById("signedInMessage");
     const createAccountSection = document.getElementById("createAccountSection");
+    const signInSection = document.getElementById("signInSection");
 
     if (user) {
 
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;
+    signInSection.style.display = "none";
 
    if (user.displayName) {
     document.getElementById("usernameDisplay").textContent =
@@ -357,6 +386,35 @@ document.getElementById("usernameSection").style.display = "none";
     } catch (error) {
 
         usernameMessage.textContent = error.message;
+
+    }
+
+};
+
+document.getElementById("signInButton").onclick = async function() {
+
+    const email =
+        document.getElementById("signInEmailInput").value;
+
+    const password =
+        document.getElementById("signInPasswordInput").value;
+
+    const message =
+        document.getElementById("signInMessage");
+
+    try {
+
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        message.textContent = "Signed in! 🎉";
+
+    } catch (error) {
+
+        message.textContent = error.message;
 
     }
 
