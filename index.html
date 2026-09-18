@@ -71,6 +71,8 @@
 
             <button>⚙️ Settings</button>
 
+            <button id="accountButton">👤 Account</button>
+
         </div>
 
     </div>
@@ -94,6 +96,62 @@
     <div class="quest" id="uncommonQuest"></div>
 
     <div class="quest" id="rareQuest"></div>
+
+</div>
+
+<!-- ACCOUNT PAGE -->
+
+<div id="accountPage" class="quest-page">
+
+    <button id="accountBackButton">
+        ← Back
+    </button>
+
+    <h1>🎮 LIFE GAME</h1>    
+
+    <div id="createAccountSection">
+
+    <h2>Create your account</h2>
+
+    <input
+        type="email"
+        id="emailInput"
+        placeholder="Email"
+    >
+
+    <input
+        type="password"
+        id="passwordInput"
+        placeholder="Password"
+    >
+
+    <button id="createAccountButton">
+        Create Account
+    </button>
+
+    <p id="accountMessage"></p>
+
+</div>
+
+<p id="signedInMessage"></p>
+
+<p id="usernameDisplay"></p>
+
+<div id="usernameSection">
+
+    <input
+        type="text"
+        id="usernameInput"
+        placeholder="Choose a username"
+    >
+
+    <button id="saveUsernameButton">
+        Save Username
+    </button>
+
+</div>
+
+<p id="usernameMessage"></p>
 
 </div>
 
@@ -229,7 +287,8 @@
 <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -245,7 +304,63 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-aut
   // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 window.firebaseAuth = auth;
+window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+window.onAuthStateChanged = onAuthStateChanged;
+onAuthStateChanged(auth, (user) => {
+
+    const signedInMessage = document.getElementById("signedInMessage");
+    const createAccountSection = document.getElementById("createAccountSection");
+
+    if (user) {
+
+    createAccountSection.style.display = "none";
+    signedInMessage.textContent = "Signed in as " + user.email;
+
+   if (user.displayName) {
+    document.getElementById("usernameDisplay").textContent =
+        "Username: " + user.displayName;
+
+    document.getElementById("usernameSection").style.display = "none";
+}
+
+} else {
+
+        createAccountSection.style.display = "block";
+        signedInMessage.textContent = "Not signed in";
+
+    }
+
+});
+
+document.getElementById("saveUsernameButton").onclick = async function() {
+
+    const username = document.getElementById("usernameInput").value.trim();
+    const usernameMessage = document.getElementById("usernameMessage");
+    const user = auth.currentUser;
+
+    if (!username) {
+        usernameMessage.textContent = "Please enter a username.";
+        return;
+    }
+
+    try {
+
+        await updateProfile(user, {
+            displayName: username
+        });
+
+usernameMessage.textContent = "Username saved! 🎉";
+document.getElementById("usernameSection").style.display = "none";
+
+    } catch (error) {
+
+        usernameMessage.textContent = error.message;
+
+    }
+
+};
 </script>
 
 </body>

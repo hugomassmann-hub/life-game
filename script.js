@@ -933,12 +933,10 @@ document.getElementById("postQuestButton").onclick = function() {
 
         pastQuests.push(newQuest);
 
-        localStorage.setItem(
-            "pastQuests",
-            JSON.stringify(pastQuests)
-        );
+saveQuestToCloud(newQuest);
 
         xp = xp + questXP;
+        saveXPToCloud();
 
         completedQuests.push(
             questName
@@ -997,11 +995,9 @@ displayQuest(
 
         reader.onload = function() {
 
-            finishQuest(
-                reader.result
-            );
+    finishQuest("");
 
-        };
+};
 
         reader.readAsDataURL(photo);
 
@@ -1156,3 +1152,67 @@ document.getElementById("pageRareQuest").classList.remove("completed");
 document.getElementById("resetQuestsButton").onclick = function() {
     resetQuests();
 };
+document.getElementById("accountButton").onclick = function() {
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("pastQuestsPage").style.display = "none";
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("accountPage").style.display = "block";
+};
+document.getElementById("accountBackButton").onclick = function() {
+    document.getElementById("accountPage").style.display = "none";
+    document.getElementById("homePage").style.display = "block";
+};
+document.getElementById("createAccountButton").onclick = async function() {
+
+    const email = document.getElementById("emailInput").value;
+    const password = document.getElementById("passwordInput").value;
+    const message = document.getElementById("accountMessage");
+
+    try {
+
+        await createUserWithEmailAndPassword(
+            window.firebaseAuth,
+            email,
+            password
+        );
+
+        message.textContent = "Account created! 🎉";
+
+    } catch (error) {
+
+        message.textContent = error.message;
+
+    }
+
+};
+async function saveXPToCloud() {
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid),
+        {
+            xp: xp
+        },
+        { merge: true }
+    );
+}
+async function saveQuestToCloud(questData) {
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid,
+            "pastQuests",
+            Date.now().toString()
+        ),
+        questData
+    );
+}
