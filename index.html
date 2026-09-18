@@ -338,6 +338,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.firebaseDB = db;
 window.firebaseDoc = doc;
+window.firebaseGetDoc = getDoc;
 window.firebaseSetDoc = setDoc;
 window.firebaseGetDocs = getDocs;
 window.firebaseCollection = collection;
@@ -351,6 +352,8 @@ onAuthStateChanged(auth, (user) => {
     const signInSection = document.getElementById("signInSection");
 
     if (user) {
+
+    loadStreakFromCloud();  
 
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;
@@ -428,6 +431,8 @@ document.getElementById("signInButton").onclick = async function() {
     }
 
 };
+
+
 </script>
 
 </body>

@@ -275,7 +275,6 @@ if (savedDate === today) {
     localStorage.removeItem("todaysQuests");
 }
 
-
 let streak =
     Number(localStorage.getItem("streak")) || 0;
 
@@ -1227,4 +1226,33 @@ async function saveQuestToCloud(questData) {
         ),
         questData
     );
+}
+async function loadStreakFromCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const userSnapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        )
+    );
+
+    if (userSnapshot.exists()) {
+
+        const data = userSnapshot.data();
+
+        if (data.streak !== undefined) {
+            streak = data.streak;
+        }
+
+        if (data.lastStreakDate !== undefined) {
+            lastStreakDate = data.lastStreakDate;
+        }
+
+        updateGame();
+    }
 }
