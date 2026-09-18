@@ -1257,7 +1257,7 @@ async function loadStreakFromCloud() {
     }
 }
 
-async function loadXPFromCloud() {
+window.loadXPFromCloud = async function() {
 
     const user = window.firebaseAuth.currentUser;
 
