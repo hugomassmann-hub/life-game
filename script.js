@@ -58,6 +58,8 @@ let equippedItems =
     
 async function saveEquippedItemsToCloud() {
 
+ console.log("SAVE ITEM FUNCTION RAN");
+
     const user = window.firebaseAuth.currentUser;
 
     if (!user) {
@@ -257,8 +259,6 @@ items.forEach(function(item) {
                         equippedItems
                     )
                 );
-
-                console.log("ITEM CLICKED");
 
                 saveEquippedItemsToCloud();
 
