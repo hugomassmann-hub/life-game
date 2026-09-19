@@ -609,21 +609,52 @@ transform: translateY(-2px);
     resize: vertical;
 }
 
-#postQuestButton {
+#completeQuestButton,
+#completeAndPostButton {
+
     width: 100%;
-    margin-top: 20px;
+
     padding: 14px;
-    background: #7c5cff;
-    color: white;
+
     border: none;
+
     border-radius: 14px;
+
     font-size: 16px;
+
     font-weight: bold;
+
     cursor: pointer;
+
+    transition: 0.2s;
+
 }
 
-#postQuestButton:hover {
+#completeQuestButton {
+
+    margin-top: 20px;
+
+    background: #303544;
+
+    color: white;
+
+}
+
+#completeAndPostButton {
+
+    margin-top: 10px;
+
+    background: #7c5cff;
+
+    color: white;
+
+}
+
+#completeQuestButton:hover,
+#completeAndPostButton:hover {
+
     transform: translateY(-2px);
+
 }
 
 .close-popup {
