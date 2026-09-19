@@ -58,12 +58,9 @@ let equippedItems =
     
 async function saveEquippedItemsToCloud() {
 
- console.log("SAVE ITEM FUNCTION RAN");
-
     const user = window.firebaseAuth.currentUser;
 
     if (!user) {
-        console.log("NO USER FOR ITEM SAVE");
         return;
     }
 
@@ -80,8 +77,6 @@ async function saveEquippedItemsToCloud() {
             },
             { merge: true }
         );
-
-        console.log("EQUIPPED ITEMS SAVED:", equippedItems);
 
     } catch (error) {
 
@@ -1018,7 +1013,67 @@ displayQuest(
 
         reader.onload = function() {
 
-    finishQuest("");
+    const img = new Image();
+
+    img.onload = function() {
+
+        const canvas =
+            document.createElement("canvas");
+
+        const maxSize = 600;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+
+            if (width > maxSize) {
+
+                height =
+                    height * (maxSize / width);
+
+                width = maxSize;
+
+            }
+
+        } else {
+
+            if (height > maxSize) {
+
+                width =
+                    width * (maxSize / height);
+
+                height = maxSize;
+
+            }
+
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx =
+            canvas.getContext("2d");
+
+        ctx.drawImage(
+            img,
+            0,
+            0,
+            width,
+            height
+        );
+
+        const compressedPhoto =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.7
+            );
+
+        finishQuest(compressedPhoto);
+
+    };
+
+    img.src = reader.result;
 
 };
 
