@@ -1106,10 +1106,16 @@ function resetQuests() {
     completedQuests = [];
 
     todaysQuests = {
-        common: getRandomQuest("common"),
-        uncommon: getRandomQuest("uncommon"),
-        rare: getRandomQuest("rare")
-    };
+
+    common: getRandomQuest("common"),
+
+    uncommon: getRandomQuest("uncommon"),
+
+    rare: getRandomQuest("rare")
+
+};
+
+saveTodaysQuestsToCloud();
 
     localStorage.setItem(
         "todaysQuests",
@@ -1322,11 +1328,7 @@ async function loadCompletedQuestsFromCloud() {
 
         if (data.completedQuests !== undefined) {
             completedQuests = data.completedQuests;
-        }
-
-        updateGame();
-
-displayQuest(
+            displayQuest(
     commonQuest,
     todaysQuests.common,
     "common"
@@ -1361,5 +1363,85 @@ displayQuest(
     todaysQuests.rare,
     "rare"
 );
+        }
+
+        
+    }
+}
+async function saveTodaysQuestsToCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        ),
+        {
+            todaysQuests: todaysQuests
+        },
+        { merge: true }
+    );
+}
+async function loadTodaysQuestsFromCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const userSnapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        )
+    );
+
+    if (userSnapshot.exists()) {
+
+        const data = userSnapshot.data();
+
+        if (data.todaysQuests !== undefined) {
+            todaysQuests = data.todaysQuests;
+        }
+
+        displayQuest(
+            commonQuest,
+            todaysQuests.common,
+            "common"
+        );
+
+        displayQuest(
+            uncommonQuest,
+            todaysQuests.uncommon,
+            "uncommon"
+        );
+
+        displayQuest(
+            rareQuest,
+            todaysQuests.rare,
+            "rare"
+        );
+
+        displayQuest(
+            document.getElementById("pageCommonQuest"),
+            todaysQuests.common,
+            "common"
+        );
+
+        displayQuest(
+            document.getElementById("pageUncommonQuest"),
+            todaysQuests.uncommon,
+            "uncommon"
+        );
+
+        displayQuest(
+            document.getElementById("pageRareQuest"),
+            todaysQuests.rare,
+            "rare"
+        );
     }
 }

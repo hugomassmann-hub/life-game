@@ -354,7 +354,8 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
     loadStreakFromCloud();
     loadXPFromCloud();
-       loadCompletedQuestsFromCloud();
+    loadCompletedQuestsFromCloud();
+    loadTodaysQuestsFromCloud();
 
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;
