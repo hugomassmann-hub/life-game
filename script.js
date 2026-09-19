@@ -432,7 +432,6 @@ function getRandomQuest(category) {
     return questList[randomIndex];
 }
 
-
 let savedQuests =
     localStorage.getItem("todaysQuests");
 
@@ -1381,7 +1380,8 @@ async function saveTodaysQuestsToCloud() {
             user.uid
         ),
         {
-            todaysQuests: todaysQuests
+            todaysQuests: todaysQuests,
+            questDate: today
         },
         { merge: true }
     );
@@ -1404,9 +1404,18 @@ async function loadTodaysQuestsFromCloud() {
 
         const data = userSnapshot.data();
 
-        if (data.todaysQuests !== undefined) {
-            todaysQuests = data.todaysQuests;
-        }
+       if (
+    data.todaysQuests !== undefined &&
+    data.questDate === today
+) {
+
+    todaysQuests = data.todaysQuests;
+
+} else {
+
+    saveTodaysQuestsToCloud();
+
+}
 
         displayQuest(
             commonQuest,
