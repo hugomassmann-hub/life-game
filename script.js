@@ -1092,7 +1092,38 @@ function handleQuestCompletion(shouldPost) {
     }
 
 }
+document.getElementById("questPhoto").addEventListener(
+    "change",
+    function() {
 
+        const file =
+            this.files[0];
+
+        const preview =
+            document.getElementById("photoPreview");
+
+        if (!file) {
+
+            preview.innerHTML = "";
+
+            return;
+        }
+
+        const image =
+            document.createElement("img");
+
+        image.src =
+            URL.createObjectURL(file);
+
+        image.className =
+            "quest-photo-preview";
+
+        preview.innerHTML = "";
+
+        preview.appendChild(image);
+
+    }
+);
 
 document.getElementById("completeQuestButton").onclick =
     function() {
