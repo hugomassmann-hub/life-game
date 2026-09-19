@@ -950,6 +950,7 @@ document.getElementById("postQuestButton").onclick = function() {
         pastQuests.push(newQuest);
 
 saveQuestToCloud(newQuest);
+saveFeedPostToCloud(newQuest);
 
         xp = xp + questXP;
         saveXPToCloud();
@@ -1151,41 +1152,92 @@ async function loadPastQuests() {
 
 }
 
-function loadFeed() {
+async function loadFeed() {
+
     const container =
         document.getElementById("feedContainer");
 
-    const pastQuests =
-        JSON.parse(localStorage.getItem("pastQuests")) || [];
+    const user =
+        window.firebaseAuth.currentUser;
+
+    if (!user) {
+
+        container.innerHTML =
+            "<p>Please sign in to view the Feed.</p>";
+
+        return;
+    }
+
+    const snapshot =
+        await window.firebaseGetDocs(
+            window.firebaseCollection(
+                window.firebaseDB,
+                "feedPosts"
+            )
+        );
 
     container.innerHTML = "";
 
-    pastQuests.slice().reverse().forEach(function(quest) {
+    const posts = [];
 
-        const post =
+    snapshot.forEach(function(doc) {
+
+        posts.push(doc.data());
+
+    });
+
+    posts.reverse().forEach(function(post) {
+
+        const postElement =
             document.createElement("div");
 
-        post.className = "feed-post";
+        postElement.className =
+            "feed-post";
 
-        if (quest.photo) {
-            post.innerHTML =
-                "<strong>" + quest.quest + "</strong>" +
+        if (post.photo) {
+
+            postElement.innerHTML =
+                "<strong>" +
+                post.username +
+                "</strong><br>" +
+                "<strong>" +
+                post.quest +
+                "</strong>" +
                 "<div class='feed-photo'>" +
-                "<img src='" + quest.photo + "'>" +
+                "<img src='" +
+                post.photo +
+                "'>" +
                 "</div>" +
-                "<p>" + quest.description + "</p>" +
-                "<small>" + quest.date + "</small>";
+                "<p>" +
+                post.description +
+                "</p>" +
+                "<small>" +
+                post.date +
+                "</small>";
+
         } else {
-            post.innerHTML =
-                "<strong>" + quest.quest + "</strong>" +
-                "<p>" + quest.description + "</p>" +
-                "<small>" + quest.date + "</small>";
+
+            postElement.innerHTML =
+                "<strong>" +
+                post.username +
+                "</strong><br>" +
+                "<strong>" +
+                post.quest +
+                "</strong>" +
+                "<p>" +
+                post.description +
+                "</p>" +
+                "<small>" +
+                post.date +
+                "</small>";
+
         }
 
-        container.appendChild(post);
-    });
-}
+        container.appendChild(postElement);
 
+    });
+
+}
 function resetQuests() {
 
     localStorage.removeItem("completedQuests");
@@ -1323,6 +1375,30 @@ async function saveQuestToCloud(questData) {
         questData
     );
 }
+
+async function saveFeedPostToCloud(postData) {
+
+    const user =
+        window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "feedPosts",
+            Date.now().toString()
+        ),
+        {
+            quest: postData.quest,
+            description: postData.description,
+            date: postData.date,
+            photo: postData.photo || "",
+            username: user.displayName || "Player"
+        }
+    );
+}
+
 async function loadStreakFromCloud() {
 
     const user = window.firebaseAuth.currentUser;
