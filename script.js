@@ -258,9 +258,11 @@ items.forEach(function(item) {
                     )
                 );
 
+                console.log("ITEM CLICKED");
+
                 saveEquippedItemsToCloud();
 
-                renderEquippedItems();
+                    renderEquippedItems();
 
             }
         );
