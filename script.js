@@ -1325,5 +1325,41 @@ async function loadCompletedQuestsFromCloud() {
         }
 
         updateGame();
+
+displayQuest(
+    commonQuest,
+    todaysQuests.common,
+    "common"
+);
+
+displayQuest(
+    uncommonQuest,
+    todaysQuests.uncommon,
+    "uncommon"
+);
+
+displayQuest(
+    rareQuest,
+    todaysQuests.rare,
+    "rare"
+);
+
+displayQuest(
+    document.getElementById("pageCommonQuest"),
+    todaysQuests.common,
+    "common"
+);
+
+displayQuest(
+    document.getElementById("pageUncommonQuest"),
+    todaysQuests.uncommon,
+    "uncommon"
+);
+
+displayQuest(
+    document.getElementById("pageRareQuest"),
+    todaysQuests.rare,
+    "rare"
+);
     }
 }
