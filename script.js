@@ -1439,3 +1439,29 @@ async function loadTodaysQuestsFromCloud() {
         );
     }
 }
+async function loadEquippedItemsFromCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const userSnapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        )
+    );
+
+    if (userSnapshot.exists()) {
+
+        const data = userSnapshot.data();
+
+        if (data.equippedItems !== undefined) {
+
+            equippedItems = data.equippedItems;
+
+            renderEquippedItems();
+        }
+    }
+}
