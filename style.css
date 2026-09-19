@@ -805,3 +805,40 @@ transform: translateY(-2px);
     top: 10px;
     left: 10px;
 }
+.photo-upload-button {
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 14px;
+
+    background: #0b0d12;
+
+    color: white;
+
+    border: 1px solid #303544;
+
+    border-radius: 14px;
+
+    text-align: center;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+}
+
+.photo-upload-button:hover {
+
+    transform: translateY(-2px);
+
+    border-color: #7c5cff;
+
+}
