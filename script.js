@@ -56,6 +56,24 @@ let equippedItems =
         localStorage.getItem("equippedItems")
     ) || [];
     
+async function saveEquippedItemsToCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        ),
+        {
+            equippedItems: equippedItems
+        },
+        { merge: true }
+    );
+}
     
 function createEquippedItem(
     item,
@@ -227,6 +245,7 @@ items.forEach(function(item) {
                     )
                 );
 
+                saveEquippedItemsToCloud();
 
                 renderEquippedItems();
 
