@@ -911,7 +911,7 @@ document.getElementById("pastQuestsBackButton").onclick = function() {
 
 };
 
-document.getElementById("postQuestButton").onclick = function() {
+function handleQuestCompletion(shouldPost) {
 
     const popup =
         document.getElementById("questPopup");
@@ -949,10 +949,14 @@ document.getElementById("postQuestButton").onclick = function() {
 
         pastQuests.push(newQuest);
 
-saveQuestToCloud(newQuest);
-saveFeedPostToCloud(newQuest);
+        saveQuestToCloud(newQuest);
+
+        if (shouldPost) {
+            saveFeedPostToCloud(newQuest);
+        }
 
         xp = xp + questXP;
+
         saveXPToCloud();
 
         completedQuests.push(
@@ -986,22 +990,22 @@ saveFeedPostToCloud(newQuest);
         );
 
         displayQuest(
-    document.getElementById("pageCommonQuest"),
-    todaysQuests.common,
-    "common"
-);
+            document.getElementById("pageCommonQuest"),
+            todaysQuests.common,
+            "common"
+        );
 
-displayQuest(
-    document.getElementById("pageUncommonQuest"),
-    todaysQuests.uncommon,
-    "uncommon"
-);
+        displayQuest(
+            document.getElementById("pageUncommonQuest"),
+            todaysQuests.uncommon,
+            "uncommon"
+        );
 
-displayQuest(
-    document.getElementById("pageRareQuest"),
-    todaysQuests.rare,
-    "rare"
-);
+        displayQuest(
+            document.getElementById("pageRareQuest"),
+            todaysQuests.rare,
+            "rare"
+        );
 
         popup.style.display = "none";
     }
@@ -1014,69 +1018,70 @@ displayQuest(
 
         reader.onload = function() {
 
-    const img = new Image();
+            const img =
+                new Image();
 
-    img.onload = function() {
+            img.onload = function() {
 
-        const canvas =
-            document.createElement("canvas");
+                const canvas =
+                    document.createElement("canvas");
 
-        const maxSize = 600;
+                const maxSize = 600;
 
-        let width = img.width;
-        let height = img.height;
+                let width = img.width;
+                let height = img.height;
 
-        if (width > height) {
+                if (width > height) {
 
-            if (width > maxSize) {
+                    if (width > maxSize) {
 
-                height =
-                    height * (maxSize / width);
+                        height =
+                            height * (maxSize / width);
 
-                width = maxSize;
+                        width = maxSize;
 
-            }
+                    }
 
-        } else {
+                } else {
 
-            if (height > maxSize) {
+                    if (height > maxSize) {
 
-                width =
-                    width * (maxSize / height);
+                        width =
+                            width * (maxSize / height);
 
-                height = maxSize;
+                        height = maxSize;
 
-            }
+                    }
 
-        }
+                }
 
-        canvas.width = width;
-        canvas.height = height;
+                canvas.width = width;
+                canvas.height = height;
 
-        const ctx =
-            canvas.getContext("2d");
+                const ctx =
+                    canvas.getContext("2d");
 
-        ctx.drawImage(
-            img,
-            0,
-            0,
-            width,
-            height
-        );
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    width,
+                    height
+                );
 
-        const compressedPhoto =
-            canvas.toDataURL(
-                "image/jpeg",
-                0.7
-            );
+                const compressedPhoto =
+                    canvas.toDataURL(
+                        "image/jpeg",
+                        0.7
+                    );
 
-        finishQuest(compressedPhoto);
+                finishQuest(compressedPhoto);
 
-    };
+            };
 
-    img.src = reader.result;
+            img.src = reader.result;
 
-};
+        };
 
         reader.readAsDataURL(photo);
 
@@ -1086,7 +1091,23 @@ displayQuest(
 
     }
 
-};
+}
+
+
+document.getElementById("completeQuestButton").onclick =
+    function() {
+
+        handleQuestCompletion(false);
+
+    };
+
+
+document.getElementById("completeAndPostButton").onclick =
+    function() {
+
+        handleQuestCompletion(true);
+
+    };
 
 async function loadPastQuests() {
 
