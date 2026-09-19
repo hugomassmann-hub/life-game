@@ -1246,16 +1246,6 @@ async function loadFeed() {
         postElement.className =
             "feed-post";
 
-            const likeButton =
-    document.createElement("button");
-
-likeButton.textContent = "❤️ 0";
-
-likeButton.className =
-    "like-button";
-
-postElement.appendChild(likeButton);
-
         if (post.photo) {
 
             postElement.innerHTML =
@@ -1296,6 +1286,16 @@ postElement.appendChild(likeButton);
         }
 
         container.appendChild(postElement);
+
+        const likeButton =
+    document.createElement("button");
+
+likeButton.textContent = "❤️ 0";
+
+likeButton.className =
+    "like-button";
+
+postElement.appendChild(likeButton);
 
     });
 
