@@ -60,19 +60,32 @@ async function saveEquippedItemsToCloud() {
 
     const user = window.firebaseAuth.currentUser;
 
-    if (!user) return;
+    if (!user) {
+        console.log("NO USER FOR ITEM SAVE");
+        return;
+    }
 
-    await window.firebaseSetDoc(
-        window.firebaseDoc(
-            window.firebaseDB,
-            "users",
-            user.uid
-        ),
-        {
-            equippedItems: equippedItems
-        },
-        { merge: true }
-    );
+    try {
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(
+                window.firebaseDB,
+                "users",
+                user.uid
+            ),
+            {
+                equippedItems: equippedItems
+            },
+            { merge: true }
+        );
+
+        console.log("EQUIPPED ITEMS SAVED:", equippedItems);
+
+    } catch (error) {
+
+        console.error("ITEM SAVE ERROR:", error);
+
+    }
 }
     
 function createEquippedItem(
