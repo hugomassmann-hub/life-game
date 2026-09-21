@@ -1318,16 +1318,19 @@ const newLikes =
         "❤️ " + newLikes;
 
     await window.firebaseSetDoc(
-        window.firebaseDoc(
-            window.firebaseDB,
-            "feedPosts",
-            post.id
-        ),
-        {
-            likes: newLikes
-        },
-        { merge: true }
-    );
+    window.firebaseDoc(
+        window.firebaseDB,
+        "feedPosts",
+        post.id
+    ),
+    {
+        likes: newLikes,
+        likedBy: alreadyLiked
+            ? window.firebaseArrayRemove(currentUserId)
+            : window.firebaseArrayUnion(currentUserId)
+    },
+    { merge: true }
+);
 };
 
 postElement.appendChild(likeButton);
