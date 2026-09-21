@@ -433,13 +433,8 @@ transform: translateY(-2px);
         cursor: pointer;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     }
-/* Feed */
-.mobile-buttons button:nth-child(2) {
-    top: 29dvh;
-    right: 4%;
-}
 
-/* Quests */
+    /* Quests */
 .mobile-buttons button:nth-child(1) {
     top: 66dvh;
     left: 15%;
@@ -448,10 +443,15 @@ transform: translateY(-2px);
     border: 1px solid #7c5cff;
 }
 
-/* Customize */
+/* Feed */
+.mobile-buttons button:nth-child(2) {
+    top: 29dvh;
+    right: 4%;
+}
+
 .mobile-buttons button:nth-child(3) {
-    bottom: 2dvh;
-    left: 5%;
+    top: 29dvh;
+    left: 4%;
 }
 
 /* Account */
