@@ -412,11 +412,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     loadStreakFromCloud();
-        console.log("AUTH READY, loading XP for", user.uid);
-
-    loadXPFromCloud()
-        .then(function() { console.log("XP LOADED:", xp); })
-        .catch(function(error) { console.error("XP LOAD ERROR:", error); });
+    loadXPFromCloud();
     loadCompletedQuestsFromCloud();
     loadTodaysQuestsFromCloud();
     loadEquippedItemsFromCloud();
@@ -432,7 +428,7 @@ onAuthStateChanged(auth, async (user) => {
         "Username: " + user.displayName;
 
     document.getElementById("usernameSection").style.display = "none";
-    
+
 }
 
 } else {
@@ -509,6 +505,14 @@ document.getElementById("signInButton").onclick = async function() {
 };
 
 document.getElementById("signOutButton").onclick = async function() {
+    try {
+        if (streak > 0) {
+            await saveStreakToCloud();
+        }
+    } catch (error) {
+        console.error("STREAK SAVE ERROR:", error);
+    }
+
     await signOut(auth);
     localStorage.clear();
     location.reload();
