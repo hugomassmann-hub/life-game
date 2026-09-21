@@ -907,6 +907,73 @@ document.getElementById("friendsBackButton").onclick = function() {
     document.getElementById("homePage").style.display = "block";
 };
 
+// FRIEND SEARCH
+
+async function searchUsers() {
+
+    const container = document.getElementById("friendsContainer");
+    const searchText = document.getElementById("friendSearchInput").value.trim().toLowerCase();
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) {
+        container.innerHTML = "<p>Please sign in to search for players.</p>";
+        return;
+    }
+
+    if (!searchText) {
+        container.innerHTML = "<p>Type a username to search.</p>";
+        return;
+    }
+
+    container.innerHTML = "<p>Searching...</p>";
+
+    try {
+
+        const snapshot = await window.firebaseGetDocs(
+            window.firebaseQuery(
+                window.firebaseCollection(window.firebaseDB, "users"),
+                window.firebaseWhere("usernameLower", ">=", searchText),
+                window.firebaseWhere("usernameLower", "<=", searchText + "\uf8ff"),
+                window.firebaseLimit(10)
+            )
+        );
+
+        container.innerHTML = "";
+
+        let found = 0;
+
+        snapshot.forEach(function(userDoc) {
+
+            if (userDoc.id === user.uid) return;
+
+            found++;
+
+            const card = document.createElement("div");
+            card.className = "friend-result";
+            card.textContent = "👤 " + userDoc.data().username;
+
+            container.appendChild(card);
+        });
+
+        if (found === 0) {
+            container.innerHTML = "<p>No players found.</p>";
+        }
+
+    } catch (error) {
+
+        console.error("SEARCH ERROR:", error);
+        container.innerHTML = "<p>Search failed: " + error.message + "</p>";
+    }
+}
+
+document.getElementById("friendSearchButton").onclick = searchUsers;
+
+document.getElementById("friendSearchInput").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        searchUsers();
+    }
+});
+
 document.getElementById("questPhoto").addEventListener(
     "change",
     function() {

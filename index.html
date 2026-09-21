@@ -228,8 +228,13 @@
 
     <h1>👥 Friends</h1>
 
+        <div id="friendSearchBar">
+        <input type="text" id="friendSearchInput" placeholder="Search username">
+        <button id="friendSearchButton">🔍 Search</button>
+    </div>
+
     <div id="friendsContainer">
-        <p>Friends will appear here.</p>
+        <p>Search for a username to find other players.</p>
     </div>
 </div>
 
@@ -332,10 +337,13 @@ import {
     getDocs,
     collection,
     updateDoc,
-    arrayUnion,
-    arrayRemove
+      arrayUnion,
+    arrayRemove,
+    query,
+    where,
+    limit
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-  // TODO: Add SDKs for Firebase products that you want to use
+    // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
 
   // Your web app's Firebase configuration
@@ -359,6 +367,9 @@ window.firebaseGetDocs = getDocs;
 window.firebaseCollection = collection;
 window.firebaseArrayUnion = arrayUnion;
 window.firebaseArrayRemove = arrayRemove;
+window.firebaseQuery = query;
+window.firebaseWhere = where;
+window.firebaseLimit = limit;
 window.firebaseAuth = auth;
 window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 window.onAuthStateChanged = onAuthStateChanged;
@@ -379,11 +390,16 @@ onAuthStateChanged(auth, (user) => {
     signedInMessage.textContent = "Signed in as " + user.email;
     signInSection.style.display = "none";
 
-   if (user.displayName) {
+       if (user.displayName) {
     document.getElementById("usernameDisplay").textContent =
         "Username: " + user.displayName;
 
     document.getElementById("usernameSection").style.display = "none";
+
+    setDoc(doc(db, "users", user.uid), {
+        username: user.displayName,
+        usernameLower: user.displayName.toLowerCase()
+    }, { merge: true });
 }
 
 } else {
@@ -412,7 +428,13 @@ document.getElementById("saveUsernameButton").onclick = async function() {
             displayName: username
         });
 
+        await setDoc(doc(db, "users", user.uid), {
+    username: username,
+    usernameLower: username.toLowerCase()
+}, { merge: true });
+
 usernameMessage.textContent = "Username saved! 🎉";
+
 document.getElementById("usernameSection").style.display = "none";
 
     } catch (error) {

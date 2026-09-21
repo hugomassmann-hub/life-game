@@ -842,3 +842,58 @@ transform: translateY(-2px);
     bottom: 2dvh;
     right: 5%;
 }
+
+/* FRIENDS */
+
+#friendsPage {
+    position: relative;
+    padding-top: 35px;
+}
+
+#friendsBackButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#friendSearchBar {
+    display: flex;
+    gap: 10px;
+    max-width: 500px;
+    margin: 20px auto;
+}
+
+#friendSearchInput {
+    flex: 1;
+    background: #171a24;
+    color: white;
+    border: 1px solid #303544;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 15px;
+}
+
+#friendSearchButton {
+    background: #7c5cff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#friendsContainer {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.friend-result {
+    background: #171a24;
+    border: 1px solid #303544;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 10px 0;
+    font-size: 17px;
+}
