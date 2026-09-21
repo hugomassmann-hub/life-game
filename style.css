@@ -1007,3 +1007,49 @@ transform: translateY(-2px);
 .post-uncommon .rarity-badge { color: #4c8bf5; }
 .post-rare .rarity-badge { color: #9b59ff; }
 .post-boss .rarity-badge { color: #ffc93c; }
+
+/* FEED TIERS: stronger colors, size grows with rarity */
+
+#feedContainer {
+    scroll-snap-type: y proximity;
+}
+
+.feed-post.post-common {
+    min-height: 0;
+    border: 2px solid #4caf50;
+    background: linear-gradient(145deg, rgba(76, 175, 80, 0.18), #171a24 65%);
+    box-shadow: 0 0 14px rgba(76, 175, 80, 0.3);
+}
+
+.feed-post.post-uncommon {
+    min-height: 0;
+    border: 2px solid #4c8bf5;
+    background: linear-gradient(145deg, rgba(76, 139, 245, 0.22), #171a24 65%);
+    box-shadow: 0 0 20px rgba(76, 139, 245, 0.4);
+}
+
+.feed-post.post-rare {
+    min-height: 60vh;
+    border: 3px solid #9b59ff;
+    background: linear-gradient(145deg, rgba(155, 89, 255, 0.28), #171a24 65%);
+    box-shadow: 0 0 30px rgba(155, 89, 255, 0.55);
+}
+
+.feed-post.post-boss {
+    border: 3px solid #ffc93c;
+    background: linear-gradient(145deg, rgba(255, 201, 60, 0.3), #171a24 60%);
+    animation: bossGlow 2s ease-in-out infinite;
+}
+
+@keyframes bossGlow {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 201, 60, 0.5); }
+    50% { box-shadow: 0 0 50px rgba(255, 201, 60, 0.9); }
+}
+
+.feed-post.post-common .feed-photo { height: 220px; }
+.feed-post.post-uncommon .feed-photo { height: 280px; }
+
+.rarity-badge {
+    font-size: 13px;
+    padding: 4px 12px;
+}
