@@ -1303,9 +1303,12 @@ likeButton.className =
 
     likeButton.onclick = async function() {
 
-    const newLikes =
-        (post.likes || 0) + 1;
+const likedBy =
+    post.likedBy || [];
 
+const alreadyLiked =
+    likedBy.includes(currentUserId);
+    
     likeButton.textContent =
         "❤️ " + newLikes;
 
