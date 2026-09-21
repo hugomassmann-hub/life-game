@@ -1907,6 +1907,61 @@ async function openProfile(uid) {
 
         container.appendChild(stats);
 
+        // FOLLOW BUTTON
+
+        const me = window.firebaseAuth.currentUser;
+
+        if (me && me.uid !== uid) {
+
+            const mySnapshot = await window.firebaseGetDoc(
+                window.firebaseDoc(window.firebaseDB, "users", me.uid)
+            );
+
+            let isFollowing = false;
+
+            if (mySnapshot.exists()) {
+                isFollowing = (mySnapshot.data().following || []).includes(uid);
+            }
+
+            const followButton = document.createElement("button");
+            followButton.id = "followButton";
+
+            const updateFollowButton = function() {
+                followButton.textContent = isFollowing ? "✓ Following" : "➕ Follow";
+                followButton.className = isFollowing ? "following" : "";
+            };
+
+            updateFollowButton();
+
+            followButton.onclick = async function() {
+
+                followButton.disabled = true;
+
+                try {
+
+                    await window.firebaseSetDoc(
+                        window.firebaseDoc(window.firebaseDB, "users", me.uid),
+                        {
+                            following: isFollowing
+                                ? window.firebaseArrayRemove(uid)
+                                : window.firebaseArrayUnion(uid)
+                        },
+                        { merge: true }
+                    );
+
+                    isFollowing = !isFollowing;
+                    updateFollowButton();
+
+                } catch (error) {
+                    console.error("FOLLOW ERROR:", error);
+                }
+
+                followButton.disabled = false;
+            };
+
+            container.appendChild(followButton);
+        }
+
     } catch (error) {
 
         console.error("PROFILE ERROR:", error);

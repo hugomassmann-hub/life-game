@@ -934,3 +934,28 @@ transform: translateY(-2px);
     border-color: #7c5cff;
     transform: translateY(-2px);
 }
+
+/* FOLLOW BUTTON */
+
+#followButton {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: #7c5cff;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+#followButton.following {
+    background: #171a24;
+    border: 1px solid #7c5cff;
+}
+
+#followButton:hover {
+    transform: translateY(-2px);
+}
