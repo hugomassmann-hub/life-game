@@ -888,6 +888,25 @@ document.getElementById("feedBackButton").onclick = function() {
     document.getElementById("homePage").style.display = "block";
 };
 
+// FRIENDS PAGE
+
+document.getElementById("friendsPage").style.display = "none";
+
+document.getElementById("friendsButton").onclick = function() {
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("pastQuestsPage").style.display = "none";
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("accountPage").style.display = "none";
+    document.getElementById("friendsPage").style.display = "block";
+};
+
+document.getElementById("friendsBackButton").onclick = function() {
+    document.getElementById("friendsPage").style.display = "none";
+    document.getElementById("homePage").style.display = "block";
+};
+
 document.getElementById("questPhoto").addEventListener(
     "change",
     function() {
@@ -1346,7 +1365,7 @@ if (alreadyLiked) {
 
 likeButton.textContent =
     "❤️ " + newLikes;
-    
+
 };
 
 postElement.appendChild(likeButton);
