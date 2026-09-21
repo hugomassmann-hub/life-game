@@ -959,3 +959,18 @@ transform: translateY(-2px);
 #followButton:hover {
     transform: translateY(-2px);
 }
+
+/* SIGN OUT */
+
+#signOutButton {
+    display: none;
+    margin: 15px auto;
+    background: #171a24;
+    color: white;
+    border: 1px solid #303544;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}

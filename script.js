@@ -177,16 +177,19 @@ createEquippedItem(
 }
 
 
+function renderItemsList() {
+
+itemsContainer.innerHTML = "";
+
 items.forEach(function(item) {
 
     const itemElement =
+
         document.createElement("div");
 
     itemElement.className = "item";
 
-
-    const level =
-        Math.floor(xp / 350) + 1;
+        const level = getLevelFromXP(xp);
 
 
     if (level >= item.unlockLevel) {
@@ -273,11 +276,15 @@ items.forEach(function(item) {
     }
 
 
-    itemsContainer.appendChild(
+        itemsContainer.appendChild(
         itemElement
     );
 
 });
+
+}
+
+renderItemsList();
 
 
 renderEquippedItems();
@@ -612,7 +619,10 @@ document.getElementById("mobileXP").textContent =
         " Day Streak";
 
         document.getElementById("characterStreak").textContent =
+    
     "🔥 " + streak + " Day Streak";
+
+    renderItemsList();
 }
 
 function updateStreak() {
@@ -1822,9 +1832,11 @@ async function loadEquippedItemsFromCloud() {
 
         if (data.equippedItems !== undefined) {
 
-            equippedItems = data.equippedItems;
+                        equippedItems = data.equippedItems;
 
             renderEquippedItems();
+            renderItemsList();
+
         }
     }
 }

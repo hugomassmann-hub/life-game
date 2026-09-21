@@ -124,6 +124,7 @@
 </div>
 
 <p id="signedInMessage"></p>
+<button id="signOutButton">Sign Out</button>
 
 <div id="signInSection">
 
@@ -337,7 +338,7 @@
 <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
     getFirestore,
     doc,
@@ -397,6 +398,7 @@ onAuthStateChanged(auth, (user) => {
 
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;
+    document.getElementById("signOutButton").style.display = "block";
     signInSection.style.display = "none";
 
        if (user.displayName) {
@@ -483,6 +485,11 @@ document.getElementById("signInButton").onclick = async function() {
 
 };
 
+document.getElementById("signOutButton").onclick = async function() {
+    await signOut(auth);
+    localStorage.clear();
+    location.reload();
+};
 
 </script>
 
