@@ -661,10 +661,12 @@ function updateStreak() {
         streak
     );
 
-    localStorage.setItem(
+        localStorage.setItem(
         "lastStreakDate",
         lastStreakDate
     );
+
+    saveStreakToCloud();
 
     updateGame();
 }
@@ -950,7 +952,11 @@ async function searchUsers() {
 
             const card = document.createElement("div");
             card.className = "friend-result";
-            card.textContent = "👤 " + userDoc.data().username;
+                        card.textContent = "👤 " + userDoc.data().username;
+
+            card.onclick = function() {
+                openProfile(userDoc.id);
+            };
 
             container.appendChild(card);
         });
@@ -1820,4 +1826,114 @@ async function loadEquippedItemsFromCloud() {
             renderEquippedItems();
         }
     }
+}
+
+// PROFILE PAGE
+
+document.getElementById("profilePage").style.display = "none";
+
+function getLevelFromXP(totalXP) {
+
+    let level = 1;
+    let xpNeeded = 350;
+    let xpLeft = totalXP;
+
+    while (xpLeft >= xpNeeded) {
+        xpLeft -= xpNeeded;
+        level++;
+        xpNeeded += 150;
+    }
+
+    return level;
+}
+
+async function openProfile(uid) {
+
+    const container = document.getElementById("profileContainer");
+
+    document.getElementById("friendsPage").style.display = "none";
+    document.getElementById("profilePage").style.display = "block";
+    document.getElementById("profileUsername").textContent = "Loading...";
+    container.innerHTML = "";
+
+    try {
+
+        const snapshot = await window.firebaseGetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", uid)
+        );
+
+        if (!snapshot.exists()) {
+            document.getElementById("profileUsername").textContent = "Player";
+            container.innerHTML = "<p>Player not found.</p>";
+            return;
+        }
+
+        const data = snapshot.data();
+
+        const level = getLevelFromXP(data.xp || 0);
+        const streakCount = data.streak || 0;
+        const equipped = data.equippedItems || [];
+
+        document.getElementById("profileUsername").textContent =
+            data.username || "Player";
+
+        // Character with their equipped items
+        const characterBox = document.createElement("div");
+        characterBox.className = "customize-character";
+        characterBox.innerHTML =
+            '<div class="character-image-wrap">' +
+            '<img src="Level 1.png" alt="Player character">' +
+            '</div>';
+
+        container.appendChild(characterBox);
+
+        equipped.forEach(function(itemId) {
+
+            const item = items.find(function(i) {
+                return i.id === itemId;
+            });
+
+            if (item) {
+                createEquippedItem(item, characterBox, false);
+            }
+        });
+
+        // Stats
+        const stats = document.createElement("div");
+        stats.className = "profile-stats";
+        stats.innerHTML =
+            "<p>⭐ Level " + level + "</p>" +
+            "<p>🔥 " + streakCount + " Day Streak</p>";
+
+        container.appendChild(stats);
+
+    } catch (error) {
+
+        console.error("PROFILE ERROR:", error);
+        container.innerHTML = "<p>Couldn't load profile: " + error.message + "</p>";
+    }
+}
+
+document.getElementById("profileBackButton").onclick = function() {
+    document.getElementById("profilePage").style.display = "none";
+    document.getElementById("friendsPage").style.display = "block";
+};
+async function saveStreakToCloud() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "users",
+            user.uid
+        ),
+        {
+            streak: streak,
+            lastStreakDate: lastStreakDate
+        },
+        { merge: true }
+    );
 }

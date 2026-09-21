@@ -897,3 +897,40 @@ transform: translateY(-2px);
     margin: 10px 0;
     font-size: 17px;
 }
+/* PROFILE */
+
+#profilePage {
+    position: relative;
+    padding-top: 35px;
+    text-align: center;
+}
+
+#profileBackButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#profileContainer {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.profile-stats {
+    background: #171a24;
+    border: 1px solid #303544;
+    border-radius: 16px;
+    padding: 10px 16px;
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+.friend-result {
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.friend-result:hover {
+    border-color: #7c5cff;
+    transform: translateY(-2px);
+}
