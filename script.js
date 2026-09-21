@@ -1660,6 +1660,8 @@ window.loadXPFromCloud = async function() {
 
     const user = window.firebaseAuth.currentUser;
 
+    console.log("LOADXP: currentUser is", user ? user.uid : "NULL");
+
     if (!user) return;
 
     const userSnapshot = await window.firebaseGetDoc(
@@ -1670,9 +1672,13 @@ window.loadXPFromCloud = async function() {
         )
     );
 
+    console.log("LOADXP: document exists?", userSnapshot.exists());
+
     if (userSnapshot.exists()) {
 
         const data = userSnapshot.data();
+
+        console.log("LOADXP: xp field is", data.xp, "| fields:", Object.keys(data));
 
         if (data.xp !== undefined) {
             xp = data.xp;
@@ -1681,6 +1687,7 @@ window.loadXPFromCloud = async function() {
         updateGame();
     }
 }
+
 async function saveCompletedQuestsToCloud() {
 
     const user = window.firebaseAuth.currentUser;
