@@ -1331,6 +1331,22 @@ const newLikes =
     },
     { merge: true }
 );
+
+post.likes = newLikes;
+
+if (alreadyLiked) {
+    post.likedBy =
+        likedBy.filter(function(id) {
+            return id !== currentUserId;
+        });
+} else {
+    post.likedBy =
+        likedBy.concat(currentUserId);
+}
+
+likeButton.textContent =
+    "❤️ " + newLikes;
+    
 };
 
 postElement.appendChild(likeButton);
