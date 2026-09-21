@@ -968,8 +968,16 @@ async function searchUsers() {
 
 document.getElementById("friendSearchButton").onclick = searchUsers;
 
+let searchTimer;
+
+document.getElementById("friendSearchInput").addEventListener("input", function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(searchUsers, 300);
+});
+
 document.getElementById("friendSearchInput").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
+        clearTimeout(searchTimer);
         searchUsers();
     }
 });
