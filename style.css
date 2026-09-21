@@ -1112,3 +1112,18 @@ transform: translateY(-2px);
     font-size: 10px;
     padding: 2px 8px;
 }
+.feed-post.compact-solo {
+    min-height: 0;
+    max-width: 320px;
+    margin: 20px auto;
+    font-size: 14px;
+}
+
+.feed-post.compact-solo .feed-photo {
+    height: 160px;
+}
+
+.feed-post.compact-solo .rarity-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+}

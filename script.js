@@ -1418,23 +1418,27 @@ async function loadFeed() {
 
             i += 2;
 
-        } else {
+                } else {
 
-            container.appendChild(createFeedPostElement(posts[i], currentUserId, false));
+            const soloCompact = rarity === "common";
+
+            container.appendChild(createFeedPostElement(posts[i], currentUserId, false, soloCompact));
 
             i += 1;
         }
     }
 }
 
-function createFeedPostElement(post, currentUserId, isPaired) {
+function createFeedPostElement(post, currentUserId, isPaired, soloCompact) {
 
     const rarity = getPostRarity(post);
 
     const postElement = document.createElement("div");
 
     postElement.className =
-        "feed-post post-" + rarity + (isPaired ? " paired" : "");
+        "feed-post post-" + rarity +
+        (isPaired ? " paired" : "") +
+        (soloCompact ? " compact-solo" : "");
 
     postElement.innerHTML =
         "<strong>" + escapeHTML(post.username) + "</strong><br>" +
