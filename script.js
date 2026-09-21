@@ -1212,6 +1212,9 @@ async function loadFeed() {
     const user =
         window.firebaseAuth.currentUser;
 
+const currentUserId =
+    user.uid;
+
     if (!user) {
 
         container.innerHTML =
