@@ -1308,7 +1308,12 @@ const likedBy =
 
 const alreadyLiked =
     likedBy.includes(currentUserId);
-    
+
+const newLikes =
+    alreadyLiked
+        ? Math.max((post.likes || 0) - 1, 0)
+        : (post.likes || 0) + 1;
+
     likeButton.textContent =
         "❤️ " + newLikes;
 
