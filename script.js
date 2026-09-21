@@ -1290,7 +1290,8 @@ async function loadFeed() {
         const likeButton =
     document.createElement("button");
 
-likeButton.textContent = "❤️ 0";
+likeButton.textContent =
+    "❤️ " + (post.likes || 0);
 
 likeButton.className =
     "like-button";
