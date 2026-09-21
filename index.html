@@ -400,7 +400,11 @@ onAuthStateChanged(auth, (user) => {
 
     if (user) {
     loadStreakFromCloud();
-    loadXPFromCloud();
+        console.log("AUTH READY, loading XP for", user.uid);
+
+    loadXPFromCloud()
+        .then(function() { console.log("XP LOADED:", xp); })
+        .catch(function(error) { console.error("XP LOAD ERROR:", error); });
     loadCompletedQuestsFromCloud();
     loadTodaysQuestsFromCloud();
     loadEquippedItemsFromCloud();
