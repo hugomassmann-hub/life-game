@@ -1053,3 +1053,62 @@ transform: translateY(-2px);
     font-size: 13px;
     padding: 4px 12px;
 }
+
+#feedContainer {
+    scroll-snap-type: none;
+}
+
+.feed-post {
+    scroll-snap-align: none;
+}
+
+/* FEED TABS */
+
+#feedTabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 15px;
+}
+
+.feed-tab {
+    background: #171a24;
+    color: #888;
+    border: 1px solid #303544;
+    border-radius: 12px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.feed-tab.active {
+    color: white;
+    border-color: #7c5cff;
+    background: #22263a;
+}
+
+/* PAIRED COMMON POSTS */
+
+.feed-pair {
+    display: flex;
+    gap: 12px;
+    max-width: 500px;
+    margin: 20px auto;
+}
+
+.feed-post.paired {
+    min-height: 0;
+    width: 50%;
+    margin: 0;
+    font-size: 14px;
+}
+
+.feed-post.paired .feed-photo {
+    height: 120px;
+}
+
+.feed-post.paired .rarity-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+}

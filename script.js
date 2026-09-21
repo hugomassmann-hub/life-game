@@ -912,6 +912,20 @@ document.getElementById("feedBackButton").onclick = function() {
     document.getElementById("homePage").style.display = "block";
 };
 
+document.getElementById("feedTabEveryone").onclick = function() {
+    feedFilter = "everyone";
+    document.getElementById("feedTabEveryone").classList.add("active");
+    document.getElementById("feedTabFollowing").classList.remove("active");
+    loadFeed();
+};
+
+document.getElementById("feedTabFollowing").onclick = function() {
+    feedFilter = "following";
+    document.getElementById("feedTabFollowing").classList.add("active");
+    document.getElementById("feedTabEveryone").classList.remove("active");
+    loadFeed();
+};
+
 // FRIENDS PAGE
 
 document.getElementById("friendsPage").style.display = "none";
@@ -1318,6 +1332,8 @@ async function loadPastQuests() {
 
 }
 
+let feedFilter = "everyone";
+
 async function loadFeed() {
 
     const container =
@@ -1326,16 +1342,14 @@ async function loadFeed() {
     const user =
         window.firebaseAuth.currentUser;
 
-const currentUserId =
-    user ? user.uid : null;
-
     if (!user) {
-
-        container.innerHTML =
-            "<p>Please sign in to view the Feed.</p>";
-
+        container.innerHTML = "<p>Please sign in to view the Feed.</p>";
         return;
     }
+
+    const currentUserId = user.uid;
+
+    container.innerHTML = "<p>Loading...</p>";
 
     const snapshot =
         await window.firebaseGetDocs(
@@ -1345,104 +1359,132 @@ const currentUserId =
             )
         );
 
-    container.innerHTML = "";
-
-    const posts = [];
+    let posts = [];
 
     snapshot.forEach(function(doc) {
-    const post = doc.data();
+        const post = doc.data();
+        post.id = doc.id;
+        posts.push(post);
+    });
 
-    post.id = doc.id;
+    posts.reverse();
 
-    posts.push(post);
-});
+    if (feedFilter === "following") {
 
-    posts.reverse().forEach(function(post) {
+        const mySnapshot = await window.firebaseGetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", currentUserId)
+        );
 
-        const postElement =
-            document.createElement("div");
+        const following = mySnapshot.exists()
+            ? (mySnapshot.data().following || [])
+            : [];
 
-                postElement.className =
-            "feed-post";
+        posts = posts.filter(function(post) {
+            return post.uid === currentUserId || following.includes(post.uid);
+        });
+    }
 
-        const rarity = getPostRarity(post);
+    container.innerHTML = "";
 
-        postElement.classList.add("post-" + rarity);
-        
-                    postElement.innerHTML =
-            "<strong>" + escapeHTML(post.username) + "</strong><br>" +
-                        "<span class='rarity-badge'>" + escapeHTML(rarity.toUpperCase()) + "</span><br>" +
-            "<strong>" + escapeHTML((post.emoji ? post.emoji + " " : "") + cleanQuestName(post.quest)) + "</strong>" +
-            (post.photo
-                ? "<div class='feed-photo'><img src='" + escapeHTML(post.photo) + "'></div>"
-                : "") +
-            "<p>" + escapeHTML(post.description) + "</p>" +
-            "<small>" + escapeHTML(post.date) + "</small>";
+    if (posts.length === 0) {
 
-        container.appendChild(postElement);
+        container.innerHTML = feedFilter === "following"
+            ? "<p>Nobody you follow has posted yet. Try Everyone, or follow more players!</p>"
+            : "<p>No posts yet. Complete a quest and tap Complete & Post!</p>";
 
-        const likeButton =
-    document.createElement("button");
+        return;
+    }
 
-likeButton.textContent =
-    "❤️ " + (post.likes || 0);
+    let i = 0;
 
-likeButton.className =
-    "like-button";
+    while (i < posts.length) {
+
+        const rarity = getPostRarity(posts[i]);
+
+        const canPair =
+            rarity === "common" &&
+            i + 1 < posts.length &&
+            getPostRarity(posts[i + 1]) === "common";
+
+        if (canPair) {
+
+            const pairRow = document.createElement("div");
+            pairRow.className = "feed-pair";
+
+            pairRow.appendChild(createFeedPostElement(posts[i], currentUserId, true));
+            pairRow.appendChild(createFeedPostElement(posts[i + 1], currentUserId, true));
+
+            container.appendChild(pairRow);
+
+            i += 2;
+
+        } else {
+
+            container.appendChild(createFeedPostElement(posts[i], currentUserId, false));
+
+            i += 1;
+        }
+    }
+}
+
+function createFeedPostElement(post, currentUserId, isPaired) {
+
+    const rarity = getPostRarity(post);
+
+    const postElement = document.createElement("div");
+
+    postElement.className =
+        "feed-post post-" + rarity + (isPaired ? " paired" : "");
+
+    postElement.innerHTML =
+        "<strong>" + escapeHTML(post.username) + "</strong><br>" +
+        "<span class='rarity-badge'>" + escapeHTML(rarity.toUpperCase()) + "</span><br>" +
+        "<strong>" + escapeHTML((post.emoji ? post.emoji + " " : "") + cleanQuestName(post.quest)) + "</strong>" +
+        (post.photo
+            ? "<div class='feed-photo'><img src='" + escapeHTML(post.photo) + "'></div>"
+            : "") +
+        "<p>" + escapeHTML(post.description) + "</p>" +
+        "<small>" + escapeHTML(post.date) + "</small>";
+
+    const likeButton = document.createElement("button");
+
+    likeButton.textContent = "❤️ " + (post.likes || 0);
+    likeButton.className = "like-button";
 
     likeButton.onclick = async function() {
 
-const likedBy =
-    post.likedBy || [];
+        const likedBy = post.likedBy || [];
+        const alreadyLiked = likedBy.includes(currentUserId);
 
-const alreadyLiked =
-    likedBy.includes(currentUserId);
+        const newLikes = alreadyLiked
+            ? Math.max((post.likes || 0) - 1, 0)
+            : (post.likes || 0) + 1;
 
-const newLikes =
-    alreadyLiked
-        ? Math.max((post.likes || 0) - 1, 0)
-        : (post.likes || 0) + 1;
+        likeButton.textContent = "❤️ " + newLikes;
 
-    likeButton.textContent =
-        "❤️ " + newLikes;
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "feedPosts", post.id),
+            {
+                likes: newLikes,
+                likedBy: alreadyLiked
+                    ? window.firebaseArrayRemove(currentUserId)
+                    : window.firebaseArrayUnion(currentUserId)
+            },
+            { merge: true }
+        );
 
-    await window.firebaseSetDoc(
-    window.firebaseDoc(
-        window.firebaseDB,
-        "feedPosts",
-        post.id
-    ),
-    {
-        likes: newLikes,
-        likedBy: alreadyLiked
-            ? window.firebaseArrayRemove(currentUserId)
-            : window.firebaseArrayUnion(currentUserId)
-    },
-    { merge: true }
-);
+        post.likes = newLikes;
 
-post.likes = newLikes;
+        post.likedBy = alreadyLiked
+            ? likedBy.filter(function(id) { return id !== currentUserId; })
+            : likedBy.concat(currentUserId);
+    };
 
-if (alreadyLiked) {
-    post.likedBy =
-        likedBy.filter(function(id) {
-            return id !== currentUserId;
-        });
-} else {
-    post.likedBy =
-        likedBy.concat(currentUserId);
+    postElement.appendChild(likeButton);
+
+    return postElement;
 }
 
-likeButton.textContent =
-    "❤️ " + newLikes;
-
-};
-
-postElement.appendChild(likeButton);
-
-    });
-
-}
 function resetQuests() {
 
     localStorage.removeItem("completedQuests");
