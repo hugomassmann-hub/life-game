@@ -980,3 +980,30 @@ transform: translateY(-2px);
 #usernameSection {
     display: none;
 }
+
+/* FEED RARITY COLORS */
+
+.feed-post.post-common { border: 2px solid #4caf50; }
+.feed-post.post-uncommon { border: 2px solid #4c8bf5; }
+.feed-post.post-rare { border: 2px solid #9b59ff; }
+
+.feed-post.post-boss {
+    border: 2px solid #ffc93c;
+    box-shadow: 0 0 25px rgba(255, 201, 60, 0.35);
+}
+
+.rarity-badge {
+    display: inline-block;
+    margin: 6px 0;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    background: #0b0d12;
+}
+
+.post-common .rarity-badge { color: #4caf50; }
+.post-uncommon .rarity-badge { color: #4c8bf5; }
+.post-rare .rarity-badge { color: #9b59ff; }
+.post-boss .rarity-badge { color: #ffc93c; }

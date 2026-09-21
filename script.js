@@ -708,6 +708,18 @@ function completeQuest(
 
     document.getElementById("questPopup").dataset.elementId =
         element.id;
+
+    document.getElementById("questPopup").dataset.questTitle =
+        quest.name;
+
+    document.getElementById("questPopup").dataset.questEmoji =
+        quest.emoji;
+
+    document.getElementById("questPopup").dataset.questRarity =
+        questName.split("-")[0];
+
+    document.getElementById("questPopup").dataset.questType =
+        "daily";
 }
 
 commonQuest.addEventListener(
@@ -1052,7 +1064,10 @@ function handleQuestCompletion(shouldPost) {
     function finishQuest(photoData) {
 
         const newQuest = {
-            quest: questName,
+            quest: popup.dataset.questTitle || questName,
+            emoji: popup.dataset.questEmoji || "",
+            rarity: popup.dataset.questRarity || "common",
+            type: popup.dataset.questType || "daily",
             description: description,
             date: new Date().toLocaleString(),
             photo: photoData
@@ -1290,7 +1305,7 @@ async function loadPastQuests() {
         questElement.className = "past-quest";
 
         questElement.innerHTML =
-            "<strong>" + escapeHTML(quest.quest) + "</strong><br>" +
+            "<strong>" + escapeHTML(cleanQuestName(quest.quest)) + "</strong><br>" +
             (quest.photo
                 ? "<div class='past-quest-photo'><img src='" + escapeHTML(quest.photo) + "'></div><br>"
                 : "") +
@@ -1347,12 +1362,17 @@ const currentUserId =
         const postElement =
             document.createElement("div");
 
-        postElement.className =
+                postElement.className =
             "feed-post";
 
+        const rarity = getPostRarity(post);
+
+        postElement.classList.add("post-" + rarity);
+        
                     postElement.innerHTML =
             "<strong>" + escapeHTML(post.username) + "</strong><br>" +
-            "<strong>" + escapeHTML(post.quest) + "</strong>" +
+                        "<span class='rarity-badge'>" + escapeHTML(rarity.toUpperCase()) + "</span><br>" +
+            "<strong>" + escapeHTML((post.emoji ? post.emoji + " " : "") + cleanQuestName(post.quest)) + "</strong>" +
             (post.photo
                 ? "<div class='feed-photo'><img src='" + escapeHTML(post.photo) + "'></div>"
                 : "") +
@@ -1576,10 +1596,14 @@ async function saveFeedPostToCloud(postData) {
         ),
         {
             quest: postData.quest,
+            emoji: postData.emoji || "",
+            rarity: postData.rarity || "common",
+            type: postData.type || "daily",
             description: postData.description,
             date: postData.date,
             photo: postData.photo || "",
-            username: user.displayName || "Player"
+            username: user.displayName || "Player",
+            uid: user.uid
         }
     );
 }
@@ -2040,4 +2064,20 @@ function escapeHTML(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+}
+
+// QUEST HELPERS
+
+function cleanQuestName(name) {
+    return String(name || "").replace(/^(common|uncommon|rare|boss)-/, "");
+}
+
+function getPostRarity(post) {
+    if (post.rarity) return post.rarity;
+
+    const prefix = String(post.quest || "").split("-")[0];
+
+    return ["common", "uncommon", "rare", "boss"].includes(prefix)
+        ? prefix
+        : "common";
 }
