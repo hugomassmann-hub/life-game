@@ -1233,10 +1233,12 @@ async function loadFeed() {
     const posts = [];
 
     snapshot.forEach(function(doc) {
+    const post = doc.data();
 
-        posts.push(doc.data());
+    post.id = doc.id;
 
-    });
+    posts.push(post);
+});
 
     posts.reverse().forEach(function(post) {
 
