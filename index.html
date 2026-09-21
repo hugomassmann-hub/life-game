@@ -392,13 +392,25 @@ window.firebaseLimit = limit;
 window.firebaseAuth = auth;
 window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 window.onAuthStateChanged = onAuthStateChanged;
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 
     const signedInMessage = document.getElementById("signedInMessage");
     const createAccountSection = document.getElementById("createAccountSection");
     const signInSection = document.getElementById("signInSection");
 
-    if (user) {
+        if (user) {
+
+    if (user.displayName) {
+        try {
+            await setDoc(doc(db, "users", user.uid), {
+                username: user.displayName,
+                usernameLower: user.displayName.toLowerCase()
+            }, { merge: true });
+        } catch (error) {
+            console.error("USERNAME BACKFILL ERROR:", error);
+        }
+    }
+
     loadStreakFromCloud();
         console.log("AUTH READY, loading XP for", user.uid);
 
@@ -420,11 +432,7 @@ onAuthStateChanged(auth, (user) => {
         "Username: " + user.displayName;
 
     document.getElementById("usernameSection").style.display = "none";
-
-    setDoc(doc(db, "users", user.uid), {
-        username: user.displayName,
-        usernameLower: user.displayName.toLowerCase()
-    }, { merge: true });
+    
 }
 
 } else {
