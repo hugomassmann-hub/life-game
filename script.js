@@ -1298,6 +1298,27 @@ likeButton.textContent =
 likeButton.className =
     "like-button";
 
+    likeButton.onclick = async function() {
+
+    const newLikes =
+        (post.likes || 0) + 1;
+
+    likeButton.textContent =
+        "❤️ " + newLikes;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(
+            window.firebaseDB,
+            "feedPosts",
+            post.id
+        ),
+        {
+            likes: newLikes
+        },
+        { merge: true }
+    );
+};
+
 postElement.appendChild(likeButton);
 
     });
