@@ -107,12 +107,14 @@
         type="email"
         id="emailInput"
         placeholder="Email"
+        autocomplete="off"
     >
 
     <input
         type="password"
         id="passwordInput"
         placeholder="Password"
+        autocomplete="new-password"
     >
 
     <button id="createAccountButton">
@@ -124,7 +126,26 @@
 </div>
 
 <p id="signedInMessage"></p>
-<button id="signOutButton">Sign Out</button>
+
+
+<p id="usernameDisplay"></p>
+
+<div id="usernameSection">
+
+    <input
+        type="text"
+        id="usernameInput"
+        placeholder="Choose a username"
+        autocomplete="off"
+    >
+
+    <button id="saveUsernameButton">
+        Save Username
+    </button>
+
+</div>
+
+<p id="usernameMessage"></p>
 
 <div id="signInSection">
 
@@ -134,12 +155,14 @@
         type="email"
         id="signInEmailInput"
         placeholder="Email"
+        autocomplete="username"
     >
 
     <input
         type="password"
         id="signInPasswordInput"
         placeholder="Password"
+        autocomplete="current-password"
     >
 
     <button id="signInButton">
@@ -150,23 +173,9 @@
 
 </div>
 
-<p id="usernameDisplay"></p>
-
-<div id="usernameSection">
-
-    <input
-        type="text"
-        id="usernameInput"
-        placeholder="Choose a username"
-    >
-
-    <button id="saveUsernameButton">
-        Save Username
-    </button>
+<button id="signOutButton">Sign Out</button>
 
 </div>
-
-<p id="usernameMessage"></p>
 
 </div>
 
@@ -398,6 +407,7 @@ onAuthStateChanged(auth, (user) => {
 
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;
+     document.getElementById("usernameSection").style.display = "block";
     document.getElementById("signOutButton").style.display = "block";
     signInSection.style.display = "none";
 

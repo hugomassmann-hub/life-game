@@ -974,3 +974,9 @@ transform: translateY(-2px);
     font-weight: bold;
     cursor: pointer;
 }
+
+/* USERNAME BOX starts hidden */
+
+#usernameSection {
+    display: none;
+}
