@@ -453,11 +453,6 @@ transform: translateY(-2px);
     top: 29dvh;
     left: 4%;
 }
-
-/* Account */
-.mobile-buttons button:nth-child(4) {
-    bottom: 2dvh;
-    right: 5%;
 }
     #map {
         position: absolute;
@@ -833,4 +828,18 @@ transform: translateY(-2px);
     object-fit: cover;
     border-radius: 14px;
     border: 1px solid #303544;
+}
+
+#customizeButton {
+    top: auto;
+    left: 5%;
+    bottom: 2dvh;
+    right: auto;
+}
+
+#accountButton {
+    top: auto;
+    left: auto;
+    bottom: 2dvh;
+    right: 5%;
 }
