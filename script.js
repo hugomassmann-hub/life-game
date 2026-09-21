@@ -1289,25 +1289,13 @@ async function loadPastQuests() {
 
         questElement.className = "past-quest";
 
-        if (quest.photo) {
-
-            questElement.innerHTML =
-                "<strong>" + quest.quest + "</strong><br>" +
-                "<div class='past-quest-photo'>" +
-                "<img src='" + quest.photo + "'>" +
-                "</div>" +
-                "<br>" +
-                quest.description + "<br>" +
-                "<small>" + quest.date + "</small>";
-
-        } else {
-
-            questElement.innerHTML =
-                "<strong>" + quest.quest + "</strong><br>" +
-                quest.description + "<br>" +
-                "<small>" + quest.date + "</small>";
-
-        }
+        questElement.innerHTML =
+            "<strong>" + escapeHTML(quest.quest) + "</strong><br>" +
+            (quest.photo
+                ? "<div class='past-quest-photo'><img src='" + escapeHTML(quest.photo) + "'></div><br>"
+                : "") +
+            escapeHTML(quest.description) + "<br>" +
+            "<small>" + escapeHTML(quest.date) + "</small>";
 
         container.appendChild(questElement);
 
@@ -1362,44 +1350,14 @@ const currentUserId =
         postElement.className =
             "feed-post";
 
-        if (post.photo) {
-
-            postElement.innerHTML =
-                "<strong>" +
-                post.username +
-                "</strong><br>" +
-                "<strong>" +
-                post.quest +
-                "</strong>" +
-                "<div class='feed-photo'>" +
-                "<img src='" +
-                post.photo +
-                "'>" +
-                "</div>" +
-                "<p>" +
-                post.description +
-                "</p>" +
-                "<small>" +
-                post.date +
-                "</small>";
-
-        } else {
-
-            postElement.innerHTML =
-                "<strong>" +
-                post.username +
-                "</strong><br>" +
-                "<strong>" +
-                post.quest +
-                "</strong>" +
-                "<p>" +
-                post.description +
-                "</p>" +
-                "<small>" +
-                post.date +
-                "</small>";
-
-        }
+                    postElement.innerHTML =
+            "<strong>" + escapeHTML(post.username) + "</strong><br>" +
+            "<strong>" + escapeHTML(post.quest) + "</strong>" +
+            (post.photo
+                ? "<div class='feed-photo'><img src='" + escapeHTML(post.photo) + "'></div>"
+                : "") +
+            "<p>" + escapeHTML(post.description) + "</p>" +
+            "<small>" + escapeHTML(post.date) + "</small>";
 
         container.appendChild(postElement);
 
@@ -1885,7 +1843,7 @@ async function openProfile(uid) {
         const data = snapshot.data();
 
         const level = getLevelFromXP(data.xp || 0);
-        const streakCount = data.streak || 0;
+        const streakCount = Number(data.streak) || 0;
         const equipped = data.equippedItems || [];
 
         document.getElementById("profileUsername").textContent =
@@ -2072,4 +2030,14 @@ async function loadFollowingList() {
         console.error("FOLLOWING LIST ERROR:", error);
         container.innerHTML = "<p>Couldn't load your list: " + error.message + "</p>";
     }
+}
+// HTML SAFETY
+
+function escapeHTML(text) {
+    return String(text === undefined || text === null ? "" : text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
