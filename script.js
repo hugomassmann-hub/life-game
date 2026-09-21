@@ -902,6 +902,7 @@ document.getElementById("friendsButton").onclick = function() {
     document.getElementById("feedPage").style.display = "none";
     document.getElementById("accountPage").style.display = "none";
     document.getElementById("friendsPage").style.display = "block";
+    searchUsers();
 };
 
 document.getElementById("friendsBackButton").onclick = function() {
@@ -922,8 +923,8 @@ async function searchUsers() {
         return;
     }
 
-    if (!searchText) {
-        container.innerHTML = "<p>Type a username to search.</p>";
+        if (!searchText) {
+        loadFollowingList();
         return;
     }
 
@@ -1313,7 +1314,7 @@ async function loadFeed() {
         window.firebaseAuth.currentUser;
 
 const currentUserId =
-    user.uid;
+    user ? user.uid : null;
 
     if (!user) {
 
@@ -1972,6 +1973,7 @@ async function openProfile(uid) {
 document.getElementById("profileBackButton").onclick = function() {
     document.getElementById("profilePage").style.display = "none";
     document.getElementById("friendsPage").style.display = "block";
+    searchUsers();
 };
 async function saveStreakToCloud() {
 
@@ -1991,4 +1993,70 @@ async function saveStreakToCloud() {
         },
         { merge: true }
     );
+}
+// FOLLOWING LIST
+
+async function loadFollowingList() {
+
+    const container = document.getElementById("friendsContainer");
+    const me = window.firebaseAuth.currentUser;
+
+    if (!me) {
+        container.innerHTML = "<p>Please sign in to see who you follow.</p>";
+        return;
+    }
+
+    container.innerHTML = "<p>Loading...</p>";
+
+    try {
+
+        const mySnapshot = await window.firebaseGetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", me.uid)
+        );
+
+        const following = mySnapshot.exists()
+            ? (mySnapshot.data().following || [])
+            : [];
+
+        // If you started typing while this loaded, don't overwrite the search results
+        if (document.getElementById("friendSearchInput").value.trim()) return;
+
+        if (following.length === 0) {
+            container.innerHTML =
+                "<p>You're not following anyone yet. Search above to find players!</p>";
+            return;
+        }
+
+        const friendDocs = await Promise.all(
+            following.map(function(uid) {
+                return window.firebaseGetDoc(
+                    window.firebaseDoc(window.firebaseDB, "users", uid)
+                );
+            })
+        );
+
+        if (document.getElementById("friendSearchInput").value.trim()) return;
+
+        container.innerHTML = "<h2>Following (" + following.length + ")</h2>";
+
+        friendDocs.forEach(function(friendDoc) {
+
+            if (!friendDoc.exists()) return;
+
+            const card = document.createElement("div");
+            card.className = "friend-result";
+            card.textContent = "👤 " + (friendDoc.data().username || "Player");
+
+            card.onclick = function() {
+                openProfile(friendDoc.id);
+            };
+
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+
+        console.error("FOLLOWING LIST ERROR:", error);
+        container.innerHTML = "<p>Couldn't load your list: " + error.message + "</p>";
+    }
 }
