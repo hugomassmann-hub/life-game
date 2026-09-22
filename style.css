@@ -1127,3 +1127,95 @@ transform: translateY(-2px);
     font-size: 11px;
     padding: 3px 10px;
 }
+
+/* BOSS QUESTS */
+
+#bossQuestsPage {
+    position: relative;
+    padding-top: 35px;
+}
+
+#bossQuestsBackButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#bossQuestsPageButton {
+    position: absolute;
+    top: -20px;
+    right: 150px;
+}
+
+#bossQuestsContainer {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.boss-card {
+    background: #171a24;
+    border: 2px solid #ffc93c;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 16px 0;
+    box-shadow: 0 0 20px rgba(255, 201, 60, 0.25);
+}
+
+.boss-card h3 {
+    margin: 0 0 6px;
+}
+
+.boss-card p {
+    color: #aaa;
+    margin: 6px 0;
+}
+
+.boss-deadline {
+    font-size: 13px;
+    color: #ff8a65;
+}
+
+.boss-accept-button, .boss-reset-button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.boss-accept-button {
+    background: #ffc93c;
+    color: #171a24;
+}
+
+.boss-reset-button {
+    background: #303544;
+    color: white;
+}
+
+.boss-progress-bar {
+    background: #0b0d12;
+    border-radius: 12px;
+    height: 16px;
+    overflow: hidden;
+    margin: 12px 0;
+    border: 1px solid #303544;
+}
+
+.boss-progress-fill {
+    background: linear-gradient(90deg, #ffc93c, #ff8a65);
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.boss-step {
+    padding: 8px 0;
+    border-top: 1px solid #292d3a;
+    color: #888;
+}
+
+.boss-step.done {
+    color: #ffc93c;
+}

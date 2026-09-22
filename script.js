@@ -2127,3 +2127,239 @@ function getPostRarity(post) {
         ? prefix
         : "common";
 }
+
+// BOSS QUESTS
+
+const bossQuests = [
+    {
+        id: "summit-seeker",
+        name: "Summit Seeker",
+        emoji: "🏔️",
+        category: "adventure",
+        description: "Hike a trail you've never done that takes at least 2 hours, and reach the top or the end.",
+        trophyName: "The Summit",
+        rewardXP: 500,
+        deadlineDays: null,
+        steps: [
+            { label: "Pick your trail and start hiking", xp: 100 },
+            { label: "Reach the halfway point", xp: 150 },
+            { label: "Reach the top or the end", xp: 250 }
+        ]
+    },
+    {
+        id: "century-ride",
+        name: "Century Ride",
+        emoji: "🚴",
+        category: "fitness",
+        description: "Bike 100 miles total within one week.",
+        trophyName: "The Century",
+        rewardXP: 600,
+        deadlineDays: 7,
+        steps: [
+            { label: "Bike 25 miles total", xp: 100 },
+            { label: "Bike 50 miles total", xp: 150 },
+            { label: "Bike 75 miles total", xp: 150 },
+            { label: "Bike 100 miles total, finish!", xp: 200 }
+        ]
+    },
+    {
+        id: "the-gathering",
+        name: "The Gathering",
+        emoji: "🎉",
+        category: "social",
+        description: "Organize a hangout for 4 or more people, like a game night, picnic, or movie night.",
+        trophyName: "The Host",
+        rewardXP: 500,
+        deadlineDays: 14,
+        steps: [
+            { label: "Plan it and invite everyone", xp: 100 },
+            { label: "Host the hangout", xp: 250 },
+            { label: "Post a photo with the group", xp: 150 }
+        ]
+    },
+    {
+        id: "bookworm",
+        name: "Bookworm",
+        emoji: "📖",
+        category: "mind",
+        description: "Finish an entire book, then write what it made you think about.",
+        trophyName: "The Scholar",
+        rewardXP: 500,
+        deadlineDays: null,
+        steps: [
+            { label: "Start the book", xp: 50 },
+            { label: "Reach the halfway point", xp: 100 },
+            { label: "Finish the book", xp: 150 },
+            { label: "Write your reflection", xp: 200 }
+        ]
+    },
+    {
+        id: "fresh-start",
+        name: "Fresh Start",
+        emoji: "🧹",
+        category: "lifestyle",
+        description: "Fully reset your room or workspace: declutter, deep clean, and reorganize.",
+        trophyName: "The Reset",
+        rewardXP: 450,
+        deadlineDays: 7,
+        steps: [
+            { label: "Declutter everything", xp: 150 },
+            { label: "Deep clean the space", xp: 150 },
+            { label: "Post a before and after", xp: 150 }
+        ]
+    }
+];
+
+document.getElementById("bossQuestsPage").style.display = "none";
+
+document.getElementById("bossQuestsPageButton").onclick = function() {
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("bossQuestsPage").style.display = "block";
+    loadBossQuestsPage();
+};
+
+document.getElementById("bossQuestsBackButton").onclick = function() {
+    document.getElementById("bossQuestsPage").style.display = "none";
+    document.getElementById("questPage").style.display = "block";
+};
+
+function isBossExpired(accepted, bossData) {
+
+    if (!bossData.deadlineDays) return false;
+
+    const acceptedTime = new Date(accepted.acceptedDate).getTime();
+    const deadlineMs = bossData.deadlineDays * 24 * 60 * 60 * 1000;
+
+    return (Date.now() - acceptedTime) > deadlineMs;
+}
+
+async function loadBossQuestsPage() {
+
+    const container = document.getElementById("bossQuestsContainer");
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) {
+        container.innerHTML = "<p>Please sign in to view Boss Quests.</p>";
+        return;
+    }
+
+    container.innerHTML = "<p>Loading...</p>";
+
+    const snapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid)
+    );
+
+    const data = snapshot.exists() ? snapshot.data() : {};
+    const accepted = data.acceptedBoss || null;
+
+    container.innerHTML = "";
+
+    if (accepted) {
+
+        const bossData = bossQuests.find(function(b) { return b.id === accepted.id; });
+
+        if (!bossData) {
+            container.innerHTML = "<p>That boss quest no longer exists.</p>";
+            return;
+        }
+
+        renderActiveBoss(container, accepted, bossData, user.uid);
+
+    } else {
+
+        renderBossList(container, user.uid);
+    }
+}
+
+function renderBossList(container, uid) {
+
+    const heading = document.createElement("p");
+    heading.textContent = "Pick a Boss Quest to begin. You can only have one active at a time.";
+    container.appendChild(heading);
+
+    bossQuests.forEach(function(boss) {
+
+        const card = document.createElement("div");
+        card.className = "boss-card";
+
+        card.innerHTML =
+            "<h3>" + boss.emoji + " " + escapeHTML(boss.name) + "</h3>" +
+            "<p>" + escapeHTML(boss.description) + "</p>" +
+            "<p>🏆 Reward: " + boss.rewardXP + " XP + \"" + escapeHTML(boss.trophyName) + "\" trophy</p>" +
+            (boss.deadlineDays
+                ? "<p class='boss-deadline'>⏳ " + boss.deadlineDays + "-day deadline</p>"
+                : "<p class='boss-deadline'>No deadline</p>");
+
+        const acceptButton = document.createElement("button");
+        acceptButton.className = "boss-accept-button";
+        acceptButton.textContent = "Accept Quest";
+
+        acceptButton.onclick = async function() {
+
+            await window.firebaseSetDoc(
+                window.firebaseDoc(window.firebaseDB, "users", uid),
+                {
+                    acceptedBoss: {
+                        id: boss.id,
+                        acceptedDate: new Date().toISOString(),
+                        completedSteps: []
+                    }
+                },
+                { merge: true }
+            );
+
+            loadBossQuestsPage();
+        };
+
+        card.appendChild(acceptButton);
+        container.appendChild(card);
+    });
+}
+
+function renderActiveBoss(container, accepted, bossData, uid) {
+
+    const expired = isBossExpired(accepted, bossData);
+
+    const card = document.createElement("div");
+    card.className = "boss-card";
+
+    const completedCount = (accepted.completedSteps || []).length;
+    const percent = Math.round((completedCount / bossData.steps.length) * 100);
+
+    card.innerHTML =
+        "<h3>" + bossData.emoji + " " + escapeHTML(bossData.name) + "</h3>" +
+        "<p>" + escapeHTML(bossData.description) + "</p>" +
+        (expired ? "<p class='boss-deadline'>⏳ This quest's deadline has passed.</p>" : "") +
+        "<div class='boss-progress-bar'><div class='boss-progress-fill' style='width:" + percent + "%'></div></div>" +
+        "<p>" + completedCount + " / " + bossData.steps.length + " steps complete</p>";
+
+    container.appendChild(card);
+
+    bossData.steps.forEach(function(step, index) {
+
+        const stepRow = document.createElement("div");
+        const done = (accepted.completedSteps || []).includes(index);
+
+        stepRow.className = "boss-step" + (done ? " done" : "");
+        stepRow.textContent = (done ? "✅ " : "⬜ ") + step.label + " (+" + step.xp + " XP)";
+
+        card.appendChild(stepRow);
+    });
+
+    const resetButton = document.createElement("button");
+    resetButton.className = "boss-reset-button";
+    resetButton.textContent = expired ? "Reset Quest" : "Abandon Quest";
+
+    resetButton.onclick = async function() {
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", uid),
+            { acceptedBoss: null },
+            { merge: true }
+        );
+
+        loadBossQuestsPage();
+    };
+
+    card.appendChild(resetButton);
+}
