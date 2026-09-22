@@ -1291,16 +1291,15 @@ transform: translateY(-2px);
 }
 
 #trophyCaseContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    max-width: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 500px;
     margin: 0 auto;
 }
 
 .trophy-card {
-    width: 244px;
+    width: auto;
     background: linear-gradient(145deg, rgba(255, 82, 82, 0.25), #171a24 65%);
     border: 2px solid #ff5252;
     border-radius: 20px;

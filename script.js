@@ -696,6 +696,10 @@ function completeQuest(
         return;
     }
 
+    document.getElementById("questDescription").value = "";
+    document.getElementById("questPhoto").value = "";
+    document.getElementById("photoPreview").innerHTML = "";
+
     document.getElementById("questPopup").style.display =
         "flex";
 
@@ -2272,6 +2276,7 @@ async function loadBossQuestsPage() {
     const data = snapshot.exists() ? snapshot.data() : {};
     const accepted = data.acceptedBoss || null;
     const trophies = data.trophies || [];
+    const bossCooldowns = data.bossCooldowns || {};
 
     container.innerHTML = "";
 
@@ -2288,35 +2293,43 @@ async function loadBossQuestsPage() {
 
     } else {
 
-        renderBossList(container, user.uid, trophies, data.lastBossAcceptDate);
+        renderBossList(container, user.uid, trophies, bossCooldowns);
     }
 }
 
-const BOSS_COOLDOWN_DAYS = 3;
+const BOSS_COMMITMENT_DAYS = 3;
+const BOSS_RETRY_COOLDOWN_DAYS = 14;
 
-function renderBossList(container, uid, trophies, lastAcceptDate) {
-
-    let cooldownDaysLeft = 0;
-
-    if (lastAcceptDate) {
-
-        const cooldownMs = BOSS_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
-        const elapsed = Date.now() - new Date(lastAcceptDate).getTime();
-
-        cooldownDaysLeft = Math.ceil((cooldownMs - elapsed) / (24 * 60 * 60 * 1000));
-    }
-
-    const onCooldown = cooldownDaysLeft > 0;
+function renderBossList(container, uid, trophies, bossCooldowns) {
 
     const heading = document.createElement("p");
-    heading.textContent = onCooldown
-        ? "You can pick a new Boss Quest in " + cooldownDaysLeft + " day" + (cooldownDaysLeft === 1 ? "" : "s") + "."
-        : "Pick a Boss Quest to begin. You can only have one active at a time.";
+    heading.textContent = "Pick a Boss Quest to begin. Accepting one locks you in for " + BOSS_COMMITMENT_DAYS + " days.";
     container.appendChild(heading);
 
     bossQuests.forEach(function(boss) {
 
         const alreadyEarned = trophies.some(function(t) { return t.id === boss.id; });
+        const cooldownStart = bossCooldowns[boss.id];
+
+        let locked = false;
+        let lockLabel = "";
+
+        if (boss.oneTime && alreadyEarned) {
+
+            locked = true;
+            lockLabel = "✅ Completed (one-time)";
+
+        } else if (cooldownStart) {
+
+            const cooldownMs = BOSS_RETRY_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+            const elapsed = Date.now() - new Date(cooldownStart).getTime();
+
+            if (elapsed < cooldownMs) {
+                locked = true;
+                const daysLeft = Math.ceil((cooldownMs - elapsed) / (24 * 60 * 60 * 1000));
+                lockLabel = "🔒 Do Again in " + daysLeft + "d";
+            }
+        }
 
         const card = document.createElement("div");
         card.className = "boss-card";
@@ -2334,9 +2347,9 @@ function renderBossList(container, uid, trophies, lastAcceptDate) {
         const acceptButton = document.createElement("button");
         acceptButton.className = "boss-accept-button";
 
-        if (onCooldown) {
+        if (locked) {
 
-            acceptButton.textContent = "🔒 Locked (" + cooldownDaysLeft + "d)";
+            acceptButton.textContent = lockLabel;
             acceptButton.disabled = true;
 
         } else {
@@ -2352,8 +2365,7 @@ function renderBossList(container, uid, trophies, lastAcceptDate) {
                             id: boss.id,
                             acceptedDate: new Date().toISOString(),
                             completedSteps: []
-                        },
-                        lastBossAcceptDate: new Date().toISOString()
+                        }
                     },
                     { merge: true }
                 );
@@ -2371,16 +2383,22 @@ function renderActiveBoss(container, accepted, bossData, uid) {
 
     const expired = isBossExpired(accepted, bossData);
 
-    const card = document.createElement("div");
-    card.className = "boss-card";
-
     const completedCount = (accepted.completedSteps || []).length;
     const percent = Math.round((completedCount / bossData.steps.length) * 100);
+
+    const acceptedTime = new Date(accepted.acceptedDate).getTime();
+    const commitmentMs = BOSS_COMMITMENT_DAYS * 24 * 60 * 60 * 1000;
+    const commitmentDaysLeft = Math.ceil((commitmentMs - (Date.now() - acceptedTime)) / (24 * 60 * 60 * 1000));
+    const isCommitted = !expired && commitmentDaysLeft > 0;
+
+    const card = document.createElement("div");
+    card.className = "boss-card";
 
     card.innerHTML =
         "<h3>" + bossData.emoji + " " + escapeHTML(bossData.name) + "</h3>" +
         "<p>" + escapeHTML(bossData.description) + "</p>" +
         (expired ? "<p class='boss-deadline'>⏳ This quest's deadline has passed.</p>" : "") +
+        (isCommitted ? "<p class='boss-deadline'>🔒 Locked in for " + commitmentDaysLeft + " more day" + (commitmentDaysLeft === 1 ? "" : "s") + "</p>" : "") +
         "<div class='boss-progress-bar'><div class='boss-progress-fill' style='width:" + percent + "%'></div></div>" +
         "<p>" + completedCount + " / " + bossData.steps.length + " steps complete</p>";
 
@@ -2391,7 +2409,7 @@ function renderActiveBoss(container, accepted, bossData, uid) {
         const stepRow = document.createElement("div");
         const done = (accepted.completedSteps || []).includes(index);
 
-                stepRow.className = "boss-step" + (done ? " done" : "");
+        stepRow.className = "boss-step" + (done ? " done" : "");
         stepRow.textContent = (done ? "✅ " : "⬜ ") + step.label + " (+" + step.xp + " XP)";
 
         if (!done && !expired) {
@@ -2410,25 +2428,46 @@ function renderActiveBoss(container, accepted, bossData, uid) {
         }
 
         card.appendChild(stepRow);
-
     });
 
-    const resetButton = document.createElement("button");
-    resetButton.className = "boss-reset-button";
-    resetButton.textContent = expired ? "Reset Quest" : "Abandon Quest";
+    if (expired) {
 
-    resetButton.onclick = async function() {
+        const resetButton = document.createElement("button");
+        resetButton.className = "boss-reset-button";
+        resetButton.textContent = "Reset Quest";
 
-        await window.firebaseSetDoc(
-            window.firebaseDoc(window.firebaseDB, "users", uid),
-            { acceptedBoss: null },
-            { merge: true }
-        );
+        resetButton.onclick = async function() {
 
-        loadBossQuestsPage();
-    };
+            await window.firebaseSetDoc(
+                window.firebaseDoc(window.firebaseDB, "users", uid),
+                { acceptedBoss: null },
+                { merge: true }
+            );
 
-    card.appendChild(resetButton);
+            loadBossQuestsPage();
+        };
+
+        card.appendChild(resetButton);
+
+    } else if (!isCommitted) {
+
+        const giveUpButton = document.createElement("button");
+        giveUpButton.className = "boss-reset-button";
+        giveUpButton.textContent = "Give Up";
+
+        giveUpButton.onclick = async function() {
+
+            await window.firebaseSetDoc(
+                window.firebaseDoc(window.firebaseDB, "users", uid),
+                { acceptedBoss: null },
+                { merge: true }
+            );
+
+            loadBossQuestsPage();
+        };
+
+        card.appendChild(giveUpButton);
+    }
 }
 
 async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, description, shouldPost) {
@@ -2477,6 +2516,8 @@ async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, descr
 
         xp = xp + bossData.rewardXP;
         update.xp = xp;
+
+        update["bossCooldowns." + bossId] = new Date().toISOString();
 
         update.trophies = window.firebaseArrayUnion({
             id: bossData.id,
