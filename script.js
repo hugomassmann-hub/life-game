@@ -2388,8 +2388,9 @@ function renderActiveBoss(container, accepted, bossData, uid) {
 
     const acceptedTime = new Date(accepted.acceptedDate).getTime();
     const commitmentMs = BOSS_COMMITMENT_DAYS * 24 * 60 * 60 * 1000;
-    const commitmentDaysLeft = Math.ceil((commitmentMs - (Date.now() - acceptedTime)) / (24 * 60 * 60 * 1000));
-    const isCommitted = !expired && commitmentDaysLeft > 0;
+    const commitmentMsLeft = commitmentMs - (Date.now() - acceptedTime);
+    const isCommitted = !expired && commitmentMsLeft > 0;
+    const commitmentCountdownText = formatCountdown(commitmentMsLeft);
 
     const card = document.createElement("div");
     card.className = "boss-card";
@@ -2398,11 +2399,30 @@ function renderActiveBoss(container, accepted, bossData, uid) {
         "<h3>" + bossData.emoji + " " + escapeHTML(bossData.name) + "</h3>" +
         "<p>" + escapeHTML(bossData.description) + "</p>" +
         (expired ? "<p class='boss-deadline'>⏳ This quest's deadline has passed.</p>" : "") +
-        (isCommitted ? "<p class='boss-deadline'>🔒 Locked in for " + commitmentDaysLeft + " more day" + (commitmentDaysLeft === 1 ? "" : "s") + "</p>" : "") +
+                (isCommitted ? "<div class='boss-commitment-countdown' id='bossCommitCountdown'>🔒 Locked in for " + commitmentCountdownText + "</div>" : "");
         "<div class='boss-progress-bar'><div class='boss-progress-fill' style='width:" + percent + "%'></div></div>" +
         "<p>" + completedCount + " / " + bossData.steps.length + " steps complete</p>";
 
-    container.appendChild(card);
+        container.appendChild(card);
+
+    if (isCommitted) {
+
+        clearInterval(window.bossCountdownTimer);
+
+        window.bossCountdownTimer = setInterval(function() {
+
+            const msLeft = commitmentMs - (Date.now() - acceptedTime);
+            const el = document.getElementById("bossCommitCountdown");
+
+            if (!el || msLeft <= 0) {
+                clearInterval(window.bossCountdownTimer);
+                return;
+            }
+
+            el.textContent = "🔒 Locked in for " + formatCountdown(msLeft);
+
+        }, 60000);
+    }
 
     bossData.steps.forEach(function(step, index) {
 
@@ -2641,3 +2661,17 @@ function openTrophyDetail(trophy) {
 document.getElementById("closeTrophyDetail").onclick = function() {
     document.getElementById("trophyDetailPopup").style.display = "none";
 };
+
+function formatCountdown(msLeft) {
+
+    if (msLeft <= 0) return "0m";
+
+    const totalMinutes = Math.ceil(msLeft / 60000);
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    const minutes = totalMinutes % 60;
+
+    if (days > 0) return days + "d " + hours + "h";
+    if (hours > 0) return hours + "h " + minutes + "m";
+    return minutes + "m";
+}
