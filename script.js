@@ -684,9 +684,11 @@ function updateStreak() {
 function completeQuest(
     element,
     quest,
-    questName
+    questName,
+    bossInfo
 ) {
     if (
+        !bossInfo &&
         completedQuests.includes(
             questName
         )
@@ -707,7 +709,7 @@ function completeQuest(
         quest.xp;
 
     document.getElementById("questPopup").dataset.elementId =
-        element.id;
+        element ? element.id : "";
 
     document.getElementById("questPopup").dataset.questTitle =
         quest.name;
@@ -716,10 +718,18 @@ function completeQuest(
         quest.emoji;
 
     document.getElementById("questPopup").dataset.questRarity =
-        questName.split("-")[0];
+        bossInfo ? "boss" : questName.split("-")[0];
 
     document.getElementById("questPopup").dataset.questType =
-        "daily";
+        bossInfo ? "boss" : "daily";
+
+    if (bossInfo) {
+        document.getElementById("questPopup").dataset.bossId = bossInfo.bossId;
+        document.getElementById("questPopup").dataset.bossStepIndex = bossInfo.stepIndex;
+    } else {
+        delete document.getElementById("questPopup").dataset.bossId;
+        delete document.getElementById("questPopup").dataset.bossStepIndex;
+    }
 }
 
 commonQuest.addEventListener(
@@ -1068,14 +1078,24 @@ function handleQuestCompletion(shouldPost) {
     const photo =
         document.getElementById("questPhoto").files[0];
 
-    const element =
-        document.getElementById(elementId);
+        const element =
+        elementId ? document.getElementById(elementId) : null;
+
+    const bossId = popup.dataset.bossId;
+    const bossStepIndex = popup.dataset.bossStepIndex !== undefined
+        ? Number(popup.dataset.bossStepIndex)
+        : undefined;
 
     const pastQuests =
         JSON.parse(localStorage.getItem("pastQuests")) || [];
 
 
-    function finishQuest(photoData) {
+        function finishQuest(photoData) {
+
+        if (bossId !== undefined && bossStepIndex !== undefined) {
+            finishBossStep(bossId, bossStepIndex, questXP, popup, photoData, description);
+            return;
+        }
 
         const newQuest = {
             quest: popup.dataset.questTitle || questName,
@@ -2340,10 +2360,26 @@ function renderActiveBoss(container, accepted, bossData, uid) {
         const stepRow = document.createElement("div");
         const done = (accepted.completedSteps || []).includes(index);
 
-        stepRow.className = "boss-step" + (done ? " done" : "");
+                stepRow.className = "boss-step" + (done ? " done" : "");
         stepRow.textContent = (done ? "✅ " : "⬜ ") + step.label + " (+" + step.xp + " XP)";
 
+        if (!done && !expired) {
+
+            stepRow.style.cursor = "pointer";
+
+            stepRow.onclick = function() {
+
+                completeQuest(
+                    null,
+                    { name: step.label, emoji: bossData.emoji, xp: step.xp },
+                    "boss-" + bossData.id + "-" + index,
+                    { bossId: bossData.id, stepIndex: index }
+                );
+            };
+        }
+
         card.appendChild(stepRow);
+
     });
 
     const resetButton = document.createElement("button");
@@ -2362,4 +2398,88 @@ function renderActiveBoss(container, accepted, bossData, uid) {
     };
 
     card.appendChild(resetButton);
+}
+
+async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, description) {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const bossData = bossQuests.find(function(b) { return b.id === bossId; });
+
+    const snapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid)
+    );
+
+    const data = snapshot.exists() ? snapshot.data() : {};
+    const accepted = data.acceptedBoss;
+
+    if (!accepted || accepted.id !== bossId) {
+        popup.style.display = "none";
+        return;
+    }
+
+    const completedSteps = accepted.completedSteps || [];
+
+    if (completedSteps.includes(stepIndex)) {
+        popup.style.display = "none";
+        return;
+    }
+
+    completedSteps.push(stepIndex);
+
+    xp = xp + stepXP;
+
+    const isFinalStep = completedSteps.length >= bossData.steps.length;
+
+    const update = {
+        xp: xp,
+        acceptedBoss: isFinalStep ? null : {
+            id: bossId,
+            acceptedDate: accepted.acceptedDate,
+            completedSteps: completedSteps
+        }
+    };
+
+    if (isFinalStep) {
+
+        xp = xp + bossData.rewardXP;
+        update.xp = xp;
+
+        const trophy = {
+            id: bossData.id,
+            name: bossData.trophyName,
+            emoji: bossData.emoji,
+            dateEarned: new Date().toISOString()
+        };
+
+        update.trophies = window.firebaseArrayUnion(trophy);
+    }
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid),
+        update,
+        { merge: true }
+    );
+
+    await saveQuestToCloud({
+        quest: bossData.name + ": " + bossData.steps[stepIndex].label,
+        emoji: bossData.emoji,
+        rarity: "boss",
+        type: "boss",
+        description: description,
+        date: new Date().toLocaleString(),
+        photo: photoData || ""
+    });
+
+    updateGame();
+
+    popup.style.display = "none";
+
+    if (isFinalStep) {
+        alert("👑 BOSS QUEST COMPLETE!\n\nYou earned the \"" + bossData.trophyName + "\" trophy and " + bossData.rewardXP + " bonus XP!");
+    }
+
+    loadBossQuestsPage();
 }
