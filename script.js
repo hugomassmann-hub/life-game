@@ -1092,8 +1092,8 @@ function handleQuestCompletion(shouldPost) {
 
         function finishQuest(photoData) {
 
-        if (bossId !== undefined && bossStepIndex !== undefined) {
-            finishBossStep(bossId, bossStepIndex, questXP, popup, photoData, description);
+                if (bossId !== undefined && bossStepIndex !== undefined) {
+            finishBossStep(bossId, bossStepIndex, questXP, popup, photoData, description, shouldPost);
             return;
         }
 
@@ -1462,7 +1462,7 @@ function createFeedPostElement(post, currentUserId, isPaired, soloCompact) {
 
     postElement.innerHTML =
         "<strong>" + escapeHTML(post.username) + "</strong><br>" +
-        "<span class='rarity-badge'>" + escapeHTML(rarity.toUpperCase()) + "</span><br>" +
+                "<span class='rarity-badge'>" + escapeHTML(getRarityLabel(rarity)) + "</span><br>" +
         "<strong>" + escapeHTML((post.emoji ? post.emoji + " " : "") + cleanQuestName(post.quest)) + "</strong>" +
         (post.photo
             ? "<div class='feed-photo'><img src='" + escapeHTML(post.photo) + "'></div>"
@@ -2271,6 +2271,7 @@ async function loadBossQuestsPage() {
 
     const data = snapshot.exists() ? snapshot.data() : {};
     const accepted = data.acceptedBoss || null;
+    const trophies = data.trophies || [];
 
     container.innerHTML = "";
 
@@ -2287,23 +2288,43 @@ async function loadBossQuestsPage() {
 
     } else {
 
-        renderBossList(container, user.uid);
+        renderBossList(container, user.uid, trophies, data.lastBossAcceptDate);
     }
 }
 
-function renderBossList(container, uid) {
+const BOSS_COOLDOWN_DAYS = 3;
+
+function renderBossList(container, uid, trophies, lastAcceptDate) {
+
+    let cooldownDaysLeft = 0;
+
+    if (lastAcceptDate) {
+
+        const cooldownMs = BOSS_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+        const elapsed = Date.now() - new Date(lastAcceptDate).getTime();
+
+        cooldownDaysLeft = Math.ceil((cooldownMs - elapsed) / (24 * 60 * 60 * 1000));
+    }
+
+    const onCooldown = cooldownDaysLeft > 0;
 
     const heading = document.createElement("p");
-    heading.textContent = "Pick a Boss Quest to begin. You can only have one active at a time.";
+    heading.textContent = onCooldown
+        ? "You can pick a new Boss Quest in " + cooldownDaysLeft + " day" + (cooldownDaysLeft === 1 ? "" : "s") + "."
+        : "Pick a Boss Quest to begin. You can only have one active at a time.";
     container.appendChild(heading);
 
     bossQuests.forEach(function(boss) {
+
+        const alreadyEarned = trophies.some(function(t) { return t.id === boss.id; });
 
         const card = document.createElement("div");
         card.className = "boss-card";
 
         card.innerHTML =
-            "<h3>" + boss.emoji + " " + escapeHTML(boss.name) + "</h3>" +
+            "<h3>" + boss.emoji + " " + escapeHTML(boss.name) +
+            (alreadyEarned ? " <span class='boss-earned-badge'>🏆 Completed</span>" : "") +
+            "</h3>" +
             "<p>" + escapeHTML(boss.description) + "</p>" +
             "<p>🏆 Reward: " + boss.rewardXP + " XP + \"" + escapeHTML(boss.trophyName) + "\" trophy</p>" +
             (boss.deadlineDays
@@ -2312,24 +2333,34 @@ function renderBossList(container, uid) {
 
         const acceptButton = document.createElement("button");
         acceptButton.className = "boss-accept-button";
-        acceptButton.textContent = "Accept Quest";
 
-        acceptButton.onclick = async function() {
+        if (onCooldown) {
 
-            await window.firebaseSetDoc(
-                window.firebaseDoc(window.firebaseDB, "users", uid),
-                {
-                    acceptedBoss: {
-                        id: boss.id,
-                        acceptedDate: new Date().toISOString(),
-                        completedSteps: []
-                    }
-                },
-                { merge: true }
-            );
+            acceptButton.textContent = "🔒 Locked (" + cooldownDaysLeft + "d)";
+            acceptButton.disabled = true;
 
-            loadBossQuestsPage();
-        };
+        } else {
+
+            acceptButton.textContent = alreadyEarned ? "Do Again" : "Accept Quest";
+
+            acceptButton.onclick = async function() {
+
+                await window.firebaseSetDoc(
+                    window.firebaseDoc(window.firebaseDB, "users", uid),
+                    {
+                        acceptedBoss: {
+                            id: boss.id,
+                            acceptedDate: new Date().toISOString(),
+                            completedSteps: []
+                        },
+                        lastBossAcceptDate: new Date().toISOString()
+                    },
+                    { merge: true }
+                );
+
+                loadBossQuestsPage();
+            };
+        }
 
         card.appendChild(acceptButton);
         container.appendChild(card);
@@ -2400,7 +2431,7 @@ function renderActiveBoss(container, accepted, bossData, uid) {
     card.appendChild(resetButton);
 }
 
-async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, description) {
+async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, description, shouldPost) {
 
     const user = window.firebaseAuth.currentUser;
 
@@ -2447,14 +2478,13 @@ async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, descr
         xp = xp + bossData.rewardXP;
         update.xp = xp;
 
-        const trophy = {
+        update.trophies = window.firebaseArrayUnion({
             id: bossData.id,
             name: bossData.trophyName,
             emoji: bossData.emoji,
+            description: bossData.description,
             dateEarned: new Date().toISOString()
-        };
-
-        update.trophies = window.firebaseArrayUnion(trophy);
+        });
     }
 
     await window.firebaseSetDoc(
@@ -2463,15 +2493,21 @@ async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, descr
         { merge: true }
     );
 
-    await saveQuestToCloud({
+    const questData = {
         quest: bossData.name + ": " + bossData.steps[stepIndex].label,
         emoji: bossData.emoji,
-        rarity: "boss",
+        rarity: isFinalStep ? "bosscomplete" : "boss",
         type: "boss",
         description: description,
         date: new Date().toLocaleString(),
         photo: photoData || ""
-    });
+    };
+
+    await saveQuestToCloud(questData);
+
+    if (shouldPost) {
+        saveFeedPostToCloud(questData);
+    }
 
     updateGame();
 
@@ -2483,3 +2519,84 @@ async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, descr
 
     loadBossQuestsPage();
 }
+
+function getRarityLabel(rarity) {
+    return rarity === "bosscomplete" ? "BOSS COMPLETE!" : String(rarity || "common").toUpperCase();
+}
+
+// TROPHY CASE
+
+document.getElementById("trophyCasePage").style.display = "none";
+document.getElementById("trophyDetailPopup").style.display = "none";
+
+document.getElementById("trophyCaseButton").onclick = function() {
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("trophyCasePage").style.display = "block";
+    loadTrophyCase();
+};
+
+document.getElementById("trophyCaseBackButton").onclick = function() {
+    document.getElementById("trophyCasePage").style.display = "none";
+    document.getElementById("questPage").style.display = "block";
+};
+
+async function loadTrophyCase() {
+
+    const container = document.getElementById("trophyCaseContainer");
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) {
+        container.innerHTML = "<p>Please sign in to view your Trophy Case.</p>";
+        return;
+    }
+
+    container.innerHTML = "<p>Loading...</p>";
+
+    const snapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid)
+    );
+
+    const trophies = snapshot.exists() ? (snapshot.data().trophies || []) : [];
+
+    container.innerHTML = "";
+
+    if (trophies.length === 0) {
+        container.innerHTML = "<p>No trophies yet. Complete a Boss Quest to earn one!</p>";
+        return;
+    }
+
+    trophies.forEach(function(trophy) {
+
+        const card = document.createElement("div");
+        card.className = "trophy-card";
+
+        const shortDescription = (trophy.description || "").slice(0, 60) +
+            (trophy.description && trophy.description.length > 60 ? "..." : "");
+
+        card.innerHTML =
+            "<div class='trophy-emoji'>" + escapeHTML(trophy.emoji || "🏆") + "</div>" +
+            "<h3>" + escapeHTML(trophy.name) + "</h3>" +
+            "<p>" + escapeHTML(shortDescription) + "</p>";
+
+        card.onclick = function() {
+            openTrophyDetail(trophy);
+        };
+
+        container.appendChild(card);
+    });
+}
+
+function openTrophyDetail(trophy) {
+
+    document.getElementById("trophyDetailEmoji").textContent = trophy.emoji || "🏆";
+    document.getElementById("trophyDetailName").textContent = trophy.name;
+    document.getElementById("trophyDetailDescription").textContent = trophy.description || "";
+    document.getElementById("trophyDetailDate").textContent =
+        trophy.dateEarned ? "Earned " + new Date(trophy.dateEarned).toLocaleDateString() : "";
+
+    document.getElementById("trophyDetailPopup").style.display = "flex";
+}
+
+document.getElementById("closeTrophyDetail").onclick = function() {
+    document.getElementById("trophyDetailPopup").style.display = "none";
+};

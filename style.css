@@ -1223,3 +1223,115 @@ transform: translateY(-2px);
 .boss-step.done {
     color: #ffc93c;
 }
+
+/* BOSS LIST EXTRAS */
+
+.boss-earned-badge {
+    color: #ff5252;
+    font-size: 13px;
+}
+
+.boss-accept-button:disabled {
+    background: #303544;
+    color: #777;
+    cursor: not-allowed;
+}
+
+/* BOSS COMPLETE (red, distinct from gold boss steps) */
+
+.feed-post.post-bosscomplete {
+    border: 3px solid #ff5252;
+    background: linear-gradient(145deg, rgba(255, 82, 82, 0.3), #171a24 60%);
+    animation: bossCompleteGlow 2s ease-in-out infinite;
+}
+
+@keyframes bossCompleteGlow {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 82, 82, 0.5); }
+    50% { box-shadow: 0 0 50px rgba(255, 82, 82, 0.9); }
+}
+
+.post-bosscomplete .rarity-badge {
+    color: #ff5252;
+}
+
+/* TROPHY CASE BUTTON */
+
+#trophyCaseButton {
+    display: block;
+    margin: 20px auto 0;
+    background: #171a24;
+    color: white;
+    border: 1px solid #ff5252;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#trophyCaseButton:hover {
+    background: #ff5252;
+}
+
+/* TROPHY CASE PAGE */
+
+#trophyCasePage {
+    position: relative;
+    height: 100%;
+    overflow-y: auto;
+    padding-top: 35px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+#trophyCaseBackButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#trophyCaseContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.trophy-card {
+    width: 244px;
+    background: linear-gradient(145deg, rgba(255, 82, 82, 0.25), #171a24 65%);
+    border: 2px solid #ff5252;
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 0 20px rgba(255, 82, 82, 0.3);
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.trophy-card:hover {
+    transform: translateY(-3px);
+}
+
+.trophy-card .trophy-emoji {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.trophy-card h3 {
+    margin: 6px 0;
+    font-size: 15px;
+}
+
+.trophy-card p {
+    color: #aaa;
+    font-size: 12px;
+    margin: 0;
+}
+
+#trophyDetailEmoji {
+    font-size: 60px;
+    text-align: center;
+    margin: 0;
+}
