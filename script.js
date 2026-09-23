@@ -1457,8 +1457,12 @@ async function loadMoreFeedPosts(isFirstLoad) {
         }
     }
 
-    const oldButton = document.getElementById("feedLoadMoreButton");
-    if (oldButton) oldButton.remove();
+        const oldSentinel = document.getElementById("feedSentinel");
+    if (oldSentinel) oldSentinel.remove();
+
+    if (window.feedObserver) {
+        window.feedObserver.disconnect();
+    }
 
     let i = 0;
 
@@ -1493,20 +1497,33 @@ async function loadMoreFeedPosts(isFirstLoad) {
         }
     }
 
-    if (feedHasMore) {
+        if (feedHasMore) {
 
-        const loadMoreButton = document.createElement("button");
-        loadMoreButton.id = "feedLoadMoreButton";
-        loadMoreButton.className = "feed-load-more-button";
-        loadMoreButton.textContent = "Load More";
+        const sentinel = document.createElement("div");
+        sentinel.id = "feedSentinel";
+        sentinel.style.height = "1px";
 
-        loadMoreButton.onclick = function() {
-            loadMoreButton.textContent = "Loading...";
-            loadMoreButton.disabled = true;
-            loadMoreFeedPosts(false);
-        };
+        container.appendChild(sentinel);
 
-        container.appendChild(loadMoreButton);
+        window.feedObserver = new IntersectionObserver(function(entries) {
+
+            if (entries[0].isIntersecting) {
+
+                window.feedObserver.disconnect();
+                loadMoreFeedPosts(false);
+            }
+
+        });
+
+        window.feedObserver.observe(sentinel);
+
+    } else {
+
+        const endMessage = document.createElement("p");
+        endMessage.className = "feed-end-message";
+        endMessage.textContent = "You're all caught up 🎉";
+
+        container.appendChild(endMessage);
     }
 }
 

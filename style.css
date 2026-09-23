@@ -1335,26 +1335,9 @@ transform: translateY(-2px);
     margin: 0;
 }
 
-.feed-load-more-button {
-    display: block;
-    width: 100%;
-    max-width: 300px;
-    margin: 20px auto;
-    padding: 14px;
-    background: #171a24;
-    color: white;
-    border: 1px solid #7c5cff;
-    border-radius: 14px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.feed-load-more-button:hover {
-    background: #7c5cff;
-}
-
-.feed-load-more-button:disabled {
-    opacity: 0.6;
-    cursor: default;
+.feed-end-message {
+    text-align: center;
+    color: #666;
+    padding: 30px 0;
+    font-size: 14px;
 }
