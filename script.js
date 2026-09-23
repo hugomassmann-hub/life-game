@@ -1515,6 +1515,9 @@ async function loadMoreFeedPosts(isFirstLoad) {
                 loadMoreFeedPosts(false);
             }
 
+        }, {
+            root: document.getElementById("feedContainer"),
+            rootMargin: "400px"
         });
 
         window.feedObserver.observe(sentinel);

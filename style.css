@@ -729,9 +729,10 @@ transform: translateY(-2px);
     height: calc(100% - 100px);
     overflow-y: auto;
     scroll-snap-type: y mandatory;
-    padding: 40px 0;
+    padding: 40px 0 60px;
     box-sizing: border-box;
 }
+
 .feed-post {
     scroll-snap-align: start;
     background: #171a24;
