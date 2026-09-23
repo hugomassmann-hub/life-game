@@ -1466,38 +1466,11 @@ async function loadMoreFeedPosts(isFirstLoad) {
         window.feedObserver.disconnect();
     }
 
-    let i = 0;
+        const slides = buildFeedSlides(posts);
 
-    while (i < posts.length) {
-
-        const rarity = getPostRarity(posts[i]);
-
-        const canPair =
-            rarity === "common" &&
-            i + 1 < posts.length &&
-            getPostRarity(posts[i + 1]) === "common";
-
-        if (canPair) {
-
-            const pairRow = document.createElement("div");
-            pairRow.className = "feed-pair";
-
-            pairRow.appendChild(createFeedPostElement(posts[i], currentUserId, true));
-            pairRow.appendChild(createFeedPostElement(posts[i + 1], currentUserId, true));
-
-            container.appendChild(pairRow);
-
-            i += 2;
-
-        } else {
-
-            const soloCompact = rarity === "common";
-
-            container.appendChild(createFeedPostElement(posts[i], currentUserId, false, soloCompact));
-
-            i += 1;
-        }
-    }
+    slides.forEach(function(slide) {
+        container.appendChild(renderFeedSlide(slide, currentUserId));
+    });
 
         if (feedHasMore) {
 
@@ -1532,26 +1505,28 @@ async function loadMoreFeedPosts(isFirstLoad) {
     }
 }
 
-function createFeedPostElement(post, currentUserId, isPaired, soloCompact) {
+function createFeedPostElement(post, currentUserId, layout) {
 
     const rarity = getPostRarity(post);
 
     const postElement = document.createElement("div");
 
     postElement.className =
-        "feed-post post-" + rarity +
-        (isPaired ? " paired" : "") +
-        (soloCompact ? " compact-solo" : "");
+        "feed-post post-" + rarity + " layout-" + layout;
 
     postElement.innerHTML =
+        "<div class='feed-post-header'>" +
         "<strong>" + escapeHTML(post.username) + "</strong><br>" +
-                "<span class='rarity-badge'>" + escapeHTML(getRarityLabel(rarity)) + "</span><br>" +
+        "<span class='rarity-badge'>" + escapeHTML(getRarityLabel(rarity)) + "</span><br>" +
         "<strong>" + escapeHTML((post.emoji ? post.emoji + " " : "") + cleanQuestName(post.quest)) + "</strong>" +
+        "</div>" +
         (post.photo
             ? "<div class='feed-photo'><img src='" + escapeHTML(post.photo) + "'></div>"
             : "") +
+        "<div class='feed-post-body'>" +
         "<p>" + escapeHTML(post.description) + "</p>" +
-        "<small>" + escapeHTML(post.date) + "</small>";
+        "<small>" + escapeHTML(post.date) + "</small>" +
+        "</div>";
 
     const likeButton = document.createElement("button");
 
@@ -2773,4 +2748,59 @@ function waitForFirebaseAuth() {
 
         }, 50);
     });
+}
+
+// FEED SLIDES
+
+function buildFeedSlides(posts) {
+
+    const slides = [];
+    let i = 0;
+
+    while (i < posts.length) {
+
+        const rarity = getPostRarity(posts[i]);
+
+        if (rarity === "common") {
+
+            const group = [];
+
+            while (group.length < 4 && i < posts.length && getPostRarity(posts[i]) === "common") {
+                group.push(posts[i]);
+                i++;
+            }
+
+            slides.push({ layout: "grid", posts: group });
+
+        } else if (rarity === "uncommon") {
+
+            const group = [];
+
+            while (group.length < 2 && i < posts.length && getPostRarity(posts[i]) === "uncommon") {
+                group.push(posts[i]);
+                i++;
+            }
+
+            slides.push({ layout: "stack", posts: group });
+
+        } else {
+
+            slides.push({ layout: "full", posts: [posts[i]] });
+            i++;
+        }
+    }
+
+    return slides;
+}
+
+function renderFeedSlide(slide, currentUserId) {
+
+    const slideElement = document.createElement("div");
+    slideElement.className = "feed-slide slide-" + slide.layout;
+
+    slide.posts.forEach(function(post) {
+        slideElement.appendChild(createFeedPostElement(post, currentUserId, slide.layout));
+    });
+
+    return slideElement;
 }

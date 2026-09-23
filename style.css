@@ -1058,16 +1058,106 @@ transform: translateY(-2px);
 #feedContainer {
     scroll-snap-type: y mandatory;
     -webkit-overflow-scrolling: touch;
+    padding: 0;
 }
 
-.feed-post {
-    scroll-snap-align: none;
-}
+/* FEED SLIDES: one screen per slide */
 
-.feed-post.post-rare,
-.feed-post.post-boss,
-.feed-post.post-bosscomplete {
+.feed-slide {
+    height: 100%;
+    box-sizing: border-box;
+    padding: 20px;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+.slide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+}
+
+.slide-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.slide-full {
+    display: flex;
+}
+
+.feed-slide .feed-post {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    min-height: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.slide-stack .feed-post {
+    flex: 1;
+}
+
+.feed-post-header {
+    flex-shrink: 0;
+}
+
+.feed-post .feed-photo {
+    flex: 1;
+    min-height: 0;
+    margin-top: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.feed-post .feed-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.feed-post-body {
+    flex-shrink: 0;
+}
+
+.feed-post .like-button {
+    flex-shrink: 0;
+}
+
+/* Smaller text for the 2x2 grid */
+
+.layout-grid .rarity-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+}
+
+.layout-grid strong {
+    font-size: 12px;
+}
+
+.layout-grid .feed-post-body p {
+    font-size: 11px;
+}
+
+.layout-grid .feed-post-body small {
+    font-size: 9px;
+}
+
+/* Medium text for the stacked pair */
+
+.layout-stack .rarity-badge {
+    font-size: 11px;
+}
+
+.layout-stack strong {
+    font-size: 14px;
 }
 
 /* FEED TABS */
@@ -1094,47 +1184,6 @@ transform: translateY(-2px);
     color: white;
     border-color: #7c5cff;
     background: #22263a;
-}
-
-/* PAIRED COMMON POSTS */
-
-.feed-pair {
-    display: flex;
-    gap: 12px;
-    max-width: 500px;
-    margin: 20px auto;
-}
-
-.feed-post.paired {
-    min-height: 0;
-    width: 50%;
-    margin: 0;
-    font-size: 14px;
-}
-
-.feed-post.paired .feed-photo {
-    height: 120px;
-}
-
-.feed-post.paired .rarity-badge {
-    font-size: 10px;
-    padding: 2px 8px;
-}
-
-.feed-post.compact-solo {
-    min-height: 0;
-    max-width: 244px;
-    margin: 20px auto;
-    font-size: 14px;
-}
-
-.feed-post.compact-solo .feed-photo {
-    height: 120px;
-}
-
-.feed-post.compact-solo .rarity-badge {
-    font-size: 10px;
-    padding: 2px 8px;
 }
 
 /* BOSS QUESTS */
