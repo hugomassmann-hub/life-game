@@ -1359,14 +1359,15 @@ async function loadPastQuests() {
 let feedFilter = "everyone";
 let feedLastDoc = null;
 let feedHasMore = true;
-let feedLeftoverPosts = [];
+let feedIsLoading = false;
+let feedLeftoverPosts = { common: [], uncommon: [] };
 const FEED_PAGE_SIZE = 10;
 
 async function loadFeed() {
 
     feedLastDoc = null;
     feedHasMore = true;
-    feedLeftoverPosts = [];
+    feedLeftoverPosts = { common: [], uncommon: [] };
 
     document.getElementById("feedContainer").innerHTML = "<p>Loading...</p>";
 
@@ -1375,19 +1376,26 @@ async function loadFeed() {
 
 async function loadMoreFeedPosts(isFirstLoad) {
 
+    if (fesedIsLoading) return;
+    feedIsLoading = true;
+
     await waitForFirebaseAuth();
 
     const container = document.getElementById("feedContainer");
     const user = window.firebaseAuth.currentUser;
 
-    if (!user) {
+        if (!user) {
         container.innerHTML = "<p>Please sign in to view the Feed.</p>";
+        feedIsLoading = false;
         return;
     }
 
     const currentUserId = user.uid;
 
-    if (!feedHasMore) return;
+    if (!feedHasMore) {
+        feedIsLoading = false;
+        return;
+    }
 
     const queryParts = [];
 
@@ -1422,7 +1430,7 @@ async function loadMoreFeedPosts(isFirstLoad) {
             )
         );
 
-    } catch (error) {
+        } catch (error) {
 
         console.error("FEED LOAD ERROR:", error);
 
@@ -1430,6 +1438,7 @@ async function loadMoreFeedPosts(isFirstLoad) {
             container.innerHTML = "<p>Couldn't load the Feed: " + error.message + "</p>";
         }
 
+        feedIsLoading = false;
         return;
     }
 
@@ -1468,9 +1477,7 @@ async function loadMoreFeedPosts(isFirstLoad) {
         window.feedObserver.disconnect();
     }
 
-            const allPosts = feedLeftoverPosts.concat(posts);
-
-    const result = buildFeedSlides(allPosts, !feedHasMore);
+        const result = buildFeedSlides(posts, !feedHasMore, feedLeftoverPosts);
 
     feedLeftoverPosts = result.leftover;
 
@@ -1509,6 +1516,8 @@ async function loadMoreFeedPosts(isFirstLoad) {
 
         container.appendChild(endMessage);
     }
+
+        feedIsLoading = false;
 }
 
 function createFeedPostElement(post, currentUserId, layout) {
@@ -2758,39 +2767,54 @@ function waitForFirebaseAuth() {
 
 // FEED SLIDES
 
-function buildFeedSlides(posts, isEndOfFeed) {
+function buildFeedSlides(posts, isEndOfFeed, leftover) {
 
     const slides = [];
-    let i = 0;
 
-    while (i < posts.length) {
+    const commonBuffer = leftover.common.slice();
+    const uncommonBuffer = leftover.uncommon.slice();
 
-        const rarity = getPostRarity(posts[i]);
-        const groupSize = rarity === "common" ? 4 : (rarity === "uncommon" ? 2 : 1);
+    posts.forEach(function(post) {
 
-        const group = [];
+        const rarity = getPostRarity(post);
 
-        while (group.length < groupSize && i < posts.length && getPostRarity(posts[i]) === rarity) {
-            group.push(posts[i]);
-            i++;
+        if (rarity === "common") {
+
+            commonBuffer.push(post);
+
+            if (commonBuffer.length === 4) {
+                slides.push({ layout: "grid", posts: commonBuffer.splice(0, 4) });
+            }
+
+        } else if (rarity === "uncommon") {
+
+            uncommonBuffer.push(post);
+
+            if (uncommonBuffer.length === 2) {
+                slides.push({ layout: "stack", posts: uncommonBuffer.splice(0, 2) });
+            }
+
+        } else {
+
+            slides.push({ layout: "full", posts: [post] });
+        }
+    });
+
+    if (isEndOfFeed) {
+
+        if (commonBuffer.length > 0) {
+            slides.push({ layout: "grid", posts: commonBuffer.splice(0) });
         }
 
-        const isComplete = group.length === groupSize;
-        const isLastGroup = i >= posts.length;
-
-        if (isComplete || (isLastGroup && isEndOfFeed)) {
-
-            const layout = rarity === "common" ? "grid" : (rarity === "uncommon" ? "stack" : "full");
-            slides.push({ layout: layout, posts: group });
-
-        } else if (isLastGroup) {
-
-            // Not enough posts yet to complete this group, hold it for the next batch
-            return { slides: slides, leftover: group };
+        if (uncommonBuffer.length > 0) {
+            slides.push({ layout: "stack", posts: uncommonBuffer.splice(0) });
         }
     }
-    
-    return { slides: slides, leftover: [] };
+
+    return {
+        slides: slides,
+        leftover: { common: commonBuffer, uncommon: uncommonBuffer }
+    };
 }
 
 function renderFeedSlide(slide, currentUserId) {
