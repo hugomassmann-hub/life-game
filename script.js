@@ -1357,14 +1357,24 @@ async function loadPastQuests() {
 }
 
 let feedFilter = "everyone";
+let feedLastDoc = null;
+let feedHasMore = true;
+const FEED_PAGE_SIZE = 10;
 
 async function loadFeed() {
 
-    const container =
-        document.getElementById("feedContainer");
+    feedLastDoc = null;
+    feedHasMore = true;
 
-    const user =
-        window.firebaseAuth.currentUser;
+    document.getElementById("feedContainer").innerHTML = "<p>Loading...</p>";
+
+    await loadMoreFeedPosts(true);
+}
+
+async function loadMoreFeedPosts(isFirstLoad) {
+
+    const container = document.getElementById("feedContainer");
+    const user = window.firebaseAuth.currentUser;
 
     if (!user) {
         container.innerHTML = "<p>Please sign in to view the Feed.</p>";
@@ -1373,25 +1383,9 @@ async function loadFeed() {
 
     const currentUserId = user.uid;
 
-    container.innerHTML = "<p>Loading...</p>";
+    if (!feedHasMore) return;
 
-    const snapshot =
-        await window.firebaseGetDocs(
-            window.firebaseCollection(
-                window.firebaseDB,
-                "feedPosts"
-            )
-        );
-
-    let posts = [];
-
-    snapshot.forEach(function(doc) {
-        const post = doc.data();
-        post.id = doc.id;
-        posts.push(post);
-    });
-
-    posts.reverse();
+    const queryParts = [];
 
     if (feedFilter === "following") {
 
@@ -1399,25 +1393,72 @@ async function loadFeed() {
             window.firebaseDoc(window.firebaseDB, "users", currentUserId)
         );
 
-        const following = mySnapshot.exists()
-            ? (mySnapshot.data().following || [])
-            : [];
+        let followingIds = mySnapshot.exists() ? (mySnapshot.data().following || []) : [];
+        followingIds = followingIds.concat(currentUserId).slice(0, 30);
 
-        posts = posts.filter(function(post) {
-            return post.uid === currentUserId || following.includes(post.uid);
-        });
+        queryParts.push(window.firebaseWhere("uid", "in", followingIds));
     }
 
-    container.innerHTML = "";
+    queryParts.push(window.firebaseOrderBy(window.firebaseDocumentId(), "desc"));
 
-    if (posts.length === 0) {
+    if (feedLastDoc) {
+        queryParts.push(window.firebaseStartAfter(feedLastDoc));
+    }
 
-        container.innerHTML = feedFilter === "following"
-            ? "<p>Nobody you follow has posted yet. Try Everyone, or follow more players!</p>"
-            : "<p>No posts yet. Complete a quest and tap Complete & Post!</p>";
+    queryParts.push(window.firebaseLimit(FEED_PAGE_SIZE));
+
+    let snapshot;
+
+    try {
+
+        snapshot = await window.firebaseGetDocs(
+            window.firebaseQuery(
+                window.firebaseCollection(window.firebaseDB, "feedPosts"),
+                ...queryParts
+            )
+        );
+
+    } catch (error) {
+
+        console.error("FEED LOAD ERROR:", error);
+
+        if (isFirstLoad) {
+            container.innerHTML = "<p>Couldn't load the Feed: " + error.message + "</p>";
+        }
 
         return;
     }
+
+    const posts = [];
+
+    snapshot.forEach(function(doc) {
+        const post = doc.data();
+        post.id = doc.id;
+        posts.push(post);
+    });
+
+    if (snapshot.docs.length > 0) {
+        feedLastDoc = snapshot.docs[snapshot.docs.length - 1];
+    }
+
+    if (posts.length < FEED_PAGE_SIZE) {
+        feedHasMore = false;
+    }
+
+    if (isFirstLoad) {
+
+        container.innerHTML = "";
+
+        if (posts.length === 0) {
+            container.innerHTML = feedFilter === "following"
+                ? "<p>Nobody you follow has posted yet. Try Everyone, or follow more players!</p>"
+                : "<p>No posts yet. Complete a quest and tap Complete & Post!</p>";
+            return;
+        }
+    }
+
+    const oldButton = document.getElementById("feedLoadMoreButton");
+    if (oldButton) oldButton.remove();
 
     let i = 0;
 
@@ -1442,7 +1483,7 @@ async function loadFeed() {
 
             i += 2;
 
-                } else {
+        } else {
 
             const soloCompact = rarity === "common";
 
@@ -1450,6 +1491,22 @@ async function loadFeed() {
 
             i += 1;
         }
+    }
+
+    if (feedHasMore) {
+
+        const loadMoreButton = document.createElement("button");
+        loadMoreButton.id = "feedLoadMoreButton";
+        loadMoreButton.className = "feed-load-more-button";
+        loadMoreButton.textContent = "Load More";
+
+        loadMoreButton.onclick = function() {
+            loadMoreButton.textContent = "Loading...";
+            loadMoreButton.disabled = true;
+            loadMoreFeedPosts(false);
+        };
+
+        container.appendChild(loadMoreButton);
     }
 }
 

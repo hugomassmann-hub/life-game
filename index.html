@@ -398,11 +398,14 @@ import {
     getDocs,
     collection,
     updateDoc,
-      arrayUnion,
+    arrayUnion,
     arrayRemove,
     query,
     where,
-    limit
+    limit,
+    orderBy,
+    startAfter,
+    documentId
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
     // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
@@ -431,6 +434,9 @@ window.firebaseArrayRemove = arrayRemove;
 window.firebaseQuery = query;
 window.firebaseWhere = where;
 window.firebaseLimit = limit;
+window.firebaseOrderBy = orderBy;
+window.firebaseStartAfter = startAfter;
+window.firebaseDocumentId = documentId;
 window.firebaseAuth = auth;
 window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 window.onAuthStateChanged = onAuthStateChanged;
