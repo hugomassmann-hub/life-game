@@ -1477,12 +1477,14 @@ async function loadMoreFeedPosts(isFirstLoad) {
         window.feedObserver.disconnect();
     }
 
-        const result = buildFeedSlides(posts, !feedHasMore, feedLeftoverPosts);
+   const result = buildFeedSlides(posts, !feedHasMore, feedLeftoverPosts);
 
     feedLeftoverPosts = result.leftover;
 
+    const myFollowing = await getMyFollowingList(currentUserId);
+
     result.slides.forEach(function(slide) {
-        container.appendChild(renderFeedSlide(slide, currentUserId));
+        container.appendChild(renderFeedSlide(slide, currentUserId, myFollowing));
     });
 
         if (feedHasMore) {
@@ -1520,7 +1522,7 @@ async function loadMoreFeedPosts(isFirstLoad) {
         feedIsLoading = false;
 }
 
-function createFeedPostElement(post, currentUserId, layout) {
+function createFeedPostElement(post, currentUserId, layout, myFollowing) {
 
     const rarity = getPostRarity(post);
 
@@ -1529,9 +1531,19 @@ function createFeedPostElement(post, currentUserId, layout) {
     postElement.className =
         "feed-post post-" + rarity + " layout-" + layout;
 
+    const isMyPost = post.uid === currentUserId;
+    const alreadyFollowing = myFollowing.includes(post.uid);
+
     postElement.innerHTML =
         "<div class='feed-post-header'>" +
-        "<strong>" + escapeHTML(post.username) + "</strong><br>" +
+        "<div class='feed-poster-row'>" +
+        "<span class='feed-poster-name' data-uid='" + escapeHTML(post.uid || "") + "'>👤 " + escapeHTML(post.username) + "</span>" +
+        (!isMyPost && post.uid
+            ? "<button class='feed-follow-button" + (alreadyFollowing ? " following" : "") + "' data-uid='" + escapeHTML(post.uid) + "'>" +
+              (alreadyFollowing ? "✓ Following" : "➕ Follow") +
+              "</button>"
+            : "") +
+        "</div>" +
         "<span class='rarity-badge'>" + escapeHTML(getRarityLabel(rarity)) + "</span><br>" +
         "<strong>" + escapeHTML((post.emoji ? post.emoji + " " : "") + cleanQuestName(post.quest)) + "</strong>" +
         "</div>" +
@@ -1543,21 +1555,25 @@ function createFeedPostElement(post, currentUserId, layout) {
         "<small>" + escapeHTML(post.date) + "</small>" +
         "</div>";
 
+    const likedBy = post.likedBy || [];
+    const startedLiked = likedBy.includes(currentUserId);
+
     const likeButton = document.createElement("button");
 
-    likeButton.textContent = "❤️ " + (post.likes || 0);
-    likeButton.className = "like-button";
+    likeButton.className = "like-button" + (startedLiked ? " liked" : "");
+    likeButton.textContent = (startedLiked ? "❤️ " : "🤍 ") + (post.likes || 0);
 
     likeButton.onclick = async function() {
 
-        const likedBy = post.likedBy || [];
-        const alreadyLiked = likedBy.includes(currentUserId);
+        const currentLikedBy = post.likedBy || [];
+        const alreadyLiked = currentLikedBy.includes(currentUserId);
 
         const newLikes = alreadyLiked
             ? Math.max((post.likes || 0) - 1, 0)
             : (post.likes || 0) + 1;
 
-        likeButton.textContent = "❤️ " + newLikes;
+        likeButton.className = "like-button" + (alreadyLiked ? "" : " liked");
+        likeButton.textContent = (alreadyLiked ? "🤍 " : "❤️ ") + newLikes;
 
         await window.firebaseSetDoc(
             window.firebaseDoc(window.firebaseDB, "feedPosts", post.id),
@@ -1573,11 +1589,54 @@ function createFeedPostElement(post, currentUserId, layout) {
         post.likes = newLikes;
 
         post.likedBy = alreadyLiked
-            ? likedBy.filter(function(id) { return id !== currentUserId; })
-            : likedBy.concat(currentUserId);
+            ? currentLikedBy.filter(function(id) { return id !== currentUserId; })
+            : currentLikedBy.concat(currentUserId);
     };
 
     postElement.appendChild(likeButton);
+
+    const nameEl = postElement.querySelector(".feed-poster-name");
+
+    if (nameEl && post.uid) {
+        nameEl.onclick = function() {
+            openProfile(post.uid);
+        };
+    }
+
+    const followBtn = postElement.querySelector(".feed-follow-button");
+
+    if (followBtn) {
+
+        let isFollowing = alreadyFollowing;
+
+        followBtn.onclick = async function() {
+
+            followBtn.disabled = true;
+
+            try {
+
+                await window.firebaseSetDoc(
+                    window.firebaseDoc(window.firebaseDB, "users", currentUserId),
+                    {
+                        following: isFollowing
+                            ? window.firebaseArrayRemove(post.uid)
+                            : window.firebaseArrayUnion(post.uid)
+                    },
+                    { merge: true }
+                );
+
+                isFollowing = !isFollowing;
+
+                followBtn.textContent = isFollowing ? "✓ Following" : "➕ Follow";
+                followBtn.className = "feed-follow-button" + (isFollowing ? " following" : "");
+
+            } catch (error) {
+                console.error("FEED FOLLOW ERROR:", error);
+            }
+
+            followBtn.disabled = false;
+        };
+    }
 
     return postElement;
 }
@@ -2817,14 +2876,31 @@ function buildFeedSlides(posts, isEndOfFeed, leftover) {
     };
 }
 
-function renderFeedSlide(slide, currentUserId) {
+function renderFeedSlide(slide, currentUserId, myFollowing) {
 
     const slideElement = document.createElement("div");
     slideElement.className = "feed-slide slide-" + slide.layout;
 
     slide.posts.forEach(function(post) {
-        slideElement.appendChild(createFeedPostElement(post, currentUserId, slide.layout));
+        slideElement.appendChild(createFeedPostElement(post, currentUserId, slide.layout, myFollowing));
     });
 
     return slideElement;
+}
+
+async function getMyFollowingList(uid) {
+
+    try {
+
+        const snapshot = await window.firebaseGetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", uid)
+        );
+
+        return snapshot.exists() ? (snapshot.data().following || []) : [];
+
+    } catch (error) {
+
+        console.error("FOLLOWING FETCH ERROR:", error);
+        return [];
+    }
 }

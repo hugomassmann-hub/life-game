@@ -1097,6 +1097,10 @@ transform: translateY(-2px);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+.feed-post-body {
     overflow-y: auto;
 }
 
@@ -1397,4 +1401,78 @@ transform: translateY(-2px);
     color: #666;
     padding: 30px 0;
     font-size: 14px;
+}
+
+/* CLEARER POSTER + FOLLOW BUTTON */
+
+.feed-poster-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.feed-poster-name {
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.feed-poster-name:hover {
+    text-decoration: underline;
+}
+
+.feed-follow-button {
+    flex-shrink: 0;
+    background: #7c5cff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.feed-follow-button.following {
+    background: #171a24;
+    border: 1px solid #7c5cff;
+}
+
+/* Smaller versions inside the tight grid/stack layouts */
+
+.layout-grid .feed-poster-name {
+    font-size: 12px;
+}
+
+.layout-grid .feed-follow-button {
+    font-size: 9px;
+    padding: 3px 8px;
+}
+
+.layout-stack .feed-poster-name {
+    font-size: 15px;
+}
+
+/* LIKE BUTTON COLOR STATES */
+
+.like-button {
+    background: #171a24;
+    color: #888;
+    border: 1px solid #303544;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    transition: 0.15s ease;
+}
+
+.like-button.liked {
+    color: #7c5cff;
+    border-color: #7c5cff;
+    background: rgba(124, 92, 255, 0.15);
 }
