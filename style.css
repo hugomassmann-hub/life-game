@@ -1056,7 +1056,8 @@ transform: translateY(-2px);
 }
 
 #feedContainer {
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
 }
 
 .feed-post {
@@ -1067,7 +1068,6 @@ transform: translateY(-2px);
 .feed-post.post-boss,
 .feed-post.post-bosscomplete {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
 }
 
 /* FEED TABS */
