@@ -1373,6 +1373,8 @@ async function loadFeed() {
 
 async function loadMoreFeedPosts(isFirstLoad) {
 
+    await waitForFirebaseAuth();
+
     const container = document.getElementById("feedContainer");
     const user = window.firebaseAuth.currentUser;
 
@@ -2748,4 +2750,24 @@ function formatCountdown(msLeft) {
     if (days > 0) return days + "d " + hours + "h";
     if (hours > 0) return hours + "h " + minutes + "m";
     return minutes + "m";
+}
+
+function waitForFirebaseAuth() {
+
+    return new Promise(function(resolve) {
+
+        if (window.firebaseAuth) {
+            resolve();
+            return;
+        }
+
+        const check = setInterval(function() {
+
+            if (window.firebaseAuth) {
+                clearInterval(check);
+                resolve();
+            }
+
+        }, 50);
+    });
 }
