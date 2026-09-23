@@ -1056,11 +1056,18 @@ transform: translateY(-2px);
 }
 
 #feedContainer {
-    scroll-snap-type: none;
+    scroll-snap-type: y proximity;
 }
 
 .feed-post {
     scroll-snap-align: none;
+}
+
+.feed-post.post-rare,
+.feed-post.post-boss,
+.feed-post.post-bosscomplete {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
 }
 
 /* FEED TABS */
