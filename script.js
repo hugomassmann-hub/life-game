@@ -1376,7 +1376,7 @@ async function loadFeed() {
 
 async function loadMoreFeedPosts(isFirstLoad) {
 
-    if (fesedIsLoading) return;
+    if (feedIsLoading) return;
     feedIsLoading = true;
 
     await waitForFirebaseAuth();
@@ -2464,11 +2464,11 @@ function renderActiveBoss(container, accepted, bossData, uid) {
     const card = document.createElement("div");
     card.className = "boss-card";
 
-    card.innerHTML =
+      card.innerHTML =
         "<h3>" + bossData.emoji + " " + escapeHTML(bossData.name) + "</h3>" +
         "<p>" + escapeHTML(bossData.description) + "</p>" +
         (expired ? "<p class='boss-deadline'>⏳ This quest's deadline has passed.</p>" : "") +
-                (isCommitted ? "<div class='boss-commitment-countdown' id='bossCommitCountdown'>🔒 Locked in for " + commitmentCountdownText + "</div>" : "");
+        (isCommitted ? "<div class='boss-commitment-countdown' id='bossCommitCountdown'>🔒 Locked in for " + commitmentCountdownText + "</div>" : "") +
         "<div class='boss-progress-bar'><div class='boss-progress-fill' style='width:" + percent + "%'></div></div>" +
         "<p>" + completedCount + " / " + bossData.steps.length + " steps complete</p>";
 
