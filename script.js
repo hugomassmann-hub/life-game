@@ -1359,12 +1359,14 @@ async function loadPastQuests() {
 let feedFilter = "everyone";
 let feedLastDoc = null;
 let feedHasMore = true;
+let feedLeftoverPosts = [];
 const FEED_PAGE_SIZE = 10;
 
 async function loadFeed() {
 
     feedLastDoc = null;
     feedHasMore = true;
+    feedLeftoverPosts = [];
 
     document.getElementById("feedContainer").innerHTML = "<p>Loading...</p>";
 
@@ -1466,9 +1468,13 @@ async function loadMoreFeedPosts(isFirstLoad) {
         window.feedObserver.disconnect();
     }
 
-        const slides = buildFeedSlides(posts);
+            const allPosts = feedLeftoverPosts.concat(posts);
 
-    slides.forEach(function(slide) {
+    const result = buildFeedSlides(allPosts, !feedHasMore);
+
+    feedLeftoverPosts = result.leftover;
+
+    result.slides.forEach(function(slide) {
         container.appendChild(renderFeedSlide(slide, currentUserId));
     });
 
@@ -2752,7 +2758,7 @@ function waitForFirebaseAuth() {
 
 // FEED SLIDES
 
-function buildFeedSlides(posts) {
+function buildFeedSlides(posts, isEndOfFeed) {
 
     const slides = [];
     let i = 0;
@@ -2760,37 +2766,31 @@ function buildFeedSlides(posts) {
     while (i < posts.length) {
 
         const rarity = getPostRarity(posts[i]);
+        const groupSize = rarity === "common" ? 4 : (rarity === "uncommon" ? 2 : 1);
 
-        if (rarity === "common") {
+        const group = [];
 
-            const group = [];
-
-            while (group.length < 4 && i < posts.length && getPostRarity(posts[i]) === "common") {
-                group.push(posts[i]);
-                i++;
-            }
-
-            slides.push({ layout: "grid", posts: group });
-
-        } else if (rarity === "uncommon") {
-
-            const group = [];
-
-            while (group.length < 2 && i < posts.length && getPostRarity(posts[i]) === "uncommon") {
-                group.push(posts[i]);
-                i++;
-            }
-
-            slides.push({ layout: "stack", posts: group });
-
-        } else {
-
-            slides.push({ layout: "full", posts: [posts[i]] });
+        while (group.length < groupSize && i < posts.length && getPostRarity(posts[i]) === rarity) {
+            group.push(posts[i]);
             i++;
         }
-    }
 
-    return slides;
+        const isComplete = group.length === groupSize;
+        const isLastGroup = i >= posts.length;
+
+        if (isComplete || (isLastGroup && isEndOfFeed)) {
+
+            const layout = rarity === "common" ? "grid" : (rarity === "uncommon" ? "stack" : "full");
+            slides.push({ layout: layout, posts: group });
+
+        } else if (isLastGroup) {
+
+            // Not enough posts yet to complete this group, hold it for the next batch
+            return { slides: slides, leftover: group };
+        }
+    }
+    
+    return { slides: slides, leftover: [] };
 }
 
 function renderFeedSlide(slide, currentUserId) {
