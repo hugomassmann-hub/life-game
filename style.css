@@ -1113,11 +1113,17 @@ transform: translateY(-2px);
 }
 
 .feed-post .feed-photo {
-    flex: 1;
+    flex: 1 1 0;
     min-height: 0;
     margin-top: 8px;
     border-radius: 12px;
     overflow: hidden;
+}
+
+.feed-post-header,
+.feed-post-body,
+.feed-post .like-button {
+    flex-shrink: 0;
 }
 
 .feed-post .feed-photo img {
@@ -1170,7 +1176,7 @@ transform: translateY(-2px);
     display: flex;
     justify-content: center;
     gap: 10px;
-    padding-top: 15px;
+    padding-top: 4px;
 }
 
 .feed-tab {
@@ -1413,9 +1419,10 @@ transform: translateY(-2px);
 }
 
 .feed-poster-name {
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 26px;
+    font-weight: 900;
     cursor: pointer;
+    color: white;
 }
 
 .feed-poster-name:hover {
@@ -1442,7 +1449,8 @@ transform: translateY(-2px);
 /* Smaller versions inside the tight grid/stack layouts */
 
 .layout-grid .feed-poster-name {
-    font-size: 12px;
+    font-size: 15px;
+    font-weight: 900;
 }
 
 .layout-grid .feed-follow-button {
@@ -1451,7 +1459,8 @@ transform: translateY(-2px);
 }
 
 .layout-stack .feed-poster-name {
-    font-size: 15px;
+    font-size: 20px;
+    font-weight: 900;
 }
 
 /* LIKE BUTTON COLOR STATES */
@@ -1475,4 +1484,9 @@ transform: translateY(-2px);
     color: #7c5cff;
     border-color: #7c5cff;
     background: rgba(124, 92, 255, 0.15);
+}
+
+.feed-title {
+    font-size: 28px;
+    margin-bottom: 4px;
 }
