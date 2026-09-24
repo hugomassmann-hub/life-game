@@ -725,40 +725,6 @@ transform: translateY(-2px);
     overflow: hidden;
 }
 
-#feedContainer {
-    height: calc(100% - 100px);
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
-    padding: 40px 0 60px;
-    box-sizing: border-box;
-}
-
-.feed-post {
-    scroll-snap-align: start;
-    background: #171a24;
-    border: 1px solid #303544;
-    border-radius: 20px;
-    padding: 25px;
-    margin: 20px auto;
-    width: 100%;
-    max-width: 500px;
-    min-height: calc(100vh - 140px);
-    box-sizing: border-box;
-}
-.feed-photo {
-    width: 100%;
-    height: 320px;
-    margin-top: 15px;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.feed-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
 #feedBackButton {
     position: absolute;
     top: 10px;
@@ -980,79 +946,6 @@ transform: translateY(-2px);
 
 #usernameSection {
     display: none;
-}
-
-/* FEED RARITY COLORS */
-
-.feed-post.post-common { border: 2px solid #4caf50; }
-.feed-post.post-uncommon { border: 2px solid #4c8bf5; }
-.feed-post.post-rare { border: 2px solid #9b59ff; }
-
-.feed-post.post-boss {
-    border: 2px solid #ffc93c;
-    box-shadow: 0 0 25px rgba(255, 201, 60, 0.35);
-}
-
-.rarity-badge {
-    display: inline-block;
-    margin: 6px 0;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    background: #0b0d12;
-}
-
-.post-common .rarity-badge { color: #4caf50; }
-.post-uncommon .rarity-badge { color: #4c8bf5; }
-.post-rare .rarity-badge { color: #9b59ff; }
-.post-boss .rarity-badge { color: #ffc93c; }
-
-/* FEED TIERS: stronger colors, size grows with rarity */
-
-#feedContainer {
-    scroll-snap-type: y proximity;
-}
-
-.feed-post.post-common {
-    min-height: 0;
-    border: 2px solid #4caf50;
-    background: linear-gradient(145deg, rgba(76, 175, 80, 0.18), #171a24 65%);
-    box-shadow: 0 0 14px rgba(76, 175, 80, 0.3);
-}
-
-.feed-post.post-uncommon {
-    min-height: 0;
-    border: 2px solid #4c8bf5;
-    background: linear-gradient(145deg, rgba(76, 139, 245, 0.22), #171a24 65%);
-    box-shadow: 0 0 20px rgba(76, 139, 245, 0.4);
-}
-
-.feed-post.post-rare {
-    min-height: 60vh;
-    border: 3px solid #9b59ff;
-    background: linear-gradient(145deg, rgba(155, 89, 255, 0.28), #171a24 65%);
-    box-shadow: 0 0 30px rgba(155, 89, 255, 0.55);
-}
-
-.feed-post.post-boss {
-    border: 3px solid #ffc93c;
-    background: linear-gradient(145deg, rgba(255, 201, 60, 0.3), #171a24 60%);
-    animation: bossGlow 2s ease-in-out infinite;
-}
-
-@keyframes bossGlow {
-    0%, 100% { box-shadow: 0 0 25px rgba(255, 201, 60, 0.5); }
-    50% { box-shadow: 0 0 50px rgba(255, 201, 60, 0.9); }
-}
-
-.feed-post.post-common .feed-photo { height: 220px; }
-.feed-post.post-uncommon .feed-photo { height: 280px; }
-
-.rarity-badge {
-    font-size: 13px;
-    padding: 4px 12px;
 }
 
 #feedContainer {
@@ -1490,3 +1383,59 @@ transform: translateY(-2px);
     font-size: 28px;
     margin-bottom: 4px;
 }
+
+/* ===== FEED: CONSOLIDATED ===== */
+
+#feedContainer {
+    height: calc(100% - 90px);
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.feed-post.post-common {
+    border: 2px solid #4caf50;
+    background: linear-gradient(145deg, rgba(76, 175, 80, 0.18), #171a24 65%);
+    box-shadow: 0 0 14px rgba(76, 175, 80, 0.3);
+}
+
+.feed-post.post-uncommon {
+    border: 2px solid #4c8bf5;
+    background: linear-gradient(145deg, rgba(76, 139, 245, 0.22), #171a24 65%);
+    box-shadow: 0 0 20px rgba(76, 139, 245, 0.4);
+}
+
+.feed-post.post-rare {
+    border: 3px solid #9b59ff;
+    background: linear-gradient(145deg, rgba(155, 89, 255, 0.28), #171a24 65%);
+    box-shadow: 0 0 30px rgba(155, 89, 255, 0.55);
+}
+
+.feed-post.post-boss {
+    border: 3px solid #ffc93c;
+    background: linear-gradient(145deg, rgba(255, 201, 60, 0.3), #171a24 60%);
+    animation: bossGlow 2s ease-in-out infinite;
+}
+
+@keyframes bossGlow {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 201, 60, 0.5); }
+    50% { box-shadow: 0 0 50px rgba(255, 201, 60, 0.9); }
+}
+
+.rarity-badge {
+    display: inline-block;
+    margin: 6px 0;
+    padding: 4px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    background: #0b0d12;
+}
+
+.post-common .rarity-badge { color: #4caf50; }
+.post-uncommon .rarity-badge { color: #4c8bf5; }
+.post-rare .rarity-badge { color: #9b59ff; }
+.post-boss .rarity-badge { color: #ffc93c; }
