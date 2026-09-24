@@ -1399,14 +1399,18 @@ async function loadMoreFeedPosts(isFirstLoad) {
 
     const queryParts = [];
 
-    if (feedFilter === "following") {
+        if (feedFilter === "following") {
 
         const mySnapshot = await window.firebaseGetDoc(
             window.firebaseDoc(window.firebaseDB, "users", currentUserId)
         );
 
         let followingIds = mySnapshot.exists() ? (mySnapshot.data().following || []) : [];
-        followingIds = followingIds.concat(currentUserId).slice(0, 30);
+        followingIds = followingIds.slice(0, 30);
+
+        if (followingIds.length === 0) {
+            followingIds = ["__none__"];
+        }
 
         queryParts.push(window.firebaseWhere("uid", "in", followingIds));
     }
@@ -1442,12 +1446,15 @@ async function loadMoreFeedPosts(isFirstLoad) {
         return;
     }
 
-    const posts = [];
+        const posts = [];
 
     snapshot.forEach(function(doc) {
         const post = doc.data();
         post.id = doc.id;
-        posts.push(post);
+
+        if (post.uid !== currentUserId) {
+            posts.push(post);
+        }
     });
 
     if (snapshot.docs.length > 0) {
