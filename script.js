@@ -2911,3 +2911,402 @@ async function getMyFollowingList(uid) {
         return [];
     }
 }
+
+// SKILLS SYSTEM
+
+const skillDefinitions = [
+    {
+        id: "biking",
+        name: "Biking",
+        emoji: "🚴",
+        components: [
+            { id: "miles", type: "cumulative", unit: "miles", label: "Miles", thresholds: [0, 50, 150, 300, 600, 1000, 1600, 2500, 4000, 6000] },
+            { id: "hours", type: "cumulative", unit: "hours", label: "Hours", thresholds: [0, 5, 15, 30, 60, 100, 150, 225, 325, 450] }
+        ]
+    },
+    {
+        id: "hiking",
+        name: "Hiking",
+        emoji: "🥾",
+        components: [
+            { id: "miles", type: "cumulative", unit: "miles", label: "Miles", thresholds: [0, 20, 50, 100, 200, 350, 550, 800, 1150, 1600] },
+            { id: "hours", type: "cumulative", unit: "hours", label: "Hours", thresholds: [0, 5, 15, 30, 60, 100, 150, 225, 325, 450] }
+        ]
+    },
+    {
+        id: "running",
+        name: "Running",
+        emoji: "🏃",
+        components: [
+            { id: "frequency", type: "frequency", unit: "runs/mo", label: "Consistency", windowDays: 30, thresholds: [0, 2, 4, 7, 10, 14, 18, 22, 26, 30] },
+            { id: "pace", type: "performance", unit: "best mile", label: "Best Mile Time", lowerIsBetter: true, thresholds: [900, 780, 660, 600, 540, 480, 420, 390, 360, 330] }
+        ]
+    },
+    {
+        id: "reading",
+        name: "Reading",
+        emoji: "📖",
+        components: [
+            { id: "books", type: "cumulative", unit: "books", label: "Books", thresholds: [0, 1, 3, 6, 10, 15, 21, 28, 36, 45] },
+            { id: "pages", type: "cumulative", unit: "pages", label: "Pages", thresholds: [0, 200, 600, 1200, 2200, 3500, 5200, 7500, 10500, 14500] }
+        ]
+    }
+];
+
+const MAX_SKILL_LEVEL = 10;
+
+function levelFromCumulative(total, thresholds) {
+    let level = 1;
+    for (let i = 1; i < thresholds.length; i++) {
+        if (total >= thresholds[i]) level = i + 1;
+    }
+    return level;
+}
+
+function levelFromPerformance(value, thresholds, lowerIsBetter) {
+    let level = 1;
+    for (let i = 1; i < thresholds.length; i++) {
+        const passed = lowerIsBetter ? value <= thresholds[i] : value >= thresholds[i];
+        if (passed) level = i + 1;
+    }
+    return level;
+}
+
+function getComponentLevel(component, statValue) {
+
+    if (statValue === undefined || statValue === null) return 1;
+
+    if (component.type === "cumulative" || component.type === "frequency") {
+        return levelFromCumulative(statValue, component.thresholds);
+    }
+
+    if (component.type === "performance") {
+        return levelFromPerformance(statValue, component.thresholds, component.lowerIsBetter);
+    }
+
+    return 1;
+}
+
+function getRawComponentValue(component, skillData) {
+
+    if (component.id === "frequency") {
+
+        const runLog = skillData.runLog || [];
+        const cutoff = Date.now() - (component.windowDays * 24 * 60 * 60 * 1000);
+
+        return runLog.filter(function(dateStr) {
+            return new Date(dateStr).getTime() >= cutoff;
+        }).length;
+    }
+
+    if (component.id === "pace") {
+        return skillData.bestMileSeconds;
+    }
+
+    const fieldMap = { miles: "totalMiles", hours: "totalHours", books: "totalBooks", pages: "totalPages" };
+
+    return skillData[fieldMap[component.id] || component.id] || 0;
+}
+
+function getSkillLevelInfo(skillDef, skillData) {
+
+    skillData = skillData || {};
+
+    const componentInfo = skillDef.components.map(function(component) {
+
+        const rawValue = getRawComponentValue(component, skillData);
+        const level = getComponentLevel(component, rawValue);
+
+        return { component: component, rawValue: rawValue, level: level };
+    });
+
+    const overallLevel = Math.round(
+        componentInfo.reduce(function(sum, c) { return sum + c.level; }, 0) / componentInfo.length
+    );
+
+    return { componentInfo: componentInfo, overallLevel: overallLevel };
+}
+
+function formatMileTime(seconds) {
+    if (!seconds) return "--:--";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return mins + ":" + (secs < 10 ? "0" : "") + secs;
+}
+
+function parseMileTime(text) {
+    const parts = String(text).split(":");
+    if (parts.length !== 2) return null;
+    const mins = Number(parts[0]);
+    const secs = Number(parts[1]);
+    if (isNaN(mins) || isNaN(secs)) return null;
+    return (mins * 60) + secs;
+}
+
+// STATS PAGE NAVIGATION
+
+document.getElementById("statsPage").style.display = "none";
+document.getElementById("skillDetailPage").style.display = "none";
+document.getElementById("skillLogPopup").style.display = "none";
+
+document.getElementById("statsPageButton").onclick = function() {
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("statsPage").style.display = "block";
+    loadStatsPage();
+};
+
+document.getElementById("statsBackButton").onclick = function() {
+    document.getElementById("statsPage").style.display = "none";
+    document.getElementById("questPage").style.display = "block";
+};
+
+document.getElementById("skillDetailBackButton").onclick = function() {
+    document.getElementById("skillDetailPage").style.display = "none";
+    document.getElementById("statsPage").style.display = "block";
+    loadStatsPage();
+};
+
+document.getElementById("closeSkillLogPopup").onclick = function() {
+    document.getElementById("skillLogPopup").style.display = "none";
+};
+
+async function getMySkillStats() {
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return {};
+
+    const snapshot = await window.firebaseGetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid)
+    );
+
+    return snapshot.exists() ? (snapshot.data().skillStats || {}) : {};
+}
+
+async function loadStatsPage() {
+
+    const container = document.getElementById("statsContainer");
+    container.innerHTML = "<p>Loading...</p>";
+
+    const skillStats = await getMySkillStats();
+
+    container.innerHTML = "";
+
+    skillDefinitions.forEach(function(skillDef) {
+
+        const info = getSkillLevelInfo(skillDef, skillStats[skillDef.id]);
+
+        const card = document.createElement("div");
+        card.className = "skill-card";
+
+        card.innerHTML =
+            "<div class='skill-card-emoji'>" + skillDef.emoji + "</div>" +
+            "<div class='skill-card-info'>" +
+            "<h3>" + escapeHTML(skillDef.name) + "</h3>" +
+            "<p>Level " + info.overallLevel + "</p>" +
+            "</div>";
+
+        card.onclick = function() {
+            openSkillDetail(skillDef.id);
+        };
+
+        container.appendChild(card);
+    });
+}
+
+async function openSkillDetail(skillId) {
+
+    const skillDef = skillDefinitions.find(function(s) { return s.id === skillId; });
+
+    document.getElementById("statsPage").style.display = "none";
+    document.getElementById("skillDetailPage").style.display = "block";
+    document.getElementById("skillDetailTitle").textContent = skillDef.emoji + " " + skillDef.name;
+
+    const container = document.getElementById("skillDetailContainer");
+    container.innerHTML = "<p>Loading...</p>";
+
+    const skillStats = await getMySkillStats();
+    const skillData = skillStats[skillId] || {};
+    const info = getSkillLevelInfo(skillDef, skillData);
+
+    container.innerHTML = "";
+
+    const overallCard = document.createElement("div");
+    overallCard.className = "skill-overall-card";
+    overallCard.innerHTML = "<h2>Level " + info.overallLevel + "</h2>";
+    container.appendChild(overallCard);
+
+    info.componentInfo.forEach(function(c) {
+
+        const barWrap = document.createElement("div");
+        barWrap.className = "skill-bar-wrap";
+
+        const displayValue = c.component.id === "pace"
+            ? formatMileTime(c.rawValue)
+            : c.rawValue + " " + c.component.unit;
+
+        const percent = Math.min(100, Math.round((c.level / MAX_SKILL_LEVEL) * 100));
+
+        barWrap.innerHTML =
+            "<p>" + escapeHTML(c.component.label) + ": Level " + c.level + " (" + escapeHTML(String(displayValue)) + ")</p>" +
+            "<div class='skill-progress-bar'><div class='skill-progress-fill' style='width:" + percent + "%'></div></div>";
+
+        container.appendChild(barWrap);
+    });
+
+    if (skillId === "reading" && (skillData.books || []).length > 0) {
+
+        const bookList = document.createElement("div");
+        bookList.className = "skill-book-list";
+        bookList.innerHTML = "<h3>Books Read</h3>";
+
+        skillData.books.slice().reverse().forEach(function(book) {
+            const row = document.createElement("p");
+            row.textContent = "📖 " + escapeHTML(book.title) + " (" + book.pages + " pages)";
+            bookList.appendChild(row);
+        });
+
+        container.appendChild(bookList);
+    }
+
+    const logButton = document.createElement("button");
+    logButton.className = "skill-log-button";
+    logButton.textContent = "+ Log Entry";
+    logButton.onclick = function() {
+        openSkillLogPopup(skillId);
+    };
+
+    container.appendChild(logButton);
+}
+
+function openSkillLogPopup(skillId) {
+
+    const skillDef = skillDefinitions.find(function(s) { return s.id === skillId; });
+    const fieldsContainer = document.getElementById("skillLogFields");
+
+    document.getElementById("skillLogTitle").textContent = "Log " + skillDef.name;
+    document.getElementById("skillLogPopup").dataset.skillId = skillId;
+
+    fieldsContainer.innerHTML = "";
+
+    if (skillId === "biking" || skillId === "hiking") {
+
+        fieldsContainer.innerHTML =
+            "<label>Miles</label>" +
+            "<input type='number' id='logMiles' placeholder='0' min='0' step='0.1'>" +
+            "<label>Hours</label>" +
+            "<input type='number' id='logHours' placeholder='0' min='0' step='0.1'>";
+
+    } else if (skillId === "running") {
+
+        fieldsContainer.innerHTML =
+            "<label>Log today's run</label>" +
+            "<p style='color:#aaa;font-size:14px;margin:0;'>This counts toward your consistency.</p>" +
+            "<label>Mile time (optional, format m:ss)</label>" +
+            "<input type='text' id='logMileTime' placeholder='7:30'>";
+
+    } else if (skillId === "reading") {
+
+        fieldsContainer.innerHTML =
+            "<label>Book title</label>" +
+            "<input type='text' id='logBookTitle' placeholder='Book title'>" +
+            "<label>Pages</label>" +
+            "<input type='number' id='logPages' placeholder='0' min='0'>";
+    }
+
+    document.getElementById("skillLogPopup").style.display = "flex";
+}
+
+document.getElementById("skillLogSaveButton").onclick = async function() {
+
+    const skillId = document.getElementById("skillLogPopup").dataset.skillId;
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const skillStats = await getMySkillStats();
+    const skillData = skillStats[skillId] || {};
+
+    if (skillId === "biking" || skillId === "hiking") {
+
+        const miles = Number(document.getElementById("logMiles").value) || 0;
+        const hours = Number(document.getElementById("logHours").value) || 0;
+
+        skillData.totalMiles = (skillData.totalMiles || 0) + miles;
+        skillData.totalHours = (skillData.totalHours || 0) + hours;
+
+    } else if (skillId === "running") {
+
+        const mileTimeText = document.getElementById("logMileTime").value.trim();
+        const runLog = skillData.runLog || [];
+
+        runLog.push(new Date().toISOString());
+
+        skillData.runLog = runLog;
+
+        if (mileTimeText) {
+
+            const seconds = parseMileTime(mileTimeText);
+
+            if (seconds && (!skillData.bestMileSeconds || seconds < skillData.bestMileSeconds)) {
+                skillData.bestMileSeconds = seconds;
+            }
+        }
+
+    } else if (skillId === "reading") {
+
+        const title = document.getElementById("logBookTitle").value.trim();
+        const pages = Number(document.getElementById("logPages").value) || 0;
+
+        if (!title || pages <= 0) {
+            alert("Please enter a book title and page count.");
+            return;
+        }
+
+        const books = skillData.books || [];
+        books.push({ title: title, pages: pages, date: new Date().toISOString() });
+
+        skillData.books = books;
+        skillData.totalBooks = (skillData.totalBooks || 0) + 1;
+        skillData.totalPages = (skillData.totalPages || 0) + pages;
+    }
+
+    skillStats[skillId] = skillData;
+
+    await window.firebaseSetDoc(
+        window.firebaseDoc(window.firebaseDB, "users", user.uid),
+        { skillStats: skillStats },
+        { merge: true }
+    );
+
+    document.getElementById("skillLogPopup").style.display = "none";
+
+    openSkillDetail(skillId);
+    loadTopSkillsWidget();
+};
+
+async function loadTopSkillsWidget() {
+
+    const widget = document.getElementById("topSkillsWidget");
+
+    if (!widget) return;
+
+    await waitForFirebaseAuth();
+
+    const user = window.firebaseAuth.currentUser;
+
+    if (!user) return;
+
+    const skillStats = await getMySkillStats();
+
+    const allLevels = skillDefinitions.map(function(skillDef) {
+        const info = getSkillLevelInfo(skillDef, skillStats[skillDef.id]);
+        return { emoji: skillDef.emoji, level: info.overallLevel };
+    });
+
+    allLevels.sort(function(a, b) { return b.level - a.level; });
+
+    widget.innerHTML = allLevels.slice(0, 5).map(function(s) {
+        return "<span class='top-skill-chip'>" + s.emoji + " " + s.level + "</span>";
+    }).join("");
+}

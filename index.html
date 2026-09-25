@@ -25,6 +25,7 @@
     <div class="mobile-top">
         <div id="mobileLevel">Level 1</div>
         <div id="mobileXP">XP: 0</div>
+        <div id="topSkillsWidget"></div>
     </div>
 
     <h1>🎮 LIFE GAME</h1>
@@ -210,6 +211,10 @@
     🏆 Trophy Case
 </button>
 
+<button id="statsPageButton">
+    📊 Stats
+</button>
+
 </div>
 
 <!-- PAST QUESTS PAGE -->
@@ -271,6 +276,30 @@
         <h3 id="trophyDetailName"></h3>
         <p id="trophyDetailDescription"></p>
         <p id="trophyDetailDate"></p>
+    </div>
+</div>
+
+<!-- STATS PAGE -->
+<div id="statsPage" class="quest-page">
+    <button id="statsBackButton">← Back</button>
+    <h1>📊 Stats</h1>
+    <div id="statsContainer"></div>
+</div>
+
+<!-- SKILL DETAIL PAGE -->
+<div id="skillDetailPage" class="quest-page">
+    <button id="skillDetailBackButton">← Back</button>
+    <h1 id="skillDetailTitle"></h1>
+    <div id="skillDetailContainer"></div>
+</div>
+
+<!-- SKILL LOG POPUP -->
+<div id="skillLogPopup" class="quest-popup">
+    <div class="quest-popup-box">
+        <button id="closeSkillLogPopup" class="close-popup">×</button>
+        <h2 id="skillLogTitle"></h2>
+        <div id="skillLogFields"></div>
+        <button id="skillLogSaveButton" class="skill-log-button">Save</button>
     </div>
 </div>
 
@@ -464,6 +493,7 @@ onAuthStateChanged(auth, async (user) => {
     loadCompletedQuestsFromCloud();
     loadTodaysQuestsFromCloud();
     loadEquippedItemsFromCloud();
+    loadTopSkillsWidget();
 
     createAccountSection.style.display = "none";
     signedInMessage.textContent = "Signed in as " + user.email;

@@ -1439,3 +1439,148 @@ transform: translateY(-2px);
 .post-uncommon .rarity-badge { color: #4c8bf5; }
 .post-rare .rarity-badge { color: #9b59ff; }
 .post-boss .rarity-badge { color: #ffc93c; }
+
+/* SKILLS SYSTEM */
+
+#statsPageButton {
+    display: block;
+    margin: 12px auto 0;
+    background: #171a24;
+    color: white;
+    border: 1px solid #7c5cff;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#statsPageButton:hover {
+    background: #7c5cff;
+}
+
+#statsPage, #skillDetailPage {
+    position: relative;
+    height: 100%;
+    overflow-y: auto;
+    padding-top: 35px;
+    box-sizing: border-box;
+}
+
+#statsBackButton, #skillDetailBackButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#statsContainer, #skillDetailContainer {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.skill-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #171a24;
+    border: 1px solid #303544;
+    border-radius: 18px;
+    padding: 16px;
+    margin: 12px 0;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.skill-card:hover {
+    border-color: #7c5cff;
+    transform: translateY(-2px);
+}
+
+.skill-card-emoji {
+    font-size: 36px;
+}
+
+.skill-card-info h3 {
+    margin: 0;
+}
+
+.skill-card-info p {
+    margin: 2px 0 0;
+    color: #aaa;
+}
+
+.skill-overall-card {
+    text-align: center;
+    background: linear-gradient(145deg, rgba(124, 92, 255, 0.25), #171a24 65%);
+    border: 2px solid #7c5cff;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.skill-overall-card h2 {
+    margin: 0;
+}
+
+.skill-bar-wrap {
+    margin: 16px 0;
+}
+
+.skill-bar-wrap p {
+    margin: 0 0 6px;
+}
+
+.skill-progress-bar {
+    background: #0b0d12;
+    border-radius: 12px;
+    height: 14px;
+    overflow: hidden;
+    border: 1px solid #303544;
+}
+
+.skill-progress-fill {
+    background: linear-gradient(90deg, #7c5cff, #a77bff);
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.skill-book-list {
+    margin-top: 20px;
+}
+
+.skill-book-list p {
+    color: #ccc;
+    margin: 6px 0;
+}
+
+.skill-log-button {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    background: #7c5cff;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#topSkillsWidget {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.top-skill-chip {
+    background: rgba(124, 92, 255, 0.2);
+    border: 1px solid #7c5cff;
+    border-radius: 10px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+}
