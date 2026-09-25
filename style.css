@@ -490,14 +490,13 @@ transform: translateY(-2px);
     font-weight: bold;
     cursor: pointer;
 }
-
 .quest-page > button:hover {
     border-color: #7c5cff;
 }
 
 #characterStreak {
     position: absolute;
-    top: 70px;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
