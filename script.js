@@ -3324,17 +3324,17 @@ async function loadTopSkillsWidget() {
 
     const allLevels = skillDefinitions.map(function(skillDef) {
         const info = getSkillLevelInfo(skillDef, skillStats[skillDef.id]);
-        return { emoji: skillDef.emoji, level: info.overallLevel };
+        return { emoji: skillDef.emoji, name: skillDef.name, level: info.overallLevel };
     });
 
     allLevels.sort(function(a, b) { return b.level - a.level; });
 
-    widget.innerHTML = allLevels.slice(0, 5).map(function(s) {
+    widget.innerHTML = allLevels.slice(0, 4).map(function(s) {
 
         const percent = Math.min(100, Math.round((s.level / MAX_SKILL_LEVEL) * 100));
 
         return "<div class='top-skill-bar'>" +
-            "<span class='ts-label'>" + s.emoji + " " + s.level + "</span>" +
+            "<span class='ts-label'>" + s.emoji + " " + escapeHTML(s.name) + " " + s.level + "</span>" +
             "<div class='ts-track'><div class='ts-fill' style='width:" + percent + "%'></div></div>" +
             "</div>";
 
