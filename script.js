@@ -3154,6 +3154,20 @@ async function openSkillDetail(skillId) {
         container.appendChild(barWrap);
     });
 
+        if (skillId === "running" && (skillData.totalMiles || skillData.totalHours)) {
+
+        const runStats = document.createElement("div");
+        runStats.className = "skill-book-list";
+        runStats.innerHTML =
+            "<h3>Running Totals</h3>" +
+            "<p>🏃 " + (skillData.totalMiles || 0).toFixed(1) + " miles</p>" +
+            "<p>⏱️ " + (skillData.totalHours || 0).toFixed(1) + " hours</p>";
+
+        container.appendChild(runStats);
+    }
+
+    if (skillId === "reading" && (skillData.books || []).length > 0) {
+
     if (skillId === "reading" && (skillData.books || []).length > 0) {
 
         const bookList = document.createElement("div");
@@ -3178,6 +3192,7 @@ async function openSkillDetail(skillId) {
 
     container.appendChild(logButton);
 }
+}
 
 function openSkillLogPopup(skillId) {
 
@@ -3197,12 +3212,16 @@ function openSkillLogPopup(skillId) {
             "<label>Hours</label>" +
             "<input type='number' id='logHours' placeholder='0' min='0' step='0.1'>";
 
-    } else if (skillId === "running") {
+            } else if (skillId === "running") {
 
         fieldsContainer.innerHTML =
             "<label>Log today's run</label>" +
             "<p style='color:#aaa;font-size:14px;margin:0;'>This counts toward your consistency.</p>" +
-            "<label>Mile time (optional, format m:ss)</label>" +
+            "<label>Miles</label>" +
+            "<input type='number' id='logRunMiles' placeholder='0' min='0' step='0.1'>" +
+            "<label>Duration (hours)</label>" +
+            "<input type='number' id='logRunHours' placeholder='0' min='0' step='0.1'>" +
+            "<label>Mile time (optional, only if you timed a mile, format m:ss)</label>" +
             "<input type='text' id='logMileTime' placeholder='7:30'>";
 
     } else if (skillId === "reading") {
@@ -3235,14 +3254,18 @@ document.getElementById("skillLogSaveButton").onclick = async function() {
         skillData.totalMiles = (skillData.totalMiles || 0) + miles;
         skillData.totalHours = (skillData.totalHours || 0) + hours;
 
-    } else if (skillId === "running") {
+        } else if (skillId === "running") {
 
+        const runMiles = Number(document.getElementById("logRunMiles").value) || 0;
+        const runHours = Number(document.getElementById("logRunHours").value) || 0;
         const mileTimeText = document.getElementById("logMileTime").value.trim();
         const runLog = skillData.runLog || [];
 
         runLog.push(new Date().toISOString());
 
         skillData.runLog = runLog;
+        skillData.totalMiles = (skillData.totalMiles || 0) + runMiles;
+        skillData.totalHours = (skillData.totalHours || 0) + runHours;
 
         if (mileTimeText) {
 
@@ -3307,6 +3330,13 @@ async function loadTopSkillsWidget() {
     allLevels.sort(function(a, b) { return b.level - a.level; });
 
     widget.innerHTML = allLevels.slice(0, 5).map(function(s) {
-        return "<span class='top-skill-chip'>" + s.emoji + " " + s.level + "</span>";
+
+        const percent = Math.min(100, Math.round((s.level / MAX_SKILL_LEVEL) * 100));
+
+        return "<div class='top-skill-bar'>" +
+            "<span class='ts-label'>" + s.emoji + " " + s.level + "</span>" +
+            "<div class='ts-track'><div class='ts-fill' style='width:" + percent + "%'></div></div>" +
+            "</div>";
+
     }).join("");
 }

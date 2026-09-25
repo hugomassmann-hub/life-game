@@ -340,11 +340,11 @@ transform: translateY(-2px);
         display: none;
     }
 
-    .mobile-top {
+   .mobile-top {
         position: relative;
         z-index: 30;
         text-align: center;
-        padding-top: 24px;
+        padding-top: 12px;
     }
 
     #mobileLevel {
@@ -374,7 +374,7 @@ transform: translateY(-2px);
 
     .character-card .character {
         position: absolute;
-        top: 43dvh;
+        top: 33dvh;
         left: 50%;
         transform: translate(-50%, -50%);
         width: 100%;
@@ -384,7 +384,7 @@ transform: translateY(-2px);
     }
 
     .character-card .character img {
-        width: min(72vw, 43dvh);
+        width: min(58vw, 33dvh);
         max-width: none;
         height: auto;
     }
@@ -445,14 +445,15 @@ transform: translateY(-2px);
 
 /* Feed */
 .mobile-buttons button:nth-child(2) {
-    top: 29dvh;
+    top: 17dvh;
     right: 4%;
 }
 
 .mobile-buttons button:nth-child(3) {
-    top: 29dvh;
+    top: 17dvh;
     left: 4%;
 }
+
 }
     #map {
         position: absolute;
@@ -1583,4 +1584,43 @@ transform: translateY(-2px);
     font-size: 12px;
     font-weight: bold;
     color: white;
+}
+
+#topSkillsWidget {
+    position: absolute;
+    top: 52dvh;
+    left: 10%;
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    z-index: 35;
+}
+
+.top-skill-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.top-skill-bar .ts-label {
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-bottom: 3px;
+}
+
+.top-skill-bar .ts-track {
+    width: 100%;
+    height: 6px;
+    background: #0b0d12;
+    border: 1px solid #303544;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.top-skill-bar .ts-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c5cff, #a77bff);
 }
