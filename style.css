@@ -497,7 +497,7 @@ transform: translateY(-2px);
 
 #characterStreak {
     position: absolute;
-    top: -45px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
