@@ -3168,8 +3168,6 @@ async function openSkillDetail(skillId) {
 
     if (skillId === "reading" && (skillData.books || []).length > 0) {
 
-    if (skillId === "reading" && (skillData.books || []).length > 0) {
-
         const bookList = document.createElement("div");
         bookList.className = "skill-book-list";
         bookList.innerHTML = "<h3>Books Read</h3>";
@@ -3191,7 +3189,6 @@ async function openSkillDetail(skillId) {
     };
 
     container.appendChild(logButton);
-}
 }
 
 function openSkillLogPopup(skillId) {
