@@ -3045,12 +3045,20 @@ function parseMileTime(text) {
 
 // STATS PAGE NAVIGATION
 
+document.getElementById("questPage").style.display = "none";
 document.getElementById("statsPage").style.display = "none";
 document.getElementById("skillDetailPage").style.display = "none";
 document.getElementById("skillLogPopup").style.display = "none";
 
 document.getElementById("statsPageButton").onclick = function() {
     document.getElementById("homePage").style.display = "none";
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("pastQuestsPage").style.display = "none";
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("friendsPage").style.display = "none";
+    document.getElementById("accountPage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("skillDetailPage").style.display = "none";
     document.getElementById("statsPage").style.display = "block";
     loadStatsPage();
 };
