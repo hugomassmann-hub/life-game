@@ -3120,22 +3120,56 @@ async function loadStatsPage() {
 
         container.appendChild(card);
     });
+
+    multiSkillDefinitions.forEach(function(skillDef) {
+
+        const level = getOverallLevelForSkill(skillDef.id, skillStats);
+
+        const card = document.createElement("div");
+        card.className = "skill-card";
+
+        card.innerHTML =
+            "<div class='skill-card-emoji'>" + skillDef.emoji + "</div>" +
+            "<div class='skill-card-info'>" +
+            "<h3>" + escapeHTML(skillDef.name) + "</h3>" +
+            "<p>Level " + level + "</p>" +
+            "</div>";
+
+        card.onclick = function() {
+            openSkillDetail(skillDef.id);
+        };
+
+        container.appendChild(card);
+    });
 }
 
 async function openSkillDetail(skillId) {
 
-    const skillDef = skillDefinitions.find(function(s) { return s.id === skillId; });
-
     document.getElementById("statsPage").style.display = "none";
     document.getElementById("skillDetailPage").style.display = "block";
-    document.getElementById("skillDetailTitle").textContent = skillDef.emoji + " " + skillDef.name;
 
     const container = document.getElementById("skillDetailContainer");
     container.innerHTML = "<p>Loading...</p>";
 
     const skillStats = await getMySkillStats();
+
+    if (skillId === "gym") {
+        document.getElementById("skillDetailTitle").textContent = "🏋️ Gym";
+        renderGymDetail(container, skillStats.gym || {});
+        return;
+    }
+
+    if (skillId === "music") {
+        document.getElementById("skillDetailTitle").textContent = "🎸 Music";
+        renderMusicDetail(container, skillStats.music || {});
+        return;
+    }
+
+    const skillDef = skillDefinitions.find(function(s) { return s.id === skillId; });
     const skillData = skillStats[skillId] || {};
     const info = getSkillLevelInfo(skillDef, skillData);
+
+    document.getElementById("skillDetailTitle").textContent = skillDef.emoji + " " + skillDef.name;
 
     container.innerHTML = "";
 
@@ -3162,7 +3196,7 @@ async function openSkillDetail(skillId) {
         container.appendChild(barWrap);
     });
 
-        if (skillId === "running" && (skillData.totalMiles || skillData.totalHours)) {
+    if (skillId === "running" && (skillData.totalMiles || skillData.totalHours)) {
 
         const runStats = document.createElement("div");
         runStats.className = "skill-book-list";
@@ -3205,7 +3239,9 @@ function openSkillLogPopup(skillId) {
     const fieldsContainer = document.getElementById("skillLogFields");
 
     document.getElementById("skillLogTitle").textContent = "Log " + skillDef.name;
+    document.getElementById("skillLogPopup").dataset.mode = "skill";
     document.getElementById("skillLogPopup").dataset.skillId = skillId;
+    document.getElementById("skillLogPopup").dataset.subId = "";
 
     fieldsContainer.innerHTML = "";
 
@@ -3217,7 +3253,7 @@ function openSkillLogPopup(skillId) {
             "<label>Hours</label>" +
             "<input type='number' id='logHours' placeholder='0' min='0' step='0.1'>";
 
-            } else if (skillId === "running") {
+    } else if (skillId === "running") {
 
         fieldsContainer.innerHTML =
             "<label>Log today's run</label>" +
@@ -3243,74 +3279,286 @@ function openSkillLogPopup(skillId) {
 
 document.getElementById("skillLogSaveButton").onclick = async function() {
 
-    const skillId = document.getElementById("skillLogPopup").dataset.skillId;
+    const popup = document.getElementById("skillLogPopup");
+    const mode = popup.dataset.mode || "skill";
     const user = window.firebaseAuth.currentUser;
 
     if (!user) return;
 
     const skillStats = await getMySkillStats();
-    const skillData = skillStats[skillId] || {};
 
-    if (skillId === "biking" || skillId === "hiking") {
+    if (mode === "skill") {
 
-        const miles = Number(document.getElementById("logMiles").value) || 0;
-        const hours = Number(document.getElementById("logHours").value) || 0;
+        const skillId = popup.dataset.skillId;
+        const skillData = skillStats[skillId] || {};
 
-        skillData.totalMiles = (skillData.totalMiles || 0) + miles;
-        skillData.totalHours = (skillData.totalHours || 0) + hours;
+        if (skillId === "biking" || skillId === "hiking") {
+
+            const miles = Number(document.getElementById("logMiles").value) || 0;
+            const hours = Number(document.getElementById("logHours").value) || 0;
+
+            skillData.totalMiles = (skillData.totalMiles || 0) + miles;
+            skillData.totalHours = (skillData.totalHours || 0) + hours;
 
         } else if (skillId === "running") {
 
-        const runMiles = Number(document.getElementById("logRunMiles").value) || 0;
-        const runHours = Number(document.getElementById("logRunHours").value) || 0;
-        const mileTimeText = document.getElementById("logMileTime").value.trim();
-        const runLog = skillData.runLog || [];
+            const runMiles = Number(document.getElementById("logRunMiles").value) || 0;
+            const runHours = Number(document.getElementById("logRunHours").value) || 0;
+            const mileTimeText = document.getElementById("logMileTime").value.trim();
+            const runLog = skillData.runLog || [];
 
-        runLog.push(new Date().toISOString());
+            runLog.push(new Date().toISOString());
 
-        skillData.runLog = runLog;
-        skillData.totalMiles = (skillData.totalMiles || 0) + runMiles;
-        skillData.totalHours = (skillData.totalHours || 0) + runHours;
+            skillData.runLog = runLog;
+            skillData.totalMiles = (skillData.totalMiles || 0) + runMiles;
+            skillData.totalHours = (skillData.totalHours || 0) + runHours;
 
-        if (mileTimeText) {
+            if (mileTimeText) {
 
-            const seconds = parseMileTime(mileTimeText);
+                const seconds = parseMileTime(mileTimeText);
 
-            if (seconds && (!skillData.bestMileSeconds || seconds < skillData.bestMileSeconds)) {
-                skillData.bestMileSeconds = seconds;
+                if (seconds && (!skillData.bestMileSeconds || seconds < skillData.bestMileSeconds)) {
+                    skillData.bestMileSeconds = seconds;
+                }
             }
+
+        } else if (skillId === "reading") {
+
+            const title = document.getElementById("logBookTitle").value.trim();
+            const pages = Number(document.getElementById("logPages").value) || 0;
+
+            if (!title || pages <= 0) {
+                alert("Please enter a book title and page count.");
+                return;
+            }
+
+            const books = skillData.books || [];
+            books.push({ title: title, pages: pages, date: new Date().toISOString() });
+
+            skillData.books = books;
+            skillData.totalBooks = (skillData.totalBooks || 0) + 1;
+            skillData.totalPages = (skillData.totalPages || 0) + pages;
         }
 
-    } else if (skillId === "reading") {
+        skillStats[skillId] = skillData;
 
-        const title = document.getElementById("logBookTitle").value.trim();
-        const pages = Number(document.getElementById("logPages").value) || 0;
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
 
-        if (!title || pages <= 0) {
-            alert("Please enter a book title and page count.");
+        popup.style.display = "none";
+        openSkillDetail(skillId);
+        loadTopSkillsWidget();
+        return;
+    }
+
+    if (mode === "gymTime") {
+
+        const hours = Number(document.getElementById("logGymHours").value) || 0;
+        const gymData = skillStats.gym || {};
+
+        gymData.totalHours = (gymData.totalHours || 0) + hours;
+
+        skillStats.gym = gymData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("gym");
+        loadTopSkillsWidget();
+        return;
+    }
+
+    if (mode === "gymAddExercise") {
+
+        const name = document.getElementById("logExerciseName").value.trim();
+
+        if (!name) {
+            alert("Please enter an exercise name.");
             return;
         }
 
-        const books = skillData.books || [];
-        books.push({ title: title, pages: pages, date: new Date().toISOString() });
+        const gymData = skillStats.gym || {};
+        const exercises = gymData.exercises || {};
 
-        skillData.books = books;
-        skillData.totalBooks = (skillData.totalBooks || 0) + 1;
-        skillData.totalPages = (skillData.totalPages || 0) + pages;
+        const exerciseId = "ex_" + Date.now();
+
+        exercises[exerciseId] = {
+            name: name,
+            startingOneRM: 0,
+            bestOneRM: 0
+        };
+
+        gymData.exercises = exercises;
+        skillStats.gym = gymData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("gym");
+        return;
     }
 
-    skillStats[skillId] = skillData;
+    if (mode === "gymLogSet") {
 
-    await window.firebaseSetDoc(
-        window.firebaseDoc(window.firebaseDB, "users", user.uid),
-        { skillStats: skillStats },
-        { merge: true }
-    );
+        const exerciseId = popup.dataset.subId;
+        const weight = Number(document.getElementById("logSetWeight").value) || 0;
+        const reps = Number(document.getElementById("logSetReps").value) || 0;
 
-    document.getElementById("skillLogPopup").style.display = "none";
+        if (weight <= 0 || reps <= 0) {
+            alert("Please enter a weight and rep count.");
+            return;
+        }
 
-    openSkillDetail(skillId);
-    loadTopSkillsWidget();
+        const gymData = skillStats.gym || {};
+        const exercises = gymData.exercises || {};
+        const exercise = exercises[exerciseId];
+
+        if (!exercise) {
+            popup.style.display = "none";
+            return;
+        }
+
+        const estimatedOneRM = estimateOneRepMax(weight, reps);
+
+        if (!exercise.startingOneRM) {
+            exercise.startingOneRM = estimatedOneRM;
+        }
+
+        if (estimatedOneRM > (exercise.bestOneRM || 0)) {
+            exercise.bestOneRM = estimatedOneRM;
+        }
+
+        exercises[exerciseId] = exercise;
+        gymData.exercises = exercises;
+        skillStats.gym = gymData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("gym");
+        loadTopSkillsWidget();
+        return;
+    }
+
+    if (mode === "musicAddInstrument") {
+
+        const name = document.getElementById("logInstrumentName").value.trim();
+
+        if (!name) {
+            alert("Please enter an instrument name.");
+            return;
+        }
+
+        const musicData = skillStats.music || {};
+        const instruments = musicData.instruments || {};
+
+        const instrumentId = "inst_" + Date.now();
+
+        instruments[instrumentId] = {
+            name: name,
+            totalHours: 0,
+            songs: []
+        };
+
+        musicData.instruments = instruments;
+        skillStats.music = musicData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("music");
+        return;
+    }
+
+    if (mode === "musicPractice") {
+
+        const instrumentId = popup.dataset.subId;
+        const hours = Number(document.getElementById("logPracticeHours").value) || 0;
+
+        const musicData = skillStats.music || {};
+        const instruments = musicData.instruments || {};
+        const instrument = instruments[instrumentId];
+
+        if (!instrument) {
+            popup.style.display = "none";
+            return;
+        }
+
+        instrument.totalHours = (instrument.totalHours || 0) + hours;
+
+        instruments[instrumentId] = instrument;
+        musicData.instruments = instruments;
+        skillStats.music = musicData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("music");
+        loadTopSkillsWidget();
+        return;
+    }
+
+    if (mode === "musicAddSong") {
+
+        const instrumentId = popup.dataset.subId;
+        const title = document.getElementById("logSongTitle").value.trim();
+
+        if (!title) {
+            alert("Please enter a song title.");
+            return;
+        }
+
+        const musicData = skillStats.music || {};
+        const instruments = musicData.instruments || {};
+        const instrument = instruments[instrumentId];
+
+        if (!instrument) {
+            popup.style.display = "none";
+            return;
+        }
+
+        const songs = instrument.songs || [];
+        songs.push({ title: title, date: new Date().toISOString() });
+
+        instrument.songs = songs;
+        instruments[instrumentId] = instrument;
+        musicData.instruments = instruments;
+        skillStats.music = musicData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("music");
+        loadTopSkillsWidget();
+        return;
+    }
 };
 
 async function loadTopSkillsWidget() {
@@ -3327,9 +3575,8 @@ async function loadTopSkillsWidget() {
 
     const skillStats = await getMySkillStats();
 
-    const allLevels = skillDefinitions.map(function(skillDef) {
-        const info = getSkillLevelInfo(skillDef, skillStats[skillDef.id]);
-        return { emoji: skillDef.emoji, name: skillDef.name, level: info.overallLevel };
+    const allLevels = skillDefinitions.concat(multiSkillDefinitions).map(function(skillDef) {
+        return { emoji: skillDef.emoji, name: skillDef.name, level: getOverallLevelForSkill(skillDef.id, skillStats) };
     });
 
     allLevels.sort(function(a, b) { return b.level - a.level; });
@@ -3344,4 +3591,293 @@ async function loadTopSkillsWidget() {
             "</div>";
 
     }).join("");
+}
+
+// GYM & MUSIC (SUB-SKILLS)
+
+const multiSkillDefinitions = [
+    { id: "gym", name: "Gym", emoji: "🏋️" },
+    { id: "music", name: "Music", emoji: "🎸" }
+];
+
+const GYM_TIME_THRESHOLDS = [0, 5, 15, 30, 60, 100, 150, 225, 325, 450];
+const EXERCISE_IMPROVEMENT_THRESHOLDS = [0, 10, 25, 45, 70, 100, 140, 190, 250, 320];
+const INSTRUMENT_HOURS_THRESHOLDS = [0, 5, 15, 30, 60, 100, 150, 225, 325, 450];
+const INSTRUMENT_SONGS_THRESHOLDS = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45];
+
+function estimateOneRepMax(weight, reps) {
+    if (!weight || !reps) return 0;
+    return weight * (1 + (reps / 30));
+}
+
+function getExerciseLevel(exercise) {
+    if (!exercise || !exercise.startingOneRM) return 1;
+    const improvementPercent = ((exercise.bestOneRM - exercise.startingOneRM) / exercise.startingOneRM) * 100;
+    return levelFromCumulative(Math.max(0, improvementPercent), EXERCISE_IMPROVEMENT_THRESHOLDS);
+}
+
+function getGymLevelInfo(gymData) {
+
+    gymData = gymData || {};
+    const exercises = gymData.exercises || {};
+    const exerciseIds = Object.keys(exercises);
+
+    const exerciseLevels = exerciseIds.map(function(id) {
+        return getExerciseLevel(exercises[id]);
+    });
+
+    const avgExerciseLevel = exerciseLevels.length > 0
+        ? exerciseLevels.reduce(function(a, b) { return a + b; }, 0) / exerciseLevels.length
+        : 1;
+
+    const timeLevel = levelFromCumulative(gymData.totalHours || 0, GYM_TIME_THRESHOLDS);
+
+    const overallLevel = Math.round((avgExerciseLevel + timeLevel) / 2);
+
+    return { timeLevel: timeLevel, avgExerciseLevel: avgExerciseLevel, overallLevel: overallLevel };
+}
+
+function getInstrumentLevel(instrument) {
+    const hoursLevel = levelFromCumulative(instrument.totalHours || 0, INSTRUMENT_HOURS_THRESHOLDS);
+    const songsLevel = levelFromCumulative((instrument.songs || []).length, INSTRUMENT_SONGS_THRESHOLDS);
+    return Math.round((hoursLevel + songsLevel) / 2);
+}
+
+function getMusicLevelInfo(musicData) {
+
+    musicData = musicData || {};
+    const instruments = musicData.instruments || {};
+    const instrumentIds = Object.keys(instruments);
+
+    const instrumentLevels = instrumentIds.map(function(id) {
+        return getInstrumentLevel(instruments[id]);
+    });
+
+    const overallLevel = instrumentLevels.length > 0
+        ? Math.round(instrumentLevels.reduce(function(a, b) { return a + b; }, 0) / instrumentLevels.length)
+        : 1;
+
+    return { instrumentLevels: instrumentLevels, overallLevel: overallLevel };
+}
+
+function getOverallLevelForSkill(skillId, skillStats) {
+
+    if (skillId === "gym") {
+        return getGymLevelInfo(skillStats.gym).overallLevel;
+    }
+
+    if (skillId === "music") {
+        return getMusicLevelInfo(skillStats.music).overallLevel;
+    }
+
+    const skillDef = skillDefinitions.find(function(s) { return s.id === skillId; });
+    return getSkillLevelInfo(skillDef, skillStats[skillId]).overallLevel;
+}
+
+function renderGymDetail(container, gymData) {
+
+    const info = getGymLevelInfo(gymData);
+    const exercises = gymData.exercises || {};
+
+    container.innerHTML = "";
+
+    const overallCard = document.createElement("div");
+    overallCard.className = "skill-overall-card";
+    overallCard.innerHTML = "<h2>Level " + info.overallLevel + "</h2>";
+    container.appendChild(overallCard);
+
+    const timePercent = Math.min(100, Math.round((info.timeLevel / MAX_SKILL_LEVEL) * 100));
+
+    const timeBar = document.createElement("div");
+    timeBar.className = "skill-bar-wrap";
+    timeBar.innerHTML =
+        "<p>Time at Gym: Level " + info.timeLevel + " (" + (gymData.totalHours || 0).toFixed(1) + " hours)</p>" +
+        "<div class='skill-progress-bar'><div class='skill-progress-fill' style='width:" + timePercent + "%'></div></div>";
+    container.appendChild(timeBar);
+
+    const logTimeButton = document.createElement("button");
+    logTimeButton.className = "skill-log-button";
+    logTimeButton.textContent = "+ Log Gym Time";
+    logTimeButton.onclick = function() {
+        openLogPopup({ mode: "gymTime", title: "Log Gym Time" });
+    };
+    container.appendChild(logTimeButton);
+
+    const exerciseHeading = document.createElement("h3");
+    exerciseHeading.textContent = "Exercises";
+    exerciseHeading.style.marginTop = "24px";
+    container.appendChild(exerciseHeading);
+
+    const exerciseIds = Object.keys(exercises);
+
+    if (exerciseIds.length === 0) {
+        const emptyMsg = document.createElement("p");
+        emptyMsg.style.color = "#aaa";
+        emptyMsg.textContent = "No exercises yet. Add one below!";
+        container.appendChild(emptyMsg);
+    }
+
+    exerciseIds.forEach(function(exerciseId) {
+
+        const exercise = exercises[exerciseId];
+        const level = getExerciseLevel(exercise);
+
+        const card = document.createElement("div");
+        card.className = "subskill-card";
+
+        card.innerHTML =
+            "<div class='subskill-header'>" +
+            "<strong>" + escapeHTML(exercise.name) + "</strong>" +
+            "<span class='subskill-level'>Level " + level + "</span>" +
+            "</div>" +
+            "<p>Best: " + Math.round(exercise.bestOneRM || 0) + " lb est. 1-rep max</p>";
+
+        const logSetButton = document.createElement("button");
+        logSetButton.className = "subskill-log-button";
+        logSetButton.textContent = "+ Log Set";
+        logSetButton.onclick = function() {
+            openLogPopup({ mode: "gymLogSet", subId: exerciseId, title: "Log Set: " + exercise.name });
+        };
+
+        card.appendChild(logSetButton);
+        container.appendChild(card);
+    });
+
+    const addExerciseButton = document.createElement("button");
+    addExerciseButton.className = "skill-log-button";
+    addExerciseButton.textContent = "+ Add Exercise";
+    addExerciseButton.onclick = function() {
+        openLogPopup({ mode: "gymAddExercise", title: "Add Exercise" });
+    };
+
+    container.appendChild(addExerciseButton);
+}
+
+function renderMusicDetail(container, musicData) {
+
+    const info = getMusicLevelInfo(musicData);
+    const instruments = musicData.instruments || {};
+
+    container.innerHTML = "";
+
+    const overallCard = document.createElement("div");
+    overallCard.className = "skill-overall-card";
+    overallCard.innerHTML = "<h2>Level " + info.overallLevel + "</h2>";
+    container.appendChild(overallCard);
+
+    const instrumentIds = Object.keys(instruments);
+
+    if (instrumentIds.length === 0) {
+        const emptyMsg = document.createElement("p");
+        emptyMsg.style.color = "#aaa";
+        emptyMsg.textContent = "No instruments yet. Add one below!";
+        container.appendChild(emptyMsg);
+    }
+
+    instrumentIds.forEach(function(instrumentId) {
+
+        const instrument = instruments[instrumentId];
+        const level = getInstrumentLevel(instrument);
+        const songs = instrument.songs || [];
+
+        const card = document.createElement("div");
+        card.className = "subskill-card";
+
+        card.innerHTML =
+            "<div class='subskill-header'>" +
+            "<strong>" + escapeHTML(instrument.name) + "</strong>" +
+            "<span class='subskill-level'>Level " + level + "</span>" +
+            "</div>" +
+            "<p>" + (instrument.totalHours || 0).toFixed(1) + " hours practiced &middot; " + songs.length + " songs learned</p>";
+
+        if (songs.length > 0) {
+            const songList = document.createElement("p");
+            songList.className = "subskill-songs";
+            songList.textContent = "🎵 " + songs.map(function(s) { return s.title; }).join(", ");
+            card.appendChild(songList);
+        }
+
+        const buttonRow = document.createElement("div");
+        buttonRow.className = "subskill-button-row";
+
+        const logPracticeButton = document.createElement("button");
+        logPracticeButton.className = "subskill-log-button";
+        logPracticeButton.textContent = "+ Log Practice";
+        logPracticeButton.onclick = function() {
+            openLogPopup({ mode: "musicPractice", subId: instrumentId, title: "Log Practice: " + instrument.name });
+        };
+
+        const addSongButton = document.createElement("button");
+        addSongButton.className = "subskill-log-button";
+        addSongButton.textContent = "+ Add Song";
+        addSongButton.onclick = function() {
+            openLogPopup({ mode: "musicAddSong", subId: instrumentId, title: "Add Song: " + instrument.name });
+        };
+
+        buttonRow.appendChild(logPracticeButton);
+        buttonRow.appendChild(addSongButton);
+        card.appendChild(buttonRow);
+
+        container.appendChild(card);
+    });
+
+    const addInstrumentButton = document.createElement("button");
+    addInstrumentButton.className = "skill-log-button";
+    addInstrumentButton.textContent = "+ Add Instrument";
+    addInstrumentButton.onclick = function() {
+        openLogPopup({ mode: "musicAddInstrument", title: "Add Instrument" });
+    };
+
+    container.appendChild(addInstrumentButton);
+}
+
+function openLogPopup(options) {
+
+    const fieldsContainer = document.getElementById("skillLogFields");
+    fieldsContainer.innerHTML = "";
+
+    document.getElementById("skillLogTitle").textContent = options.title;
+    document.getElementById("skillLogPopup").dataset.mode = options.mode;
+    document.getElementById("skillLogPopup").dataset.subId = options.subId || "";
+
+    if (options.mode === "gymTime") {
+
+        fieldsContainer.innerHTML =
+            "<label>Hours at the gym</label>" +
+            "<input type='number' id='logGymHours' placeholder='0' min='0' step='0.1'>";
+
+    } else if (options.mode === "gymAddExercise") {
+
+        fieldsContainer.innerHTML =
+            "<label>Exercise name</label>" +
+            "<input type='text' id='logExerciseName' placeholder='Bench Press'>";
+
+    } else if (options.mode === "gymLogSet") {
+
+        fieldsContainer.innerHTML =
+            "<label>Weight (lbs)</label>" +
+            "<input type='number' id='logSetWeight' placeholder='0' min='0' step='0.5'>" +
+            "<label>Reps</label>" +
+            "<input type='number' id='logSetReps' placeholder='0' min='1' step='1'>";
+
+    } else if (options.mode === "musicAddInstrument") {
+
+        fieldsContainer.innerHTML =
+            "<label>Instrument name</label>" +
+            "<input type='text' id='logInstrumentName' placeholder='Guitar'>";
+
+    } else if (options.mode === "musicPractice") {
+
+        fieldsContainer.innerHTML =
+            "<label>Hours practiced</label>" +
+            "<input type='number' id='logPracticeHours' placeholder='0' min='0' step='0.1'>";
+
+    } else if (options.mode === "musicAddSong") {
+
+        fieldsContainer.innerHTML =
+            "<label>Song title</label>" +
+            "<input type='text' id='logSongTitle' placeholder='Song title'>";
+    }
+
+    document.getElementById("skillLogPopup").style.display = "flex";
 }

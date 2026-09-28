@@ -1651,3 +1651,57 @@ transform: translateY(-2px);
     display: block;
     margin: 20px auto 0;
 }
+
+/* GYM & MUSIC SUB-SKILLS */
+
+.subskill-card {
+    background: #171a24;
+    border: 1px solid #303544;
+    border-radius: 14px;
+    padding: 14px;
+    margin: 10px 0;
+}
+
+.subskill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.subskill-level {
+    color: #7c5cff;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.subskill-card p {
+    color: #aaa;
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+.subskill-songs {
+    font-size: 13px;
+}
+
+.subskill-button-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.subskill-log-button {
+    flex: 1;
+    background: #0b0d12;
+    color: white;
+    border: 1px solid #7c5cff;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.subskill-log-button:hover {
+    background: #7c5cff;
+}
