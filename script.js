@@ -3050,14 +3050,14 @@ document.getElementById("skillDetailPage").style.display = "none";
 document.getElementById("skillLogPopup").style.display = "none";
 
 document.getElementById("statsPageButton").onclick = function() {
-    document.getElementById("questPage").style.display = "none";
+    document.getElementById("homePage").style.display = "none";
     document.getElementById("statsPage").style.display = "block";
     loadStatsPage();
 };
 
 document.getElementById("statsBackButton").onclick = function() {
     document.getElementById("statsPage").style.display = "none";
-    document.getElementById("questPage").style.display = "block";
+    document.getElementById("homePage").style.display = "block";
 };
 
 document.getElementById("skillDetailBackButton").onclick = function() {
