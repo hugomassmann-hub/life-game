@@ -3384,30 +3384,50 @@ document.getElementById("skillLogSaveButton").onclick = async function() {
 
         Object.keys(exercises).forEach(function(exerciseId) {
 
-            const weightInput = document.getElementById("sessionWeight_" + exerciseId);
+            const exercise = exercises[exerciseId];
             const repsInput = document.getElementById("sessionReps_" + exerciseId);
 
-            if (!weightInput || !repsInput) return;
+            if (!repsInput) return;
 
-            const weight = Number(weightInput.value) || 0;
             const reps = Number(repsInput.value) || 0;
 
-            if (weight <= 0 || reps <= 0) return;
+            if (reps <= 0) return;
 
-            const exercise = exercises[exerciseId];
-            const estimatedOneRM = estimateOneRepMax(weight, reps);
+            if (exercise.bodyweight) {
 
-            if (!exercise.startingOneRM) {
-                exercise.startingOneRM = estimatedOneRM;
+                if (!exercise.startingReps) {
+                    exercise.startingReps = reps;
+                }
+
+                if (reps > (exercise.bestReps || 0)) {
+                    exercise.bestReps = reps;
+                }
+
+                exercises[exerciseId] = exercise;
+
+                loggedSets.push({ exerciseName: exercise.name, weight: null, reps: reps });
+
+            } else {
+
+                const weightInput = document.getElementById("sessionWeight_" + exerciseId);
+                const weight = weightInput ? (Number(weightInput.value) || 0) : 0;
+
+                if (weight <= 0) return;
+
+                const estimatedOneRM = estimateOneRepMax(weight, reps);
+
+                if (!exercise.startingOneRM) {
+                    exercise.startingOneRM = estimatedOneRM;
+                }
+
+                if (estimatedOneRM > (exercise.bestOneRM || 0)) {
+                    exercise.bestOneRM = estimatedOneRM;
+                }
+
+                exercises[exerciseId] = exercise;
+
+                loggedSets.push({ exerciseName: exercise.name, weight: weight, reps: reps });
             }
-
-            if (estimatedOneRM > (exercise.bestOneRM || 0)) {
-                exercise.bestOneRM = estimatedOneRM;
-            }
-
-            exercises[exerciseId] = exercise;
-
-            loggedSets.push({ exerciseName: exercise.name, weight: weight, reps: reps });
         });
 
         gymData.totalHours = (gymData.totalHours || 0) + hours;
@@ -3794,7 +3814,7 @@ function renderGymDetail(container, gymData) {
     logSessionButton.onclick = function() {
 
         const exerciseList = Object.keys(exercises).map(function(id) {
-            return { id: id, name: exercises[id].name };
+            return { id: id, name: exercises[id].name, bodyweight: exercises[id].bodyweight };
         });
 
         openLogPopup({ mode: "gymSession", title: "Log Gym Session", exercises: exerciseList });
@@ -3834,14 +3854,6 @@ function renderGymDetail(container, gymData) {
             "</div>" +
             "<p>" + statLine + "</p>";
 
-        const logSetButton = document.createElement("button");
-        logSetButton.className = "subskill-log-button";
-        logSetButton.textContent = "+ Log Set";
-        logSetButton.onclick = function() {
-        openLogPopup({ mode: "gymLogSet", subId: exerciseId, title: "Log Set: " + exercise.name, bodyweight: exercise.bodyweight });
-        };
-
-        card.appendChild(logSetButton);
         container.appendChild(card);
     });
 
@@ -3878,7 +3890,10 @@ function renderGymDetail(container, gymData) {
 
             if (session.sets && session.sets.length > 0) {
                 session.sets.forEach(function(set) {
-                    html += "<p>🏋️ " + escapeHTML(set.exerciseName) + ": " + set.weight + " lb × " + set.reps + "</p>";
+                    const setLine = set.weight
+                        ? set.weight + " lb × " + set.reps
+                        : set.reps + " reps";
+                    html += "<p>🏋️ " + escapeHTML(set.exerciseName) + ": " + setLine + "</p>";
                 });
             } else {
                 html += "<p style='color:#888;'>No exercises logged this session.</p>";
@@ -4009,11 +4024,20 @@ function openLogPopup(options) {
             "<p style='color:#aaa;font-size:13px;margin:14px 0 4px;'>Log any exercises you did (leave blank to skip)</p>";
 
         options.exercises.forEach(function(ex) {
-            html += "<label>" + escapeHTML(ex.name) + " — weight (lbs) &amp; reps</label>" +
-                "<div style='display:flex;gap:8px;'>" +
-                "<input type='number' id='sessionWeight_" + ex.id + "' placeholder='Weight' min='0' step='0.5' style='flex:1;'>" +
-                "<input type='number' id='sessionReps_" + ex.id + "' placeholder='Reps' min='0' step='1' style='flex:1;'>" +
-                "</div>";
+
+            if (ex.bodyweight) {
+
+                html += "<label>" + escapeHTML(ex.name) + " — reps</label>" +
+                    "<input type='number' id='sessionReps_" + ex.id + "' placeholder='Reps' min='0' step='1'>";
+
+            } else {
+
+                html += "<label>" + escapeHTML(ex.name) + " — weight (lbs) &amp; reps</label>" +
+                    "<div style='display:flex;gap:8px;'>" +
+                    "<input type='number' id='sessionWeight_" + ex.id + "' placeholder='Weight' min='0' step='0.5' style='flex:1;'>" +
+                    "<input type='number' id='sessionReps_" + ex.id + "' placeholder='Reps' min='0' step='1' style='flex:1;'>" +
+                    "</div>";
+            }
         });
 
         fieldsContainer.innerHTML = html;
