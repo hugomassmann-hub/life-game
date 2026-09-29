@@ -210,9 +210,10 @@ border-color: #7c5cff;
 
 .customize-page {
 display: none;
-min-height: 100vh;
+height: 100dvh;
+overflow-y: auto;
 text-align: center;
-padding: 30px 25px 60px;
+padding: 30px 25px 90px;
 box-sizing: border-box;
 }
 

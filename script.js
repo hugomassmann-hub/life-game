@@ -788,11 +788,11 @@ rareQuest.addEventListener(
 
 function openCustomize() {
 
-    document.getElementById("homePage").style.display =
-        "none";
-
-    document.getElementById("questPage").style.display =
-        "none";
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("accountPage").style.display = "none";
+    document.getElementById("pastQuestsPage").style.display = "none";
 
     document.getElementById("customizePage").style.display =
         "block";
