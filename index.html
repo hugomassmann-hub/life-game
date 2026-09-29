@@ -432,7 +432,8 @@ import {
     limit,
     orderBy,
     startAfter,
-    documentId
+    documentId,
+    deleteField
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
     // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
@@ -464,6 +465,7 @@ window.firebaseLimit = limit;
 window.firebaseOrderBy = orderBy;
 window.firebaseStartAfter = startAfter;
 window.firebaseDocumentId = documentId;
+window.firebaseDeleteField = deleteField;
 window.firebaseAuth = auth;
 window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 window.onAuthStateChanged = onAuthStateChanged;

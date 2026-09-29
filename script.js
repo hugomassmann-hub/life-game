@@ -3862,16 +3862,10 @@ function renderGymDetail(container, gymData) {
             if (!confirm("Delete " + exercise.name + "? This can't be undone.")) return;
 
             const user = window.firebaseAuth.currentUser;
-            const skillStats = await getMySkillStats();
-            const gymData = skillStats.gym || {};
-
-            delete gymData.exercises[exerciseId];
-
-            skillStats.gym = gymData;
 
             await window.firebaseSetDoc(
                 window.firebaseDoc(window.firebaseDB, "users", user.uid),
-                { skillStats: skillStats },
+                { skillStats: { gym: { exercises: { [exerciseId]: window.firebaseDeleteField() } } } },
                 { merge: true }
             );
 
@@ -4003,16 +3997,10 @@ function renderMusicDetail(container, musicData) {
             if (!confirm("Delete " + instrument.name + "? This can't be undone.")) return;
 
             const user = window.firebaseAuth.currentUser;
-            const skillStats = await getMySkillStats();
-            const musicData = skillStats.music || {};
-
-            delete musicData.instruments[instrumentId];
-
-            skillStats.music = musicData;
 
             await window.firebaseSetDoc(
                 window.firebaseDoc(window.firebaseDB, "users", user.uid),
-                { skillStats: skillStats },
+                { skillStats: { music: { instruments: { [instrumentId]: window.firebaseDeleteField() } } } },
                 { merge: true }
             );
 
