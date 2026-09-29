@@ -837,8 +837,16 @@ const characterMapIcon = L.divIcon({
     iconAnchor: [35, 85]
 });
 
+let characterMarker = null;
+
 function placeCharacterOnMap(lat, lng) {
-    L.marker([lat, lng], { icon: characterMapIcon, zIndexOffset: 1000 }).addTo(map);
+
+    if (characterMarker) {
+        characterMarker.setLatLng([lat, lng]);
+        return;
+    }
+
+    characterMarker = L.marker([lat, lng], { icon: characterMapIcon, zIndexOffset: 1000 }).addTo(map);
     renderEquippedItems();
 }
 

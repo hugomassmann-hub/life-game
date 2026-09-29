@@ -1786,7 +1786,7 @@ transform: translateY(-2px);
     display: none;
 }
 
-.leaflet-div-icon.map-character-marker {
+.leaflet-marker-icon.map-character-marker {
     background: transparent !important;
     border: none !important;
     width: 70px !important;
