@@ -847,6 +847,30 @@ function placeCharacterOnMap(lat, lng) {
     }
 
     characterMarker = L.marker([lat, lng], { icon: characterMapIcon, zIndexOffset: 1000 }).addTo(map);
+
+    const markerEl = characterMarker.getElement();
+
+    if (markerEl) {
+
+        const wrap = markerEl.querySelector(".character-image-wrap");
+        const img = markerEl.querySelector(".character-image-wrap img");
+
+        if (wrap) {
+            wrap.style.width = "50px";
+            wrap.style.height = "70px";
+            wrap.style.position = "absolute";
+            wrap.style.bottom = "0";
+            wrap.style.left = "50%";
+            wrap.style.transform = "translateX(-50%)";
+        }
+
+        if (img) {
+            img.style.width = "50px";
+            img.style.height = "auto";
+            img.style.display = "block";
+        }
+    }
+
     renderEquippedItems();
 }
 
