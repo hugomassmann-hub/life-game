@@ -3847,13 +3847,38 @@ function renderGymDetail(container, gymData) {
             ? "Best: " + (exercise.bestReps || 0) + " reps"
             : "Best: " + Math.round(exercise.bestOneRM || 0) + " lb est. 1-rep max";
 
-        card.innerHTML =
+                card.innerHTML =
             "<div class='subskill-header'>" +
             "<strong>" + escapeHTML(exercise.name) + "</strong>" +
             "<span class='subskill-level'>Level " + level + "</span>" +
             "</div>" +
             "<p>" + statLine + "</p>";
 
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "subskill-delete-button";
+        deleteButton.textContent = "Delete";
+        deleteButton.onclick = async function() {
+
+            if (!confirm("Delete " + exercise.name + "? This can't be undone.")) return;
+
+            const user = window.firebaseAuth.currentUser;
+            const skillStats = await getMySkillStats();
+            const gymData = skillStats.gym || {};
+
+            delete gymData.exercises[exerciseId];
+
+            skillStats.gym = gymData;
+
+            await window.firebaseSetDoc(
+                window.firebaseDoc(window.firebaseDB, "users", user.uid),
+                { skillStats: skillStats },
+                { merge: true }
+            );
+
+            openSkillDetail("gym");
+        };
+
+        card.appendChild(deleteButton);
         container.appendChild(card);
     });
 
@@ -3966,10 +3991,35 @@ function renderMusicDetail(container, musicData) {
             openLogPopup({ mode: "musicAddSong", subId: instrumentId, title: "Add Song: " + instrument.name });
         };
 
-        buttonRow.appendChild(logPracticeButton);
+                buttonRow.appendChild(logPracticeButton);
         buttonRow.appendChild(addSongButton);
         card.appendChild(buttonRow);
 
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "subskill-delete-button";
+        deleteButton.textContent = "Delete";
+        deleteButton.onclick = async function() {
+
+            if (!confirm("Delete " + instrument.name + "? This can't be undone.")) return;
+
+            const user = window.firebaseAuth.currentUser;
+            const skillStats = await getMySkillStats();
+            const musicData = skillStats.music || {};
+
+            delete musicData.instruments[instrumentId];
+
+            skillStats.music = musicData;
+
+            await window.firebaseSetDoc(
+                window.firebaseDoc(window.firebaseDB, "users", user.uid),
+                { skillStats: skillStats },
+                { merge: true }
+            );
+
+            openSkillDetail("music");
+        };
+
+        card.appendChild(deleteButton);
         container.appendChild(card);
     });
 

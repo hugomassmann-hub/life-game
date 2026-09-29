@@ -1705,3 +1705,19 @@ transform: translateY(-2px);
 .subskill-log-button:hover {
     background: #7c5cff;
 }
+
+.subskill-delete-button {
+    width: 100%;
+    margin-top: 8px;
+    background: transparent;
+    color: #ff5252;
+    border: 1px solid #ff5252;
+    border-radius: 10px;
+    padding: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.subskill-delete-button:hover {
+    background: rgba(255, 82, 82, 0.15);
+}
