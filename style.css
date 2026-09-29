@@ -1787,13 +1787,29 @@ transform: translateY(-2px);
 }
 
 .leaflet-div-icon.map-character-marker {
-    background: transparent;
-    border: none;
+    background: transparent !important;
+    border: none !important;
+    width: 70px !important;
+    height: 90px !important;
 }
 
 .map-character-icon {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 70px;
+    height: 90px;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.map-character-icon .character-image-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 70px;
 }
 
 .map-character-icon .character-image-wrap img {
@@ -1802,4 +1818,8 @@ transform: translateY(-2px);
     display: block;
     margin: 0 auto;
     filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));
+}
+
+.map-character-icon .equipped-item {
+    position: absolute !important;
 }
