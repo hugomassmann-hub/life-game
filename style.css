@@ -206,25 +206,6 @@ color: white;
 border-color: #7c5cff;
 }
 
-/* CUSTOMIZE BUTTON */
-
-#customizeButton {
-background: #171a24;
-color: white;
-border: 1px solid #303544;
-border-radius: 14px;
-padding: 14px 22px;
-font-size: 16px;
-font-weight: bold;
-cursor: pointer;
-transition: 0.2s ease;
-}
-
-#customizeButton:hover {
-background: #7c5cff;
-transform: translateY(-2px);
-}
-
 /* CUSTOMIZE PAGE */
 
 .customize-page {
@@ -802,13 +783,6 @@ transform: translateY(-2px);
     object-fit: cover;
     border-radius: 14px;
     border: 1px solid #303544;
-}
-
-#customizeButton {
-    top: auto;
-    left: 5%;
-    bottom: 2dvh;
-    right: auto;
 }
 
 #accountButton {
@@ -1616,11 +1590,6 @@ transform: translateY(-2px);
     bottom: 2dvh;
 }
 
-#customizeButton {
-    left: 3%;
-    right: auto;
-}
-
 #statsPageButton {
     left: 35%;
     right: auto;
@@ -1730,25 +1699,6 @@ transform: translateY(-2px);
     background: rgba(255, 82, 82, 0.15);
 }
 
-#customizeButton {
-    position: absolute;
-    top: 160px;
-    right: 16px;
-    left: auto;
-    width: auto;
-    height: auto;
-    padding: 10px 16px;
-    background: rgba(23, 26, 36, 0.92);
-    color: white;
-    border: 1px solid #7c5cff;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 41;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
 /* BOTTOM TAB BAR */
 
 #bottomTabBar {
@@ -1828,4 +1778,24 @@ transform: translateY(-2px);
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
+}
+
+button#customizeButton {
+    position: absolute !important;
+    top: 160px !important;
+    right: 16px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 10px 16px !important;
+    background: rgba(23, 26, 36, 0.92) !important;
+    color: white !important;
+    border: 1px solid #7c5cff !important;
+    border-radius: 30px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    z-index: 41 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 }
