@@ -3445,10 +3445,15 @@ document.getElementById("skillLogSaveButton").onclick = async function() {
 
         const exerciseId = "ex_" + Date.now();
 
+               const isBodyweight = document.getElementById("logExerciseBodyweight").checked;
+
         exercises[exerciseId] = {
             name: name,
+            bodyweight: isBodyweight,
             startingOneRM: 0,
-            bestOneRM: 0
+            bestOneRM: 0,
+            startingReps: 0,
+            bestReps: 0
         };
 
         gymData.exercises = exercises;
@@ -3465,17 +3470,9 @@ document.getElementById("skillLogSaveButton").onclick = async function() {
         return;
     }
 
-    if (mode === "gymLogSet") {
+       if (mode === "gymLogSet") {
 
         const exerciseId = popup.dataset.subId;
-        const weight = Number(document.getElementById("logSetWeight").value) || 0;
-        const reps = Number(document.getElementById("logSetReps").value) || 0;
-
-        if (weight <= 0 || reps <= 0) {
-            alert("Please enter a weight and rep count.");
-            return;
-        }
-
         const gymData = skillStats.gym || {};
         const exercises = gymData.exercises || {};
         const exercise = exercises[exerciseId];
@@ -3485,14 +3482,41 @@ document.getElementById("skillLogSaveButton").onclick = async function() {
             return;
         }
 
-        const estimatedOneRM = estimateOneRepMax(weight, reps);
+        const reps = Number(document.getElementById("logSetReps").value) || 0;
 
-        if (!exercise.startingOneRM) {
-            exercise.startingOneRM = estimatedOneRM;
+        if (reps <= 0) {
+            alert("Please enter a rep count.");
+            return;
         }
 
-        if (estimatedOneRM > (exercise.bestOneRM || 0)) {
-            exercise.bestOneRM = estimatedOneRM;
+        if (exercise.bodyweight) {
+
+            if (!exercise.startingReps) {
+                exercise.startingReps = reps;
+            }
+
+            if (reps > (exercise.bestReps || 0)) {
+                exercise.bestReps = reps;
+            }
+
+        } else {
+
+            const weight = Number(document.getElementById("logSetWeight").value) || 0;
+
+            if (weight <= 0) {
+                alert("Please enter a weight.");
+                return;
+            }
+
+            const estimatedOneRM = estimateOneRepMax(weight, reps);
+
+            if (!exercise.startingOneRM) {
+                exercise.startingOneRM = estimatedOneRM;
+            }
+
+            if (estimatedOneRM > (exercise.bestOneRM || 0)) {
+                exercise.bestOneRM = estimatedOneRM;
+            }
         }
 
         exercises[exerciseId] = exercise;
@@ -3667,7 +3691,19 @@ function estimateOneRepMax(weight, reps) {
 }
 
 function getExerciseLevel(exercise) {
-    if (!exercise || !exercise.startingOneRM) return 1;
+
+    if (!exercise) return 1;
+
+    if (exercise.bodyweight) {
+
+        if (!exercise.startingReps) return 1;
+
+        const improvementPercent = ((exercise.bestReps - exercise.startingReps) / exercise.startingReps) * 100;
+        return levelFromCumulative(Math.max(0, improvementPercent), EXERCISE_IMPROVEMENT_THRESHOLDS);
+    }
+
+    if (!exercise.startingOneRM) return 1;
+
     const improvementPercent = ((exercise.bestOneRM - exercise.startingOneRM) / exercise.startingOneRM) * 100;
     return levelFromCumulative(Math.max(0, improvementPercent), EXERCISE_IMPROVEMENT_THRESHOLDS);
 }
@@ -3787,18 +3823,22 @@ function renderGymDetail(container, gymData) {
         const card = document.createElement("div");
         card.className = "subskill-card";
 
+        const statLine = exercise.bodyweight
+            ? "Best: " + (exercise.bestReps || 0) + " reps"
+            : "Best: " + Math.round(exercise.bestOneRM || 0) + " lb est. 1-rep max";
+
         card.innerHTML =
             "<div class='subskill-header'>" +
             "<strong>" + escapeHTML(exercise.name) + "</strong>" +
             "<span class='subskill-level'>Level " + level + "</span>" +
             "</div>" +
-            "<p>Best: " + Math.round(exercise.bestOneRM || 0) + " lb est. 1-rep max</p>";
+            "<p>" + statLine + "</p>";
 
         const logSetButton = document.createElement("button");
         logSetButton.className = "subskill-log-button";
         logSetButton.textContent = "+ Log Set";
         logSetButton.onclick = function() {
-            openLogPopup({ mode: "gymLogSet", subId: exerciseId, title: "Log Set: " + exercise.name });
+        openLogPopup({ mode: "gymLogSet", subId: exerciseId, title: "Log Set: " + exercise.name, bodyweight: exercise.bodyweight });
         };
 
         card.appendChild(logSetButton);
@@ -3943,19 +3983,24 @@ function openLogPopup(options) {
             "<label>Hours at the gym</label>" +
             "<input type='number' id='logGymHours' placeholder='0' min='0' step='0.1'>";
 
-    } else if (options.mode === "gymAddExercise") {
+        } else if (options.mode === "gymAddExercise") {
 
         fieldsContainer.innerHTML =
             "<label>Exercise name</label>" +
-            "<input type='text' id='logExerciseName' placeholder='Bench Press'>";
+            "<input type='text' id='logExerciseName' placeholder='Bench Press'>" +
+            "<label style='display:flex;align-items:center;gap:8px;margin-top:14px;'>" +
+            "<input type='checkbox' id='logExerciseBodyweight' style='width:auto;'> This is a bodyweight exercise (no added weight)" +
+            "</label>";
 
-    } else if (options.mode === "gymLogSet") {
+        } else if (options.mode === "gymLogSet") {
 
-        fieldsContainer.innerHTML =
-            "<label>Weight (lbs)</label>" +
-            "<input type='number' id='logSetWeight' placeholder='0' min='0' step='0.5'>" +
-            "<label>Reps</label>" +
-            "<input type='number' id='logSetReps' placeholder='0' min='1' step='1'>";
+        fieldsContainer.innerHTML = options.bodyweight
+            ? "<label>Reps</label>" +
+              "<input type='number' id='logSetReps' placeholder='0' min='1' step='1'>"
+            : "<label>Weight (lbs)</label>" +
+              "<input type='number' id='logSetWeight' placeholder='0' min='0' step='0.5'>" +
+              "<label>Reps</label>" +
+              "<input type='number' id='logSetReps' placeholder='0' min='1' step='1'>";
 
     } else if (options.mode === "gymSession") {
 
