@@ -927,12 +927,6 @@ document.getElementById("tabFeedButton").onclick = function() {
     setActiveTab("tabFeedButton");
 };
 
-document.getElementById("feedBackButton").onclick = function() {
-    document.getElementById("feedPage").style.display = "none";
-    document.getElementById("homePage").style.display = "block";
-    setActiveTab("tabHomeButton");
-};
-
 document.getElementById("feedTabEveryone").onclick = function() {
     feedFilter = "everyone";
     document.getElementById("feedTabEveryone").classList.add("active");
@@ -1737,12 +1731,6 @@ document.getElementById("tabAccountButton").onclick = function() {
     document.getElementById("customizePage").style.display = "none";
     document.getElementById("accountPage").style.display = "block";
     setActiveTab("tabAccountButton");
-};
-
-document.getElementById("accountBackButton").onclick = function() {
-    document.getElementById("accountPage").style.display = "none";
-    document.getElementById("homePage").style.display = "block";
-    setActiveTab("tabHomeButton");
 };
 
 document.getElementById("createAccountButton").onclick = async function() {
