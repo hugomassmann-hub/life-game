@@ -3375,6 +3375,62 @@ document.getElementById("skillLogSaveButton").onclick = async function() {
         return;
     }
 
+        if (mode === "gymSession") {
+
+        const hours = Number(document.getElementById("logSessionHours").value) || 0;
+        const gymData = skillStats.gym || {};
+        const exercises = gymData.exercises || {};
+        const loggedSets = [];
+
+        Object.keys(exercises).forEach(function(exerciseId) {
+
+            const weightInput = document.getElementById("sessionWeight_" + exerciseId);
+            const repsInput = document.getElementById("sessionReps_" + exerciseId);
+
+            if (!weightInput || !repsInput) return;
+
+            const weight = Number(weightInput.value) || 0;
+            const reps = Number(repsInput.value) || 0;
+
+            if (weight <= 0 || reps <= 0) return;
+
+            const exercise = exercises[exerciseId];
+            const estimatedOneRM = estimateOneRepMax(weight, reps);
+
+            if (!exercise.startingOneRM) {
+                exercise.startingOneRM = estimatedOneRM;
+            }
+
+            if (estimatedOneRM > (exercise.bestOneRM || 0)) {
+                exercise.bestOneRM = estimatedOneRM;
+            }
+
+            exercises[exerciseId] = exercise;
+
+            loggedSets.push({ exerciseName: exercise.name, weight: weight, reps: reps });
+        });
+
+        gymData.totalHours = (gymData.totalHours || 0) + hours;
+        gymData.exercises = exercises;
+
+        const sessions = gymData.sessions || [];
+        sessions.push({ date: new Date().toISOString(), hours: hours, sets: loggedSets });
+        gymData.sessions = sessions;
+
+        skillStats.gym = gymData;
+
+        await window.firebaseSetDoc(
+            window.firebaseDoc(window.firebaseDB, "users", user.uid),
+            { skillStats: skillStats },
+            { merge: true }
+        );
+
+        popup.style.display = "none";
+        openSkillDetail("gym");
+        loadTopSkillsWidget();
+        return;
+    }
+
     if (mode === "gymAddExercise") {
 
         const name = document.getElementById("logExerciseName").value.trim();
@@ -3678,6 +3734,7 @@ function renderGymDetail(container, gymData) {
 
     const info = getGymLevelInfo(gymData);
     const exercises = gymData.exercises || {};
+    const sessions = gymData.sessions || [];
 
     container.innerHTML = "";
 
@@ -3695,13 +3752,18 @@ function renderGymDetail(container, gymData) {
         "<div class='skill-progress-bar'><div class='skill-progress-fill' style='width:" + timePercent + "%'></div></div>";
     container.appendChild(timeBar);
 
-    const logTimeButton = document.createElement("button");
-    logTimeButton.className = "skill-log-button";
-    logTimeButton.textContent = "+ Log Gym Time";
-    logTimeButton.onclick = function() {
-        openLogPopup({ mode: "gymTime", title: "Log Gym Time" });
+    const logSessionButton = document.createElement("button");
+    logSessionButton.className = "skill-log-button";
+    logSessionButton.textContent = "+ Log Gym Session";
+    logSessionButton.onclick = function() {
+
+        const exerciseList = Object.keys(exercises).map(function(id) {
+            return { id: id, name: exercises[id].name };
+        });
+
+        openLogPopup({ mode: "gymSession", title: "Log Gym Session", exercises: exerciseList });
     };
-    container.appendChild(logTimeButton);
+    container.appendChild(logSessionButton);
 
     const exerciseHeading = document.createElement("h3");
     exerciseHeading.textContent = "Exercises";
@@ -3751,6 +3813,41 @@ function renderGymDetail(container, gymData) {
     };
 
     container.appendChild(addExerciseButton);
+
+    const historyHeading = document.createElement("h3");
+    historyHeading.textContent = "Session History";
+    historyHeading.style.marginTop = "24px";
+    container.appendChild(historyHeading);
+
+    if (sessions.length === 0) {
+
+        const emptyMsg = document.createElement("p");
+        emptyMsg.style.color = "#aaa";
+        emptyMsg.textContent = "No sessions logged yet.";
+        container.appendChild(emptyMsg);
+
+    } else {
+
+        sessions.slice().reverse().forEach(function(session) {
+
+            const sessionCard = document.createElement("div");
+            sessionCard.className = "skill-book-list";
+
+            const dateStr = new Date(session.date).toLocaleDateString();
+            let html = "<h3>" + dateStr + " — " + session.hours.toFixed(1) + " hrs</h3>";
+
+            if (session.sets && session.sets.length > 0) {
+                session.sets.forEach(function(set) {
+                    html += "<p>🏋️ " + escapeHTML(set.exerciseName) + ": " + set.weight + " lb × " + set.reps + "</p>";
+                });
+            } else {
+                html += "<p style='color:#888;'>No exercises logged this session.</p>";
+            }
+
+            sessionCard.innerHTML = html;
+            container.appendChild(sessionCard);
+        });
+    }
 }
 
 function renderMusicDetail(container, musicData) {
@@ -3859,6 +3956,22 @@ function openLogPopup(options) {
             "<input type='number' id='logSetWeight' placeholder='0' min='0' step='0.5'>" +
             "<label>Reps</label>" +
             "<input type='number' id='logSetReps' placeholder='0' min='1' step='1'>";
+
+    } else if (options.mode === "gymSession") {
+
+        let html = "<label>Total time at the gym (hours)</label>" +
+            "<input type='number' id='logSessionHours' placeholder='0' min='0' step='0.1'>" +
+            "<p style='color:#aaa;font-size:13px;margin:14px 0 4px;'>Log any exercises you did (leave blank to skip)</p>";
+
+        options.exercises.forEach(function(ex) {
+            html += "<label>" + escapeHTML(ex.name) + " — weight (lbs) &amp; reps</label>" +
+                "<div style='display:flex;gap:8px;'>" +
+                "<input type='number' id='sessionWeight_" + ex.id + "' placeholder='Weight' min='0' step='0.5' style='flex:1;'>" +
+                "<input type='number' id='sessionReps_" + ex.id + "' placeholder='Reps' min='0' step='1' style='flex:1;'>" +
+                "</div>";
+        });
+
+        fieldsContainer.innerHTML = html;
 
     } else if (options.mode === "musicAddInstrument") {
 
