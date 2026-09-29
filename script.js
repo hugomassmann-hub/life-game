@@ -854,11 +854,15 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 function openQuests() {
     document.getElementById("homePage").style.display = "none";
     document.getElementById("customizePage").style.display = "none";
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("accountPage").style.display = "none";
     document.getElementById("questPage").style.display = "block";
+    setActiveTab("tabQuestsButton");
 }
 function closeQuests() {
     document.getElementById("questPage").style.display = "none";
     document.getElementById("homePage").style.display = "block";
+    setActiveTab("tabHomeButton");
 }
 
 document.getElementById("pageCommonQuest").addEventListener(
@@ -912,18 +916,21 @@ document.getElementById("pastQuestsButton").onclick = function() {
 
 };
 
-document.getElementById("feedButton").onclick = function() {
+document.getElementById("tabFeedButton").onclick = function() {
     document.getElementById("homePage").style.display = "none";
     document.getElementById("questPage").style.display = "none";
     document.getElementById("customizePage").style.display = "none";
     document.getElementById("pastQuestsPage").style.display = "none";
+    document.getElementById("accountPage").style.display = "none";
     document.getElementById("feedPage").style.display = "block";
     loadFeed();
+    setActiveTab("tabFeedButton");
 };
 
 document.getElementById("feedBackButton").onclick = function() {
     document.getElementById("feedPage").style.display = "none";
     document.getElementById("homePage").style.display = "block";
+    setActiveTab("tabHomeButton");
 };
 
 document.getElementById("feedTabEveryone").onclick = function() {
@@ -944,7 +951,7 @@ document.getElementById("feedTabFollowing").onclick = function() {
 
 document.getElementById("friendsPage").style.display = "none";
 
-document.getElementById("friendsButton").onclick = function() {
+document.getElementById("accountFriendsButton").onclick = function() {
     document.getElementById("homePage").style.display = "none";
     document.getElementById("questPage").style.display = "none";
     document.getElementById("customizePage").style.display = "none";
@@ -957,7 +964,7 @@ document.getElementById("friendsButton").onclick = function() {
 
 document.getElementById("friendsBackButton").onclick = function() {
     document.getElementById("friendsPage").style.display = "none";
-    document.getElementById("homePage").style.display = "block";
+    document.getElementById("accountPage").style.display = "block";
 };
 
 // FRIEND SEARCH
@@ -1721,18 +1728,23 @@ document.getElementById("pageRareQuest").classList.remove("completed");
 document.getElementById("resetQuestsButton").onclick = function() {
     resetQuests();
 };
-document.getElementById("accountButton").onclick = function() {
+
+document.getElementById("tabAccountButton").onclick = function() {
     document.getElementById("homePage").style.display = "none";
     document.getElementById("questPage").style.display = "none";
     document.getElementById("pastQuestsPage").style.display = "none";
     document.getElementById("feedPage").style.display = "none";
     document.getElementById("customizePage").style.display = "none";
     document.getElementById("accountPage").style.display = "block";
+    setActiveTab("tabAccountButton");
 };
+
 document.getElementById("accountBackButton").onclick = function() {
     document.getElementById("accountPage").style.display = "none";
     document.getElementById("homePage").style.display = "block";
+    setActiveTab("tabHomeButton");
 };
+
 document.getElementById("createAccountButton").onclick = async function() {
 
     const email = document.getElementById("emailInput").value;
@@ -3065,7 +3077,7 @@ document.getElementById("statsPageButton").onclick = function() {
 
 document.getElementById("statsBackButton").onclick = function() {
     document.getElementById("statsPage").style.display = "none";
-    document.getElementById("homePage").style.display = "block";
+    document.getElementById("questPage").style.display = "block";
 };
 
 document.getElementById("skillDetailBackButton").onclick = function() {
@@ -4101,3 +4113,23 @@ function openLogPopup(options) {
 
     document.getElementById("skillLogPopup").style.display = "flex";
 }
+
+// BOTTOM TAB BAR
+
+function setActiveTab(activeId) {
+    document.querySelectorAll(".tab-bar-button").forEach(function(btn) {
+        btn.classList.remove("active");
+    });
+    document.getElementById(activeId).classList.add("active");
+}
+
+document.getElementById("tabHomeButton").onclick = function() {
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("feedPage").style.display = "none";
+    document.getElementById("accountPage").style.display = "none";
+    document.getElementById("customizePage").style.display = "none";
+    document.getElementById("homePage").style.display = "block";
+    setActiveTab("tabHomeButton");
+};
+
+document.getElementById("tabQuestsButton").onclick = openQuests;

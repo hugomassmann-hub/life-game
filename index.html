@@ -55,15 +55,16 @@
 
         </div>
 
-               <div class="mobile-buttons">
+        <!-- BOTTOM TAB BAR -->
+<div id="bottomTabBar">
+    <button id="tabHomeButton" class="tab-bar-button active">🏠<span>Home</span></button>
+    <button id="tabQuestsButton" class="tab-bar-button">🎯<span>Quests</span></button>
+    <button id="tabFeedButton" class="tab-bar-button">📰<span>Feed</span></button>
+    <button id="tabAccountButton" class="tab-bar-button">👤<span>Account</span></button>
+</div>
 
-            <button onclick="openQuests()">🎯 Quests</button>
-
-            <button id="feedButton">👥 Feed</button>
-            <button id="friendsButton">👥 Friends</button>
-                <button id="customizeButton">👕 Customize</button>
-        <button id="statsPageButton">📊 Stats</button>
-        <button id="accountButton">👤 Account</button>
+        <div class="mobile-buttons">
+        <button id="customizeButton">👕 Customize</button>
         </div>
 
         <div id="topSkillsWidget"></div>
@@ -176,6 +177,8 @@
 
 </div>
 
+<button id="accountFriendsButton">👥 Friends</button>
+
 <button id="signOutButton">Sign Out</button>
 
 </div>
@@ -203,6 +206,10 @@
 
 <button id="bossQuestsPageButton">
     👑 Boss Quests
+</button>
+
+<button id="statsPageButton">
+    📊 Stats
 </button>
 
 <button id="resetQuestsButton">
