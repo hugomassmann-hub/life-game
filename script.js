@@ -133,6 +133,7 @@ function createEquippedItem(
 
     imageWrap.appendChild(image);
 }
+
 function renderEquippedItems() {
 
     document
@@ -143,6 +144,7 @@ function renderEquippedItems() {
 
         });
 
+    const mapTargets = document.querySelectorAll(".home-character-target");
 
     equippedItems.forEach(
         function(itemId) {
@@ -172,10 +174,13 @@ createEquippedItem(
     true
 );
 
+mapTargets.forEach(function(target) {
+    createEquippedItem(item, target, true);
+});
+
         }
     );
 }
-
 
 function renderItemsList() {
 
@@ -803,11 +808,16 @@ function closeCustomize() {
 
     document.getElementById("homePage").style.display =
         "block";
+
+    setActiveTab("tabHomeButton");
 }
 
-document.getElementById("customizeButton").addEventListener(
+document.getElementById("tabCustomizeButton").addEventListener(
     "click",
-    openCustomize
+    function() {
+        openCustomize();
+        setActiveTab("tabCustomizeButton");
+    }
 );
 
 // START GAME
@@ -815,6 +825,22 @@ document.getElementById("customizeButton").addEventListener(
 updateGame();
 
 const map = L.map("map").setView([37.7749, -122.4194], 13);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+}).addTo(map);
+
+const characterMapIcon = L.divIcon({
+    className: "map-character-marker",
+    html: '<div class="home-character-target map-character-icon"><div class="character-image-wrap"><img src="Level 1.png" alt="You"></div></div>',
+    iconSize: [70, 90],
+    iconAnchor: [35, 85]
+});
+
+function placeCharacterOnMap(lat, lng) {
+    L.marker([lat, lng], { icon: characterMapIcon, zIndexOffset: 1000 }).addTo(map);
+    renderEquippedItems();
+}
 
 if (navigator.geolocation) {
 
@@ -826,11 +852,7 @@ if (navigator.geolocation) {
             const longitude = position.coords.longitude;
 
             map.setView([latitude, longitude], 15);
-
-            L.marker([latitude, longitude])
-                .addTo(map)
-                .bindPopup("You are here")
-                .openPopup();
+            placeCharacterOnMap(latitude, longitude);
 
         },
 
@@ -841,15 +863,17 @@ if (navigator.geolocation) {
                 error.message
             );
 
+            placeCharacterOnMap(37.7749, -122.4194);
+
         }
 
     );
 
-}
+} else {
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors"
-}).addTo(map);
+    placeCharacterOnMap(37.7749, -122.4194);
+
+}
 
 function openQuests() {
     document.getElementById("homePage").style.display = "none";
