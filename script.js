@@ -980,11 +980,13 @@ function setupTrees() {
             "icon-ignore-placement": true,
             "symbol-sort-key": ["get", "sortKey"],
             "icon-size": [
-                "interpolate", ["linear"], ["zoom"],
-                14.5, 0.5,
-                17, 0.9,
-                19, 1.4
-            ]
+    "interpolate", ["linear"], ["zoom"],
+    12, 0.5,
+    14, 0.9,
+    16, 1.5,
+    18, 2.3,
+    19, 3
+]
         }
     }, firstSymbol ? firstSymbol.id : undefined);
 
@@ -1007,13 +1009,13 @@ function updateTrees() {
 
     const zoom = map.getZoom();
 
-    if (zoom < 14.5) {
+    if (zoom < 12) {
         source.setData(emptyTrees);
         return;
     }
 
     // Grid cell is about 30 pixels wide at the current whole zoom level
-    const cell = (360 / (256 * Math.pow(2, Math.floor(zoom)))) * 30;
+    const cell = (360 / (256 * Math.pow(2, Math.floor(zoom)))) * 20;
 
     const canvas = map.getCanvas();
     const width = canvas.clientWidth;
@@ -1023,9 +1025,9 @@ function updateTrees() {
     const features = [];
 
     // Skip the top of the screen (sky/horizon when tilted)
-    for (let sy = height * 0.25; sy < height; sy += 20) {
+    for (let sy = height * 0.25; sy < height; sy += 10) {
 
-        for (let sx = 0; sx < width; sx += 20) {
+        for (let sx = 0; sx < width; sx += 10) {
 
             const ll = map.unproject([sx, sy]);
 
@@ -1048,7 +1050,7 @@ function updateTrees() {
             // Forests get lots of trees, parks and grass get fewer
             const id = hits[0].layer.id.toLowerCase();
             const isForest = id.includes("wood") || id.includes("forest");
-            const chance = isForest ? 0.9 : 0.35;
+            const chance = isForest ? 1 : 0.75;
 
             if (treeHash(ix, iy, 3) > chance) continue;
 
@@ -1061,7 +1063,7 @@ function updateTrees() {
                 }
             });
 
-            if (features.length > 700) break;
+            if (features.length > 2500) break;
         }
     }
 
