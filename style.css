@@ -455,7 +455,6 @@ transform: translateY(-2px);
         overflow: hidden;
         background: #171a24;
         border: none;
-        filter: saturate(0.9) brightness(0.85);
     }
 
     .customize-page {
@@ -1822,16 +1821,6 @@ transform: translateY(-2px);
 
 .map-character-icon .equipped-item {
     position: absolute !important;
-}
-
-.leaflet-control-zoom a {
-    background: rgba(23, 26, 36, 0.92) !important;
-    color: white !important;
-    border: 1px solid #303544 !important;
-}
-
-.leaflet-control-zoom a:hover {
-    background: #7c5cff !important;
 }
 
 .leaflet-control-attribution {
