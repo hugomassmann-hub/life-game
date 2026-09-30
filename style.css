@@ -1823,3 +1823,22 @@ transform: translateY(-2px);
 .map-character-icon .equipped-item {
     position: absolute !important;
 }
+
+.leaflet-control-zoom a {
+    background: rgba(23, 26, 36, 0.92) !important;
+    color: white !important;
+    border: 1px solid #303544 !important;
+}
+
+.leaflet-control-zoom a:hover {
+    background: #7c5cff !important;
+}
+
+.leaflet-control-attribution {
+    background: rgba(23, 26, 36, 0.75) !important;
+    color: #aaa !important;
+}
+
+.leaflet-control-attribution a {
+    color: #ccc !important;
+}
