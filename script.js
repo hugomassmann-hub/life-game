@@ -893,6 +893,194 @@ function applyFantasyColors() {
 
 map.on("load", applyFantasyColors);
 
+// ===== TREES =====
+
+function makeTreeImage(kind) {
+
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 80;
+    const g = c.getContext("2d");
+
+    // ground shadow
+    g.fillStyle = "rgba(0,0,0,0.25)";
+    g.beginPath();
+    g.ellipse(32, 72, 16, 5, 0, 0, Math.PI * 2);
+    g.fill();
+
+    // trunk
+    g.fillStyle = "#5a3e1b";
+    g.fillRect(29, 50, 6, 22);
+
+    if (kind === "round") {
+
+        g.fillStyle = "#1f5a2c";
+        g.beginPath(); g.arc(32, 34, 22, 0, Math.PI * 2); g.fill();
+
+        g.fillStyle = "#2f7a3c";
+        g.beginPath(); g.arc(27, 29, 15, 0, Math.PI * 2); g.fill();
+
+        g.fillStyle = "#4a9a52";
+        g.beginPath(); g.arc(23, 23, 7, 0, Math.PI * 2); g.fill();
+
+    } else {
+
+        const tiers = [
+            { y: 10, w: 16, color: "#2f7a3c" },
+            { y: 26, w: 21, color: "#276b34" },
+            { y: 42, w: 26, color: "#1f5a2c" }
+        ];
+
+        tiers.forEach(function(t) {
+            g.fillStyle = t.color;
+            g.beginPath();
+            g.moveTo(32, t.y - 6);
+            g.lineTo(32 + t.w, t.y + 22);
+            g.lineTo(32 - t.w, t.y + 22);
+            g.closePath();
+            g.fill();
+        });
+    }
+
+    return g.getImageData(0, 0, 64, 80);
+}
+
+// Same input always gives the same number between 0 and 1,
+// so trees stay put instead of jumping around
+function treeHash(x, y, seed) {
+    const n = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
+    return n - Math.floor(n);
+}
+
+let treeQueryLayers = [];
+let treesNeedUpdate = true;
+
+const emptyTrees = { type: "FeatureCollection", features: [] };
+
+function setupTrees() {
+
+    map.addImage("tree-round", makeTreeImage("round"), { pixelRatio: 2 });
+    map.addImage("tree-pine", makeTreeImage("pine"), { pixelRatio: 2 });
+
+    map.addSource("trees", { type: "geojson", data: emptyTrees });
+
+    // Put trees under the text labels
+    const firstSymbol = map.getStyle().layers.find(function(l) {
+        return l.type === "symbol";
+    });
+
+    map.addLayer({
+        id: "trees-layer",
+        type: "symbol",
+        source: "trees",
+        layout: {
+            "icon-image": ["get", "kind"],
+            "icon-anchor": "bottom",
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+            "symbol-sort-key": ["get", "sortKey"],
+            "icon-size": [
+                "interpolate", ["linear"], ["zoom"],
+                14.5, 0.5,
+                17, 0.9,
+                19, 1.4
+            ]
+        }
+    }, firstSymbol ? firstSymbol.id : undefined);
+
+    // Which map layers count as "green areas" where trees can grow
+    treeQueryLayers = map.getStyle().layers.filter(function(l) {
+        const id = l.id.toLowerCase();
+        return l.type === "fill" &&
+            (id.includes("wood") || id.includes("forest") ||
+             id.includes("park") || id.includes("grass"));
+    }).map(function(l) { return l.id; });
+
+    console.log("Tree layers:", treeQueryLayers);
+}
+
+function updateTrees() {
+
+    const source = map.getSource("trees");
+
+    if (!source || treeQueryLayers.length === 0) return;
+
+    const zoom = map.getZoom();
+
+    if (zoom < 14.5) {
+        source.setData(emptyTrees);
+        return;
+    }
+
+    // Grid cell is about 30 pixels wide at the current whole zoom level
+    const cell = (360 / (256 * Math.pow(2, Math.floor(zoom)))) * 30;
+
+    const canvas = map.getCanvas();
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    const seen = {};
+    const features = [];
+
+    // Skip the top of the screen (sky/horizon when tilted)
+    for (let sy = height * 0.25; sy < height; sy += 20) {
+
+        for (let sx = 0; sx < width; sx += 20) {
+
+            const ll = map.unproject([sx, sy]);
+
+            const ix = Math.floor(ll.lng / cell);
+            const iy = Math.floor(ll.lat / cell);
+            const key = ix + "_" + iy;
+
+            if (seen[key]) continue;
+            seen[key] = true;
+
+            const lng = (ix + 0.15 + treeHash(ix, iy, 1) * 0.7) * cell;
+            const lat = (iy + 0.15 + treeHash(ix, iy, 2) * 0.7) * cell;
+
+            const pt = map.project([lng, lat]);
+
+            const hits = map.queryRenderedFeatures(pt, { layers: treeQueryLayers });
+
+            if (hits.length === 0) continue;
+
+            // Forests get lots of trees, parks and grass get fewer
+            const id = hits[0].layer.id.toLowerCase();
+            const isForest = id.includes("wood") || id.includes("forest");
+            const chance = isForest ? 0.9 : 0.35;
+
+            if (treeHash(ix, iy, 3) > chance) continue;
+
+            features.push({
+                type: "Feature",
+                geometry: { type: "Point", coordinates: [lng, lat] },
+                properties: {
+                    kind: treeHash(ix, iy, 4) > 0.5 ? "tree-round" : "tree-pine",
+                    sortKey: -lat * 100000
+                }
+            });
+
+            if (features.length > 700) break;
+        }
+    }
+
+    source.setData({ type: "FeatureCollection", features: features });
+}
+
+map.on("load", setupTrees);
+
+map.on("moveend", function() {
+    treesNeedUpdate = true;
+});
+
+map.on("idle", function() {
+    if (treesNeedUpdate) {
+        treesNeedUpdate = false;
+        updateTrees();
+    }
+});
+
 let characterMarker = null;
 
 function placeCharacterOnMap(lat, lng) {
