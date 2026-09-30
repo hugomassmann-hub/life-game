@@ -875,7 +875,7 @@ function applyFantasyColors() {
                     map.setPaintProperty(layer.id, "line-color", "#2a6f7a");
                 }
                 else if (id.includes("road") || id.includes("bridge") || id.includes("tunnel") || id.includes("path") || id.includes("street")) {
-                    map.setPaintProperty(layer.id, "line-color", "#c9a84f");
+                    map.setPaintProperty(layer.id, "line-color", "#e2d3a8");
                 }
             }
 
@@ -981,7 +981,7 @@ function makeTreeImage(kind) {
         blobs("#17442a", 13, 62, cy, 28, 12, 18);
         blobs("#26653a", 10, 57, cy - 6, 21, 8, 13);
         blobs("#3f8f52", 7, 51, cy - 12, 14, 4, 8);
-        
+
     }
 
     // ===== PINE =====
@@ -1063,6 +1063,7 @@ function treeHash(x, y, seed) {
 }
 
 let treeQueryLayers = [];
+let waterQueryLayers = [];
 let treesNeedUpdate = true;
 
 const emptyTrees = { type: "FeatureCollection", features: [] };
@@ -1110,6 +1111,11 @@ map.addImage("tree-oak-b", makeTreeImage("oak-b"), { pixelRatio: 4 });
             (id.includes("wood") || id.includes("forest") ||
              id.includes("park") || id.includes("grass"));
     }).map(function(l) { return l.id; });
+
+waterQueryLayers = map.getStyle().layers.filter(function(l) {
+    const id = l.id.toLowerCase();
+    return l.type === "fill" && id.includes("water") && !id.includes("waterway");
+}).map(function(l) { return l.id; });
 
     console.log("Tree layers:", treeQueryLayers);
 }
@@ -1160,6 +1166,10 @@ function updateTrees() {
 
             if (hits.length === 0) continue;
 
+            // Skip spots that are actually water
+if (waterQueryLayers.length > 0 &&
+    map.queryRenderedFeatures(pt, { layers: waterQueryLayers }).length > 0) continue;
+
             // Forests get lots of trees, parks and grass get fewer
             const id = hits[0].layer.id.toLowerCase();
             const isForest = id.includes("wood") || id.includes("forest");
@@ -1205,28 +1215,36 @@ function placeCharacterOnMap(lat, lng) {
         return;
     }
 
-    const el = document.createElement("div");
-    el.className = "map-character-marker";
-    el.style.width = "70px";
-    el.style.height = "90px";
-    el.innerHTML =
-        '<div class="home-character-target map-character-icon">' +
-        '<div class="character-image-wrap"><img src="Level 1.png" alt="You"></div>' +
-        '</div>';
+    const CHAR_W = 80;              // character width in pixels (was 50)
+const CHAR_H = CHAR_W * 1.4;    // height follows the width
 
-    const wrap = el.querySelector(".character-image-wrap");
-    const img = el.querySelector(".character-image-wrap img");
+const el = document.createElement("div");
+el.className = "map-character-marker";
+el.style.width = (CHAR_W + 20) + "px";
+el.style.height = (CHAR_H + 20) + "px";
+el.innerHTML =
+    '<div class="home-character-target map-character-icon">' +
+    '<div class="character-image-wrap"><img src="Level 1.png" alt="You"></div>' +
+    '</div>';
 
-    wrap.style.width = "50px";
-    wrap.style.height = "70px";
-    wrap.style.position = "absolute";
-    wrap.style.bottom = "0";
-    wrap.style.left = "50%";
-    wrap.style.transform = "translateX(-50%)";
+// The inner box must match the marker size, or the feet float above the ground
+const icon = el.querySelector(".map-character-icon");
+const wrap = el.querySelector(".character-image-wrap");
+const img = el.querySelector(".character-image-wrap img");
 
-    img.style.width = "50px";
-    img.style.height = "auto";
-    img.style.display = "block";
+icon.style.width = el.style.width;
+icon.style.height = el.style.height;
+
+wrap.style.width = CHAR_W + "px";
+wrap.style.height = CHAR_H + "px";
+wrap.style.position = "absolute";
+wrap.style.bottom = "0";
+wrap.style.left = "50%";
+wrap.style.transform = "translateX(-50%)";
+
+img.style.width = CHAR_W + "px";
+img.style.height = "auto";
+img.style.display = "block";
 
     characterMarker = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([lng, lat])
