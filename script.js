@@ -631,6 +631,11 @@ document.getElementById("mobileXP").textContent =
     
     "🔥 " + streak + " Day Streak";
 
+        document.getElementById("panelLevel").textContent = level;
+    document.getElementById("panelStreak").textContent = streak;
+    document.getElementById("panelXPText").textContent = xpIntoLevel + " / " + xpNeeded + " XP";
+    document.getElementById("panelXPFill").style.width = percentage + "%";
+
     renderItemsList();
 }
 
@@ -839,7 +844,7 @@ const map = new maplibregl.Map({
     maxPitch: 70
 });
 
-map.addControl(new maplibregl.NavigationControl(), "bottom-right");
+map.addControl(new maplibregl.NavigationControl(), "top-right");
 
 // DARK GREEN FANTASY MAP COLORS
 function applyFantasyColors() {
@@ -4172,6 +4177,11 @@ async function loadTopSkillsWidget() {
     });
 
     allLevels.sort(function(a, b) { return b.level - a.level; });
+
+        const panelSkill = document.getElementById("panelTopSkill");
+    if (panelSkill && allLevels.length > 0) {
+        panelSkill.textContent = allLevels[0].emoji + " " + allLevels[0].name + " Lv " + allLevels[0].level;
+    }
 
     widget.innerHTML = allLevels.slice(0, 4).map(function(s) {
 
