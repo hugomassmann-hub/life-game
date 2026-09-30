@@ -1872,57 +1872,6 @@ transform: translateY(-2px);
     border-bottom: 1px solid #d4bf8f !important;
 }
 
-/* PARCHMENT BANNER ON THE MAP */
-#mapBanner {
-    position: absolute;
-    top: 160px;
-    left: 20px;
-    z-index: 30;
-    pointer-events: none;       /* lets you still drag the map underneath */
-    padding: 8px 28px 9px;
-    text-align: center;
-    color: #4a3219;
-    transform: rotate(-2deg);
-    background:
-        radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.35), transparent 55%),
-        radial-gradient(ellipse at 85% 80%, rgba(120,80,30,0.25), transparent 60%),
-        linear-gradient(180deg, #f3e6c8, #e3cf9f);
-    border-top: 2px solid #c9b07a;
-    border-bottom: 2px solid #b89a60;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.45), inset 0 0 18px rgba(120,80,30,0.35);
-}
-
-/* the rolled-up ends of the scroll */
-#mapBanner::before,
-#mapBanner::after {
-    content: "";
-    position: absolute;
-    top: -5px;
-    bottom: -5px;
-    width: 14px;
-    background: linear-gradient(90deg, #b89a60, #ead9ae 45%, #b89a60);
-    border-radius: 7px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-}
-#mapBanner::before { left: -8px; }
-#mapBanner::after { right: -8px; }
-
-#mapBanner .banner-title {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-}
-
-#mapBanner .banner-tagline {
-    font-family: Georgia, "Times New Roman", serif;
-    font-style: italic;
-    font-size: 11px;
-    color: #6b4e2a;
-    margin-top: 1px;
-}
-
 /* Text on gold (accent) buttons */
 #completeAndPostButton,
 #followButton,

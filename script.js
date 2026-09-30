@@ -1331,6 +1331,26 @@ function closeQuests() {
     setActiveTab("tabHomeButton");
 }
 
+function openQuests() {
+    [
+        "homePage", "customizePage", "feedPage", "accountPage",
+        "pastQuestsPage", "bossQuestsPage", "trophyCasePage",
+        "statsPage", "skillDetailPage", "friendsPage", "profilePage"
+    ].forEach(function(id) {
+        const page = document.getElementById(id);
+        if (page) page.style.display = "none";
+    });
+
+    document.getElementById("questPage").style.display = "block";
+    setActiveTab("tabQuestsButton");
+}
+
+function closeQuests() {
+    document.getElementById("questPage").style.display = "none";
+    document.getElementById("homePage").style.display = "block";
+    setActiveTab("tabHomeButton");
+}
+
 document.getElementById("pageCommonQuest").addEventListener(
     "click",
     function() {
