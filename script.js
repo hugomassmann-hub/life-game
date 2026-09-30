@@ -897,52 +897,174 @@ map.on("load", applyFantasyColors);
 
 function makeTreeImage(kind) {
 
+    const W = 128;
+    const H = 160;
+
     const c = document.createElement("canvas");
-    c.width = 64;
-    c.height = 80;
+    c.width = W;
+    c.height = H;
     const g = c.getContext("2d");
 
-    // ground shadow
-    g.fillStyle = "rgba(0,0,0,0.25)";
-    g.beginPath();
-    g.ellipse(32, 72, 16, 5, 0, 0, Math.PI * 2);
-    g.fill();
-
-    // trunk
-    g.fillStyle = "#5a3e1b";
-    g.fillRect(29, 50, 6, 22);
-
-    if (kind === "round") {
-
-        g.fillStyle = "#1f5a2c";
-        g.beginPath(); g.arc(32, 34, 22, 0, Math.PI * 2); g.fill();
-
-        g.fillStyle = "#2f7a3c";
-        g.beginPath(); g.arc(27, 29, 15, 0, Math.PI * 2); g.fill();
-
-        g.fillStyle = "#4a9a52";
-        g.beginPath(); g.arc(23, 23, 7, 0, Math.PI * 2); g.fill();
-
-    } else {
-
-        const tiers = [
-            { y: 10, w: 16, color: "#2f7a3c" },
-            { y: 26, w: 21, color: "#276b34" },
-            { y: 42, w: 26, color: "#1f5a2c" }
-        ];
-
-        tiers.forEach(function(t) {
-            g.fillStyle = t.color;
-            g.beginPath();
-            g.moveTo(32, t.y - 6);
-            g.lineTo(32 + t.w, t.y + 22);
-            g.lineTo(32 - t.w, t.y + 22);
-            g.closePath();
-            g.fill();
-        });
+    // Seeded random: each tree type always looks the same
+    let seed = 1;
+    for (let i = 0; i < kind.length; i++) {
+        seed = (seed * 31 + kind.charCodeAt(i)) % 2147483646 + 1;
+    }
+    function rand() {
+        seed = (seed * 16807) % 2147483647;
+        return seed / 2147483647;
     }
 
-    return g.getImageData(0, 0, 64, 80);
+    // Ground shadow
+    g.fillStyle = "rgba(0,0,0,0.3)";
+    g.beginPath();
+    g.ellipse(64, 150, 32, 8, 0, 0, Math.PI * 2);
+    g.fill();
+
+    function trunk(topY, wBottom, wTop) {
+        g.fillStyle = "#3b2616";
+        g.beginPath();
+        g.moveTo(64 - wBottom / 2, 152);
+        g.lineTo(64 - wTop / 2, topY);
+        g.lineTo(64 + wTop / 2, topY);
+        g.lineTo(64 + wBottom / 2, 152);
+        g.closePath();
+        g.fill();
+
+        // lighter left side
+        g.fillStyle = "#5a3d24";
+        g.beginPath();
+        g.moveTo(64 - wBottom / 2, 152);
+        g.lineTo(64 - wTop / 2, topY);
+        g.lineTo(64 - wTop / 2 + wTop * 0.35, topY);
+        g.lineTo(64 - wBottom / 2 + wBottom * 0.35, 152);
+        g.closePath();
+        g.fill();
+    }
+
+    // Tiny glowing specks, for the fantasy feel
+    function sparkles(cx, cy, spread, count) {
+        for (let i = 0; i < count; i++) {
+            const angle = rand() * Math.PI * 2;
+            const dist = Math.sqrt(rand()) * spread;
+            g.fillStyle = "rgba(190,255,210,0.85)";
+            g.beginPath();
+            g.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist * 0.85, 1.6 + rand() * 1.2, 0, Math.PI * 2);
+            g.fill();
+        }
+    }
+
+    // ===== OAK =====
+    if (kind.indexOf("oak") === 0) {
+
+        const wide = kind === "oak-b";
+        const cy = wide ? 62 : 66;
+        const s = wide ? 1.12 : 1;
+
+        function blobs(color, count, bx, by, spread, rMin, rMax) {
+            g.fillStyle = color;
+            for (let i = 0; i < count; i++) {
+                const angle = rand() * Math.PI * 2;
+                const dist = Math.sqrt(rand()) * spread * s;
+                const x = bx + Math.cos(angle) * dist * 1.1;
+                const y = by + Math.sin(angle) * dist * 0.85;
+                const r = rMin + rand() * (rMax - rMin);
+                g.beginPath();
+                g.arc(x, y, r, 0, Math.PI * 2);
+                g.fill();
+            }
+        }
+
+        trunk(100, 16, 10);
+
+        blobs("#0d2a19", 16, 64, cy + 4, 34, 16, 24);
+        blobs("#17442a", 13, 62, cy, 28, 12, 18);
+        blobs("#26653a", 10, 57, cy - 6, 21, 8, 13);
+        blobs("#3f8f52", 7, 51, cy - 12, 14, 4, 8);
+
+        sparkles(64, cy, 30, 6);
+    }
+
+    // ===== PINE =====
+    else {
+
+        const tall = kind === "pine-b";
+
+        const widths  = tall ? [26, 23, 20, 16, 12] : [34, 30, 25, 19];
+        const bottoms = tall ? [130, 108, 86, 64, 42] : [128, 102, 78, 54];
+        const heights = tall ? 34 : 40;
+        const colors  = ["#0b2a1a", "#0f3221", "#133b26", "#184530", "#1d5136"];
+
+        trunk(bottoms[0], 10, 7);
+
+        widths.forEach(function(halfW, i) {
+
+            const cy = bottoms[i];
+            const h = heights + 8;
+            const apexY = cy - h;
+            const steps = 4;
+
+            const left = [];
+            const right = [];
+
+            for (let n = 1; n <= steps; n++) {
+                const t = n / steps;
+                const yy = apexY + h * t;
+                const ww = halfW * t;
+
+                left.push([64 - ww, yy]);
+                right.push([64 + ww, yy]);
+
+                if (n < steps) {
+                    const inner = ww * 0.72;
+                    const iy = yy + (h / steps) * 0.28;
+                    left.push([64 - inner, iy]);
+                    right.push([64 + inner, iy]);
+                }
+            }
+
+            function tierPath() {
+                g.beginPath();
+                g.moveTo(64, apexY);
+                left.forEach(function(p) { g.lineTo(p[0], p[1]); });
+                g.lineTo(64, cy + 5);
+                for (let k = right.length - 1; k >= 0; k--) {
+                    g.lineTo(right[k][0], right[k][1]);
+                }
+                g.closePath();
+            }
+
+            // dark base
+            tierPath();
+            g.fillStyle = colors[i];
+            g.fill();
+
+            // lighter left side, fading toward the middle
+            g.save();
+            tierPath();
+            g.clip();
+            const grad = g.createLinearGradient(64 - halfW, 0, 70, 0);
+            grad.addColorStop(0, "rgba(70,170,110,0.55)");
+            grad.addColorStop(1, "rgba(70,170,110,0)");
+            g.fillStyle = grad;
+            g.fillRect(0, 0, W, H);
+            g.restore();
+        });
+
+        // Glow at the very top
+        const topY = bottoms[widths.length - 1] - (heights + 8);
+        const glow = g.createRadialGradient(64, topY + 4, 1, 64, topY + 4, 16);
+        glow.addColorStop(0, "rgba(170,255,225,0.7)");
+        glow.addColorStop(1, "rgba(170,255,225,0)");
+        g.fillStyle = glow;
+        g.beginPath();
+        g.arc(64, topY + 4, 16, 0, Math.PI * 2);
+        g.fill();
+
+        sparkles(64, (topY + bottoms[0]) / 2, tall ? 18 : 26, 5);
+    }
+
+    return g.getImageData(0, 0, W, H);
 }
 
 // Same input always gives the same number between 0 and 1,
@@ -959,8 +1081,10 @@ const emptyTrees = { type: "FeatureCollection", features: [] };
 
 function setupTrees() {
 
-    map.addImage("tree-round", makeTreeImage("round"), { pixelRatio: 2 });
-    map.addImage("tree-pine", makeTreeImage("pine"), { pixelRatio: 2 });
+    map.addImage("tree-pine-a", makeTreeImage("pine-a"), { pixelRatio: 4 });
+map.addImage("tree-pine-b", makeTreeImage("pine-b"), { pixelRatio: 4 });
+map.addImage("tree-oak-a", makeTreeImage("oak-a"), { pixelRatio: 4 });
+map.addImage("tree-oak-b", makeTreeImage("oak-b"), { pixelRatio: 4 });
 
     map.addSource("trees", { type: "geojson", data: emptyTrees });
 
@@ -1059,7 +1183,7 @@ function updateTrees() {
                 type: "Feature",
                 geometry: { type: "Point", coordinates: [lng, lat] },
                 properties: {
-                    kind: treeHash(ix, iy, 4) > 0.5 ? "tree-round" : "tree-pine",
+                    kind: ["tree-pine-a", "tree-pine-b", "tree-oak-a", "tree-oak-b"][Math.floor(treeHash(ix, iy, 4) * 4)],
                     sortKey: -lat * 100000
                 }
             });
