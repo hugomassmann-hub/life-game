@@ -1850,3 +1850,8 @@ transform: translateY(-2px);
 .leaflet-control-zoom a:hover {
   background: #e8d5a5;
 }
+
+/* Parchment tint on the MapLibre map */
+.maplibregl-canvas {
+    filter: sepia(0.35) saturate(1.1) contrast(0.95) brightness(1.02);
+}

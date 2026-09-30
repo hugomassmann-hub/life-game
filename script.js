@@ -824,53 +824,54 @@ document.getElementById("tabCustomizeButton").addEventListener(
 
 updateGame();
 
-const map = L.map("map").setView([37.7749, -122.4194], 13);
-
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: '&copy; OpenStreetMap contributors',
-  maxZoom: 19
-}).addTo(map);
-
-const characterMapIcon = L.divIcon({
-    className: "map-character-marker",
-    html: '<div class="home-character-target map-character-icon"><div class="character-image-wrap"><img src="Level 1.png" alt="You"></div></div>',
-    iconSize: [70, 90],
-    iconAnchor: [35, 85]
+// NOTE: MapLibre uses [longitude, latitude] (the reverse of Leaflet)
+const map = new maplibregl.Map({
+    container: "map",
+    style: "https://tiles.openfreemap.org/styles/liberty",
+    center: [-122.4194, 37.7749],
+    zoom: 14,
+    pitch: 55,
+    bearing: -15,
+    maxPitch: 70
 });
+
+map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
 let characterMarker = null;
 
 function placeCharacterOnMap(lat, lng) {
 
     if (characterMarker) {
-        characterMarker.setLatLng([lat, lng]);
+        characterMarker.setLngLat([lng, lat]);
         return;
     }
 
-    characterMarker = L.marker([lat, lng], { icon: characterMapIcon, zIndexOffset: 1000 }).addTo(map);
+    const el = document.createElement("div");
+    el.className = "map-character-marker";
+    el.style.width = "70px";
+    el.style.height = "90px";
+    el.innerHTML =
+        '<div class="home-character-target map-character-icon">' +
+        '<div class="character-image-wrap"><img src="Level 1.png" alt="You"></div>' +
+        '</div>';
 
-    const markerEl = characterMarker.getElement();
+    const wrap = el.querySelector(".character-image-wrap");
+    const img = el.querySelector(".character-image-wrap img");
 
-    if (markerEl) {
+    wrap.style.width = "50px";
+    wrap.style.height = "70px";
+    wrap.style.position = "absolute";
+    wrap.style.bottom = "0";
+    wrap.style.left = "50%";
+    wrap.style.transform = "translateX(-50%)";
 
-        const wrap = markerEl.querySelector(".character-image-wrap");
-        const img = markerEl.querySelector(".character-image-wrap img");
+    img.style.width = "50px";
+    img.style.height = "auto";
+    img.style.display = "block";
 
-        if (wrap) {
-            wrap.style.width = "50px";
-            wrap.style.height = "70px";
-            wrap.style.position = "absolute";
-            wrap.style.bottom = "0";
-            wrap.style.left = "50%";
-            wrap.style.transform = "translateX(-50%)";
-        }
-
-        if (img) {
-            img.style.width = "50px";
-            img.style.height = "auto";
-            img.style.display = "block";
-        }
-    }
+    characterMarker = new maplibregl.Marker({ element: el, anchor: "bottom" })
+        .setLngLat([lng, lat])
+        .addTo(map);
 
     renderEquippedItems();
 }
@@ -880,24 +881,16 @@ if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
 
         function(position) {
-
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
 
-            map.setView([latitude, longitude], 15);
+            map.flyTo({ center: [longitude, latitude], zoom: 16 });
             placeCharacterOnMap(latitude, longitude);
-
         },
 
         function(error) {
-
-            console.log(
-                "Location permission or location error:",
-                error.message
-            );
-
+            console.log("Location permission or location error:", error.message);
             placeCharacterOnMap(37.7749, -122.4194);
-
         }
 
     );
@@ -905,17 +898,8 @@ if (navigator.geolocation) {
 } else {
 
     placeCharacterOnMap(37.7749, -122.4194);
-
 }
 
-function openQuests() {
-    document.getElementById("homePage").style.display = "none";
-    document.getElementById("customizePage").style.display = "none";
-    document.getElementById("feedPage").style.display = "none";
-    document.getElementById("accountPage").style.display = "none";
-    document.getElementById("questPage").style.display = "block";
-    setActiveTab("tabQuestsButton");
-}
 function closeQuests() {
     document.getElementById("questPage").style.display = "none";
     document.getElementById("homePage").style.display = "block";
