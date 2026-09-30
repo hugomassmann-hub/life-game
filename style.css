@@ -1851,7 +1851,11 @@ transform: translateY(-2px);
   background: #e8d5a5;
 }
 
-/* Parchment tint on the MapLibre map */
-.maplibregl-canvas {
-    filter: sepia(0.35) saturate(1.1) contrast(0.95) brightness(1.02);
+.maplibregl-ctrl-group {
+    background: #f3e6c8 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+.maplibregl-ctrl-group button {
+    border-bottom: 1px solid #d4bf8f !important;
 }

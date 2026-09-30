@@ -837,6 +837,62 @@ const map = new maplibregl.Map({
 
 map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
+// DARK GREEN FANTASY MAP COLORS
+function applyFantasyColors() {
+
+    const layers = map.getStyle().layers;
+
+    layers.forEach(function(layer) {
+
+        const id = layer.id.toLowerCase();
+
+        try {
+
+            if (layer.type === "background") {
+                map.setPaintProperty(layer.id, "background-color", "#24452f");
+            }
+
+            else if (layer.type === "fill") {
+
+                let color = "#2a4d33"; // default land
+
+                if (id.includes("water")) color = "#1f5560";
+                else if (id.includes("wood") || id.includes("forest")) color = "#2c5e37";
+                else if (id.includes("park") || id.includes("grass") || id.includes("landcover")) color = "#356b3f";
+                else if (id.includes("sand") || id.includes("beach")) color = "#8a7a4a";
+                else if (id.includes("building")) color = "#4a4636";
+
+                map.setPaintProperty(layer.id, "fill-color", color);
+            }
+
+            else if (layer.type === "fill-extrusion") {
+                map.setPaintProperty(layer.id, "fill-extrusion-color", "#4a4636");
+            }
+
+            else if (layer.type === "line") {
+
+                if (id.includes("waterway") || id.includes("water")) {
+                    map.setPaintProperty(layer.id, "line-color", "#2a6f7a");
+                }
+                else if (id.includes("road") || id.includes("bridge") || id.includes("tunnel") || id.includes("path") || id.includes("street")) {
+                    map.setPaintProperty(layer.id, "line-color", "#c9a84f");
+                }
+            }
+
+            else if (layer.type === "symbol") {
+                map.setPaintProperty(layer.id, "text-color", "#f0e4bd");
+                map.setPaintProperty(layer.id, "text-halo-color", "#12261a");
+                map.setPaintProperty(layer.id, "text-halo-width", 1.5);
+            }
+
+        } catch (e) {
+            // Some layers don't support a property. Skip them.
+        }
+    });
+}
+
+map.on("load", applyFantasyColors);
+
 let characterMarker = null;
 
 function placeCharacterOnMap(lat, lng) {
@@ -876,28 +932,29 @@ function placeCharacterOnMap(lat, lng) {
     renderEquippedItems();
 }
 
+// Show the character right away, then move it to your real location
+placeCharacterOnMap(37.7749, -122.4194);
+
 if (navigator.geolocation) {
 
     navigator.geolocation.getCurrentPosition(
 
         function(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
 
-            map.flyTo({ center: [longitude, latitude], zoom: 16 });
-            placeCharacterOnMap(latitude, longitude);
+            placeCharacterOnMap(lat, lng);
+            map.flyTo({ center: [lng, lat], zoom: 16 });
         },
 
         function(error) {
-            console.log("Location permission or location error:", error.message);
-            placeCharacterOnMap(37.7749, -122.4194);
-        }
+            // Temporary, so we can see why location fails. We'll remove it later.
+            alert("Location problem: " + error.message);
+        },
+
+        { enableHighAccuracy: true, timeout: 10000 }
 
     );
-
-} else {
-
-    placeCharacterOnMap(37.7749, -122.4194);
 }
 
 function closeQuests() {
