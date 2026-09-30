@@ -981,9 +981,10 @@ function setupTrees() {
             "symbol-sort-key": ["get", "sortKey"],
             "icon-size": [
     "interpolate", ["linear"], ["zoom"],
-    12, 0.5,
-    14, 0.9,
-    16, 1.5,
+    9, 0.6,
+    12, 0.9,
+    14, 1.2,
+    16, 1.7,
     18, 2.3,
     19, 3
 ]
@@ -1009,7 +1010,7 @@ function updateTrees() {
 
     const zoom = map.getZoom();
 
-    if (zoom < 12) {
+    if (zoom < 7) {
         source.setData(emptyTrees);
         return;
     }
@@ -1025,7 +1026,7 @@ function updateTrees() {
     const features = [];
 
     // Skip the top of the screen (sky/horizon when tilted)
-    for (let sy = height; sy > height * 0.25; sy -= 10) {
+    for (let sy = height; sy > height * 0.1; sy -= 10) {
 
         for (let sx = 0; sx < width; sx += 10) {
 
@@ -1063,7 +1064,7 @@ function updateTrees() {
                 }
             });
 
-            if (features.length > 2500) break;
+            if (features.length > 5000) break;
         }
     }
 
