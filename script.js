@@ -1063,7 +1063,7 @@ function updateTrees() {
                 }
             });
 
-            if (features.length > 2500) break;
+            if (features.length > 5000) break;
         }
     }
 
