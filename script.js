@@ -1015,7 +1015,7 @@ function updateTrees() {
     }
 
     // Grid cell is about 30 pixels wide at the current whole zoom level
-    const cell = (360 / (256 * Math.pow(2, Math.floor(zoom)))) * 20;
+    const cell = (360 / (256 * Math.pow(2, zoom))) * 20;
 
     const canvas = map.getCanvas();
     const width = canvas.clientWidth;
@@ -1025,7 +1025,7 @@ function updateTrees() {
     const features = [];
 
     // Skip the top of the screen (sky/horizon when tilted)
-    for (let sy = height * 0.25; sy < height; sy += 10) {
+    for (let sy = height; sy > height * 0.25; sy -= 10) {
 
         for (let sx = 0; sx < width; sx += 10) {
 
@@ -1063,7 +1063,7 @@ function updateTrees() {
                 }
             });
 
-            if (features.length > 5000) break;
+            if (features.length > 2500) break;
         }
     }
 
