@@ -1120,6 +1120,45 @@ waterQueryLayers = map.getStyle().layers.filter(function(l) {
     console.log("Tree layers:", treeQueryLayers);
 }
 
+let treeCache = {};
+let treeCacheCount = 0;
+let treeCacheZoom = null;
+
+function makeTreeFeature(ix, iy, cell, layers) {
+
+    const lng = (ix + 0.15 + treeHash(ix, iy, 1) * 0.7) * cell;
+    const lat = (iy + 0.15 + treeHash(ix, iy, 2) * 0.7) * cell;
+
+    const pt = map.project([lng, lat]);
+
+    // One map question covers both "is it green?" and "is it water?"
+    const hits = map.queryRenderedFeatures(pt, { layers: layers });
+
+    let greenHit = null;
+
+    for (let i = 0; i < hits.length; i++) {
+        if (waterQueryLayers.indexOf(hits[i].layer.id) !== -1) return null;
+        if (!greenHit) greenHit = hits[i];
+    }
+
+    if (!greenHit) return null;
+
+    const id = greenHit.layer.id.toLowerCase();
+    const isForest = id.includes("wood") || id.includes("forest");
+    const chance = isForest ? 1 : 0.75;
+
+    if (treeHash(ix, iy, 3) > chance) return null;
+
+    return {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [lng, lat] },
+        properties: {
+            kind: ["tree-pine-a", "tree-pine-b", "tree-oak-a", "tree-oak-b"][Math.floor(treeHash(ix, iy, 4) * 4)],
+            sortKey: -lat * 100000
+        }
+    };
+}
+
 function updateTrees() {
 
     const source = map.getSource("trees");
@@ -1128,13 +1167,23 @@ function updateTrees() {
 
     const zoom = map.getZoom();
 
-    if (zoom < 7) {
+    if (zoom < 9) {
         source.setData(emptyTrees);
         return;
     }
 
-    // Grid cell is about 30 pixels wide at the current whole zoom level
-    const cell = (360 / (256 * Math.pow(2, zoom))) * 20;
+    // Round zoom to the nearest half step so the tree grid holds still while you pan
+    const zoomStep = Math.round(zoom * 2) / 2;
+
+    if (zoomStep !== treeCacheZoom || treeCacheCount > 30000) {
+        treeCache = {};
+        treeCacheCount = 0;
+        treeCacheZoom = zoomStep;
+    }
+
+    const cell = (360 / (256 * Math.pow(2, zoomStep))) * 20;
+    const tilesReady = map.areTilesLoaded();
+    const allLayers = treeQueryLayers.concat(waterQueryLayers);
 
     const canvas = map.getCanvas();
     const width = canvas.clientWidth;
@@ -1143,7 +1192,6 @@ function updateTrees() {
     const seen = {};
     const features = [];
 
-    // Skip the top of the screen (sky/horizon when tilted)
     for (let sy = height; sy > height * 0.1; sy -= 10) {
 
         for (let sx = 0; sx < width; sx += 10) {
@@ -1157,37 +1205,26 @@ function updateTrees() {
             if (seen[key]) continue;
             seen[key] = true;
 
-            const lng = (ix + 0.15 + treeHash(ix, iy, 1) * 0.7) * cell;
-            const lat = (iy + 0.15 + treeHash(ix, iy, 2) * 0.7) * cell;
+            let tree = treeCache[key];
 
-            const pt = map.project([lng, lat]);
+            if (tree === undefined) {
 
-            const hits = map.queryRenderedFeatures(pt, { layers: treeQueryLayers });
+                tree = makeTreeFeature(ix, iy, cell, allLayers);
 
-            if (hits.length === 0) continue;
-
-            // Skip spots that are actually water
-if (waterQueryLayers.length > 0 &&
-    map.queryRenderedFeatures(pt, { layers: waterQueryLayers }).length > 0) continue;
-
-            // Forests get lots of trees, parks and grass get fewer
-            const id = hits[0].layer.id.toLowerCase();
-            const isForest = id.includes("wood") || id.includes("forest");
-            const chance = isForest ? 1 : 0.75;
-
-            if (treeHash(ix, iy, 3) > chance) continue;
-
-            features.push({
-                type: "Feature",
-                geometry: { type: "Point", coordinates: [lng, lat] },
-                properties: {
-                    kind: ["tree-pine-a", "tree-pine-b", "tree-oak-a", "tree-oak-b"][Math.floor(treeHash(ix, iy, 4) * 4)],
-                    sortKey: -lat * 100000
+                // Only remember "no tree here" once the map has fully loaded,
+                // otherwise a spot that simply hasn't loaded yet gets stuck empty
+                if (tilesReady || tree) {
+                    treeCache[key] = tree;
+                    treeCacheCount++;
                 }
-            });
+            }
 
-            if (features.length > 5000) break;
+            if (tree) features.push(tree);
+
+            if (features.length > 8000) break;
         }
+
+        if (features.length > 8000) break;
     }
 
     source.setData({ type: "FeatureCollection", features: features });
@@ -1195,15 +1232,25 @@ if (waterQueryLayers.length > 0 &&
 
 map.on("load", setupTrees);
 
+let treeTimer = null;
+
+function runTrees() {
+    clearTimeout(treeTimer);
+    const tilesReady = map.areTilesLoaded();
+    updateTrees();
+    if (tilesReady) treesNeedUpdate = false;
+}
+
+// Quick first pass right after you stop moving...
 map.on("moveend", function() {
     treesNeedUpdate = true;
+    clearTimeout(treeTimer);
+    treeTimer = setTimeout(runTrees, 100);
 });
 
+// ...and a second pass once everything has finished loading, if needed
 map.on("idle", function() {
-    if (treesNeedUpdate) {
-        treesNeedUpdate = false;
-        updateTrees();
-    }
+    if (treesNeedUpdate) runTrees();
 });
 
 let characterMarker = null;
