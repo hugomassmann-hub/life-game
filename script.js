@@ -1,3 +1,7 @@
+window.onerror = function(message, source, line) {
+    alert("Error: " + message + " (line " + line + ")");
+};
+
 let xp = Number(localStorage.getItem("xp")) || 0;
 
 const items = [
