@@ -981,8 +981,7 @@ function makeTreeImage(kind) {
         blobs("#17442a", 13, 62, cy, 28, 12, 18);
         blobs("#26653a", 10, 57, cy - 6, 21, 8, 13);
         blobs("#3f8f52", 7, 51, cy - 12, 14, 4, 8);
-
-        sparkles(64, cy, 30, 6);
+        
     }
 
     // ===== PINE =====
@@ -990,7 +989,7 @@ function makeTreeImage(kind) {
 
         const tall = kind === "pine-b";
 
-        const widths  = tall ? [26, 23, 20, 16, 12] : [34, 30, 25, 19];
+        const widths  = tall ? [38, 34, 29, 23, 17] : [48, 42, 35, 26];
         const bottoms = tall ? [130, 108, 86, 64, 42] : [128, 102, 78, 54];
         const heights = tall ? 34 : 40;
         const colors  = ["#0b2a1a", "#0f3221", "#133b26", "#184530", "#1d5136"];
@@ -1051,17 +1050,6 @@ function makeTreeImage(kind) {
             g.restore();
         });
 
-        // Glow at the very top
-        const topY = bottoms[widths.length - 1] - (heights + 8);
-        const glow = g.createRadialGradient(64, topY + 4, 1, 64, topY + 4, 16);
-        glow.addColorStop(0, "rgba(170,255,225,0.7)");
-        glow.addColorStop(1, "rgba(170,255,225,0)");
-        g.fillStyle = glow;
-        g.beginPath();
-        g.arc(64, topY + 4, 16, 0, Math.PI * 2);
-        g.fill();
-
-        sparkles(64, (topY + bottoms[0]) / 2, tall ? 18 : 26, 5);
     }
 
     return g.getImageData(0, 0, W, H);
