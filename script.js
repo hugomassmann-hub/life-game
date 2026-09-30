@@ -1355,6 +1355,8 @@ function closeQuests() {
     setActiveTab("tabHomeButton");
 }
 
+document.getElementById("tabQuestsButton").onclick = openQuests;
+
 document.getElementById("pageCommonQuest").addEventListener(
     "click",
     function() {
@@ -4609,5 +4611,3 @@ document.getElementById("tabHomeButton").onclick = function() {
     document.getElementById("homePage").style.display = "block";
     setActiveTab("tabHomeButton");
 };
-
-document.getElementById("tabQuestsButton").onclick = openQuests;
