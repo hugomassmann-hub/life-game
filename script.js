@@ -401,10 +401,6 @@ const chestRewards = [
     { chance: 2,  xp: 500, emoji: "👑", title: "JACKPOT!" }
 ];
 
-function getQuestTimerMinutes(quest) {
-    return questTimers[quest.name] || 0;
-}
-
 function getTimers() {
     try {
         const saved = JSON.parse(localStorage.getItem("questTimerState"));
