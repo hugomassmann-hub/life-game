@@ -636,6 +636,8 @@ document.getElementById("mobileXP").textContent =
     document.getElementById("panelXPText").textContent = xpIntoLevel + " / " + xpNeeded + " XP";
     document.getElementById("panelXPFill").style.width = percentage + "%";
 
+    if (window.refreshMapPins) window.refreshMapPins();
+
     renderItemsList();
 }
 
@@ -1319,6 +1321,7 @@ if (navigator.geolocation) {
         function(position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
+                        userPos = { lat: lat, lng: lng };
 
             placeCharacterOnMap(lat, lng);
             map.flyTo({ center: [lng, lat], zoom: 16 });
@@ -1642,14 +1645,16 @@ function handleQuestCompletion(shouldPost) {
         updateStreak();
         updateGame();
 
-        element.innerHTML =
-            "✅ Quest completed! +" +
-            questXP +
-            " XP";
+        if (element) {
+            element.innerHTML =
+                "✅ Quest completed! +" +
+                questXP +
+                " XP";
 
-        element.classList.add(
-            "completed"
-        );
+            element.classList.add(
+                "completed"
+            );
+        }
 
         displayQuest(
             document.getElementById("pageCommonQuest"),
@@ -4654,3 +4659,201 @@ map.on("load", updateCompass);
 document.getElementById("mapCompass").onclick = function() {
     map.easeTo({ bearing: 0, duration: 600 });
 };
+
+// ===== MAP QUESTS =====
+
+const MAP_QUEST_TEST_MODE = true;   // true = skip the "be there" check. Set to false when done testing.
+const MAP_QUEST_RADIUS = 60;        // meters you must be within to complete
+
+const pinColors = { common: "#5f9e6e", uncommon: "#5b8fd1", rare: "#9a74d6" };
+
+// CUSTOM QUESTS: exact places you choose. Coordinates are latitude first, then longitude.
+// (In Google Maps, press and hold a spot and the numbers appear at the top of the screen.)
+const customMapQuests = [
+    {
+        id: "example-lookout",
+        name: "Reach the lookout",
+        emoji: "⛰️",
+        xp: 250,
+        rarity: "rare",
+        lat: 37.8,
+        lng: -122.45
+    }
+];
+
+// GENERIC QUESTS: appear near every player. "kind" says what place to look for.
+const genericMapQuests = [
+    { id: "park",  name: "Visit a park you've never been to", emoji: "🌳", xp: 150, rarity: "uncommon", kind: "park" },
+    { id: "water", name: "Stand by the water",                emoji: "🌊", xp: 150, rarity: "uncommon", kind: "water" }
+];
+
+let userPos = null;
+const mapPins = {};
+
+function distanceMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const toRad = Math.PI / 180;
+    const dLat = (lat2 - lat1) * toRad;
+    const dLng = (lng2 - lng1) * toRad;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function getGenericSpots() {
+    try {
+        const saved = JSON.parse(localStorage.getItem("mapQuestSpots"));
+        if (saved && saved.date === today) return saved.spots;
+    } catch (e) {}
+    return {};
+}
+
+function saveGenericSpots(spots) {
+    localStorage.setItem("mapQuestSpots", JSON.stringify({ date: today, spots: spots }));
+}
+
+function mapQuestKey(q) {
+    return "map-" + q.id + "-" + today;
+}
+
+function addMapPin(q, lat, lng) {
+
+    if (mapPins[q.id]) return;
+
+    const el = document.createElement("div");
+    el.className = "map-pin";
+    el.style.setProperty("--pin", pinColors[q.rarity] || pinColors.common);
+    el.innerHTML = "<div class='map-pin-head'>" + q.emoji + "</div><div class='map-pin-tail'></div>";
+
+    el.onclick = function(event) {
+        event.stopPropagation();
+        tapMapPin(q, lat, lng);
+    };
+
+    new maplibregl.Marker({ element: el, anchor: "bottom" })
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+    mapPins[q.id] = { el: el, q: q };
+}
+
+window.refreshMapPins = function() {
+    Object.keys(mapPins).forEach(function(id) {
+        const pin = mapPins[id];
+        pin.el.classList.toggle("done", completedQuests.includes(mapQuestKey(pin.q)));
+    });
+};
+
+function tapMapPin(q, lat, lng) {
+
+    const key = mapQuestKey(q);
+
+    if (completedQuests.includes(key)) {
+        alert("You already completed this one today ✅");
+        return;
+    }
+
+    if (!MAP_QUEST_TEST_MODE) {
+
+        if (!userPos) {
+            alert("Turn on location to complete map quests.");
+            return;
+        }
+
+        const d = distanceMeters(userPos.lat, userPos.lng, lat, lng);
+
+        if (d > MAP_QUEST_RADIUS) {
+            const away = d >= 1000 ? (d / 1000).toFixed(1) + " km" : Math.round(d) + " m";
+            alert(q.emoji + " " + q.name + "\n+" + q.xp + " XP\n\nYou're " + away +
+                " away. Get within " + MAP_QUEST_RADIUS + " m to complete it.");
+            return;
+        }
+    }
+
+    completeQuest(null, { name: q.name, emoji: q.emoji, xp: q.xp }, key);
+
+    const popup = document.getElementById("questPopup");
+    popup.dataset.questRarity = q.rarity;
+    popup.dataset.questType = "map";
+}
+
+// Find a real spot on screen for a generic quest
+function findSpotInView(kind) {
+
+    const canvas = map.getCanvas();
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+
+    function hasWater(x, y) {
+        return waterQueryLayers.length > 0 &&
+            map.queryRenderedFeatures([x, y], { layers: waterQueryLayers }).length > 0;
+    }
+
+    const spots = [];
+
+    for (let sy = h * 0.25; sy < h * 0.6; sy += 25) {
+        for (let sx = 30; sx < w - 30; sx += 25) {
+
+            if (hasWater(sx, sy)) continue;
+
+            if (kind === "park") {
+
+                if (map.queryRenderedFeatures([sx, sy], { layers: treeQueryLayers }).length > 0) {
+                    spots.push([sx, sy]);
+                }
+
+            } else if (kind === "water") {
+
+                if (hasWater(sx + 30, sy) || hasWater(sx - 30, sy) ||
+                    hasWater(sx, sy + 30) || hasWater(sx, sy - 30)) {
+                    spots.push([sx, sy]);
+                }
+            }
+        }
+    }
+
+    if (spots.length === 0) return null;
+
+    const pick = spots[Math.floor(Math.random() * spots.length)];
+    return map.unproject(pick);
+}
+
+function runMapQuests() {
+
+    customMapQuests.forEach(function(q) {
+        addMapPin(q, q.lat, q.lng);
+    });
+
+    const spots = getGenericSpots();
+    let changed = false;
+
+    // Only place generic quests once we know where the player is and the map is looking at them
+    let nearPlayer = false;
+
+    if (userPos) {
+        const c = map.getCenter();
+        nearPlayer = distanceMeters(c.lat, c.lng, userPos.lat, userPos.lng) < 500;
+    }
+
+    genericMapQuests.forEach(function(q) {
+
+        if (!spots[q.id] && nearPlayer && treeQueryLayers.length > 0 && map.getZoom() >= 14) {
+
+            const ll = findSpotInView(q.kind);
+
+            if (ll) {
+                spots[q.id] = { lat: ll.lat, lng: ll.lng };
+                changed = true;
+            }
+        }
+
+        if (spots[q.id]) addMapPin(q, spots[q.id].lat, spots[q.id].lng);
+    });
+
+    if (changed) saveGenericSpots(spots);
+
+    window.refreshMapPins();
+}
+
+map.on("idle", runMapQuests);
