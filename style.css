@@ -198,26 +198,6 @@ transform: none;
 box-shadow: none;
 }
 
-/* CHARACTER UNLOCKS */
-
-.character-unlocks {
-margin-top: 35px;
-}
-
-.unlock {
-background: var(--card);
-border: 1px solid var(--border);
-border-radius: 14px;
-padding: 14px;
-margin: 10px 0;
-color: #777;
-}
-
-.unlock.unlocked {
-color: var(--text);
-border-color: var(--accent);
-}
-
 /* CUSTOMIZE PAGE */
 
 .customize-page {
@@ -281,27 +261,6 @@ cursor: pointer;
 
 .item span {
 display: inline-block;
-}
-
-/* BACK BUTTON */
-
-#backButton {
-display: block;
-background: var(--card);
-color: var(--text);
-border: 1px solid var(--accent);
-border-radius: 14px;
-padding: 12px 20px;
-font-size: 16px;
-font-weight: bold;
-cursor: pointer;
-transition: 0.2s ease;
-margin-bottom: 20px;
-}
-
-#backButton:hover {
-background: var(--accent);
-transform: translateY(-2px);
 }
 
 @media all {
@@ -404,56 +363,6 @@ transform: translateY(-2px);
     .xp-bar {
         height: 100%;
     }
-
-    .mobile-buttons {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        display: block;
-        z-index: 40;
-        pointer-events: none;
-    }
-
-    .mobile-buttons button {
-        position: absolute;
-        pointer-events: auto;
-        width: 120px;
-        height: 52px;
-        padding: 0;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(23, 32, 27, 0.95);
-        color: var(--text);
-        border: 1px solid VAR(--BORDER);
-        border-radius: 16px;
-        font-size: clamp(12px, 3.5vw, 15px);
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-    }
-
-    /* Quests */
-.mobile-buttons button:nth-child(1) {
-    top: 66dvh;
-    left: 15%;
-    width: 70%;
-    height: 52px;
-    border: 1px solid var(--accent);
-}
-
-/* Feed */
-.mobile-buttons button:nth-child(2) {
-    top: 17dvh;
-    right: 4%;
-}
-
-.mobile-buttons button:nth-child(3) {
-    top: 17dvh;
-    left: 4%;
-}
 
 }
     #map {
@@ -646,12 +555,6 @@ transform: translateY(-2px);
     position: relative;
 }
 
-#questsBackButton {
-    position: absolute;
-    top: -20px;
-    left: 10px;
-}
-
 #pastQuestsButton {
     position: absolute;
     top: -20px;
@@ -726,12 +629,6 @@ transform: translateY(-2px);
     overflow: hidden;
 }
 
-#feedBackButton {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-}
-
 #accountPage {
     display: none;
     text-align: center;
@@ -741,11 +638,6 @@ transform: translateY(-2px);
     padding-top: 35px;
 }
 
-#accountBackButton {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-}
 .photo-upload-button {
 
     display: block;
@@ -1797,13 +1689,6 @@ transform: translateY(-2px);
     display: none;
 }
 
-.leaflet-marker-icon.map-character-marker {
-    background: transparent !important;
-    border: none !important;
-    width: 70px !important;
-    height: 90px !important;
-}
-
 .map-character-icon {
     position: absolute;
     top: 0;
@@ -1833,34 +1718,6 @@ transform: translateY(-2px);
 
 .map-character-icon .equipped-item {
     position: absolute !important;
-}
-
-.leaflet-control-attribution {
-    background: rgba(23, 32, 27, 0.75) !important;
-    color: var(--muted) !important;
-}
-
-.leaflet-control-attribution a {
-    color: #ccc !important;
-}
-.leaflet-tile-pane {
-  filter: sepia(0.35) saturate(1.1) contrast(0.95) brightness(1.02);
-}
-/* Parchment zoom buttons */
-.leaflet-control-zoom {
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.leaflet-control-zoom a {
-  background: #f3e6c8;
-  color: #5a3e1b;
-  border-bottom: 1px solid #d4bf8f;
-  font-weight: bold;
-}
-.leaflet-control-zoom a:hover {
-  background: #e8d5a5;
 }
 
 .maplibregl-ctrl-group {

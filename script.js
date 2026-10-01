@@ -1,7 +1,3 @@
-window.onerror = function(message, source, line) {
-    alert("Error: " + message + " (line " + line + ")");
-};
-
 let xp = Number(localStorage.getItem("xp")) || 0;
 
 const items = [
@@ -1329,7 +1325,7 @@ if (navigator.geolocation) {
 
         function(error) {
             // Temporary, so we can see why location fails. We'll remove it later.
-            alert("Location problem: " + error.message);
+            console.log("Location problem:", error.message);
         },
 
         { enableHighAccuracy: true, timeout: 10000 }
@@ -4774,11 +4770,6 @@ const customMapQuests = [
     },
 ];
 
-const genericMapQuests = [
-    { id: "peak",    name: "Reach the high point",  emoji: "⛰️", xp: 250, rarity: "rare",   kind: "poi", sourceLayer: "mountain_peak", maxDist: 8000 },
-    { id: "library", name: "Visit a local library", emoji: "📚", xp: 100, rarity: "common", kind: "poi", sourceLayer: "poi", filter: ["==", "class", "library"], maxDist: 5000 }
-];
-
 let userPos = null;
 const mapPins = {};
 
@@ -4870,47 +4861,6 @@ function tapMapPin(q, lat, lng) {
     popup.dataset.questType = "map";
 }
 
-// Find a real spot on screen for a generic quest
-function findSpotInView(kind) {
-
-    const canvas = map.getCanvas();
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-
-    function hasWater(x, y) {
-        return waterQueryLayers.length > 0 &&
-            map.queryRenderedFeatures([x, y], { layers: waterQueryLayers }).length > 0;
-    }
-
-    const spots = [];
-
-    for (let sy = h * 0.25; sy < h * 0.6; sy += 25) {
-        for (let sx = 30; sx < w - 30; sx += 25) {
-
-            if (hasWater(sx, sy)) continue;
-
-            if (kind === "park") {
-
-                if (map.queryRenderedFeatures([sx, sy], { layers: treeQueryLayers }).length > 0) {
-                    spots.push([sx, sy]);
-                }
-
-            } else if (kind === "water") {
-
-                if (hasWater(sx + 30, sy) || hasWater(sx - 30, sy) ||
-                    hasWater(sx, sy + 30) || hasWater(sx, sy - 30)) {
-                    spots.push([sx, sy]);
-                }
-            }
-        }
-    }
-
-    if (spots.length === 0) return null;
-
-    const pick = spots[Math.floor(Math.random() * spots.length)];
-    return map.unproject(pick);
-}
-
 function runMapQuests() {
 
     customMapQuests.forEach(function(q) {
@@ -4928,14 +4878,14 @@ function runMapQuests() {
         nearPlayer = distanceMeters(c.lat, c.lng, userPos.lat, userPos.lng) < 500;
     }
 
-    genericMapQuests.forEach(function(q) {
+        genericMapQuests.forEach(function(q) {
 
         if (!spots[q.id] && nearPlayer && treeQueryLayers.length > 0 && map.getZoom() >= 14) {
 
-            const ll = findSpotInView(q.kind);
+            const spot = findPoiNearPlayer(q);
 
-            if (ll) {
-                spots[q.id] = { lat: ll.lat, lng: ll.lng };
+            if (spot) {
+                spots[q.id] = spot;
                 changed = true;
             }
         }
