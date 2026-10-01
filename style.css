@@ -2212,3 +2212,30 @@ body {
     line-height: 18px;
     text-align: center;
 }
+
+/* MAP PINS: Forest Slate */
+.map-pin-head {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(23, 32, 27, 0.6);
+}
+
+.map-pin-tail {
+    border-top-color: var(--accent);
+}
+
+.map-pin.done .map-pin-head::after {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* FEED: LOCATION QUESTS (teal) */
+.feed-post.post-location {
+    border: 3px solid #2dd4bf;
+    background: linear-gradient(145deg, rgba(45, 212, 191, 0.22), var(--card) 65%);
+    box-shadow: 0 0 26px rgba(45, 212, 191, 0.45);
+}
+
+.post-location .rarity-badge {
+    color: #2dd4bf;
+}

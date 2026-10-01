@@ -3219,7 +3219,9 @@ async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, descr
 }
 
 function getRarityLabel(rarity) {
-    return rarity === "bosscomplete" ? "BOSS COMPLETE!" : String(rarity || "common").toUpperCase();
+    if (rarity === "bosscomplete") return "BOSS COMPLETE!";
+    if (rarity === "location") return "LOCATION QUEST";
+    return String(rarity || "common").toUpperCase();
 }
 
 // TROPHY CASE
@@ -4686,8 +4688,8 @@ const customMapQuests = [
         emoji: "⛰️",
         xp: 400,
         rarity: "rare",
-        lat: 37.9236,      // East Peak, approximate
-        lng: -122.5964
+        lat: 37.92750,      // East Peak, approximate
+        lng: -122.57944
     },
     {
         id: "bison-paddock",
@@ -4713,8 +4715,8 @@ const customMapQuests = [
         emoji: "🦅",
         xp: 250,
         rarity: "rare",
-        lat: 37.8307,      // approximate
-        lng: -122.4994
+        lat: 37.82762,      // approximate
+        lng: -122.49967
     },
     {
         id: "twin-peaks",
@@ -4731,8 +4733,8 @@ const customMapQuests = [
         emoji: "🌲",
         xp: 250,
         rarity: "rare",
-        lat: 37.8912,      // approximate, near the main entrance
-        lng: -122.5714
+        lat: 37.89264,      // approximate, near the main entrance
+        lng: -122.57222
     },
     {
         id: "stinson-beach",
@@ -4740,8 +4742,8 @@ const customMapQuests = [
         emoji: "🏖️",
         xp: 200,
         rarity: "uncommon",
-        lat: 37.9003,      // approximate
-        lng: -122.6444
+        lat: 37.89579,      // approximate
+        lng: -122.63994
     },
     {
         id: "muir-beach",
@@ -4749,8 +4751,8 @@ const customMapQuests = [
         emoji: "🌊",
         xp: 200,
         rarity: "uncommon",
-        lat: 37.8601,      // approximate
-        lng: -122.5774
+        lat: 37.85963,      // approximate
+        lng: -122.57595
     },
     {
         id: "grandview-park",
@@ -4767,15 +4769,14 @@ const customMapQuests = [
         emoji: "🦆",
         xp: 150,
         rarity: "common",
-        lat: 37.9783,      // approximate, check it's on the lake trail
-        lng: -122.5675
+        lat: 37.95609,      // approximate, check it's on the lake trail
+        lng: -122.57587
     },
 ];
 
-// GENERIC QUESTS: appear near every player. "kind" says what place to look for.
 const genericMapQuests = [
-    { id: "park",  name: "Visit a park you've never been to", emoji: "🌳", xp: 150, rarity: "uncommon", kind: "park" },
-    { id: "water", name: "Stand by the water",                emoji: "🌊", xp: 150, rarity: "uncommon", kind: "water" }
+    { id: "peak",    name: "Reach the high point",  emoji: "⛰️", xp: 250, rarity: "rare",   kind: "poi", sourceLayer: "mountain_peak", maxDist: 8000 },
+    { id: "library", name: "Visit a local library", emoji: "📚", xp: 100, rarity: "common", kind: "poi", sourceLayer: "poi", filter: ["==", "class", "library"], maxDist: 5000 }
 ];
 
 let userPos = null;
@@ -4865,7 +4866,7 @@ function tapMapPin(q, lat, lng) {
     completeQuest(null, { name: q.name, emoji: q.emoji, xp: q.xp }, key);
 
     const popup = document.getElementById("questPopup");
-    popup.dataset.questRarity = q.rarity;
+        popup.dataset.questRarity = "location";
     popup.dataset.questType = "map";
 }
 
