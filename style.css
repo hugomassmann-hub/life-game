@@ -2397,3 +2397,25 @@ body {
     text-decoration: underline;
     cursor: pointer;
 }
+
+/* SWAP BUTTON */
+.qc-swap {
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: none;
+    color: var(--accent);
+    border: 1px solid rgba(217, 178, 95, 0.5);
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.qc-swap:active { background: rgba(217, 178, 95, 0.15); }
+
+@keyframes cardSwap {
+    0%   { opacity: 0; transform: translateY(-10px) rotateX(70deg); }
+    100% { opacity: 1; transform: none; }
+}
+
+#questPage .quest-card.swapped { animation: cardSwap 0.35s ease; }

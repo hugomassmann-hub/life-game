@@ -433,6 +433,7 @@ function displayQuest(element, quest, rarity) {
     element.classList.add(rarity);
 
     const done = completedQuests.includes(rarity + "-" + quest.name);
+    const canSwap = !done && !todaysQuests.swapUsed;
 
     element.classList.toggle("completed", done);
 
@@ -441,10 +442,53 @@ function displayQuest(element, quest, rarity) {
         "<div class='qc-body'>" +
             "<div class='qc-rarity'>" + rarity.toUpperCase() + "</div>" +
             "<div class='qc-name'>" + escapeHTML(quest.name) + "</div>" +
+            (canSwap ? "<button class='qc-swap'>↻ Swap</button>" : "") +
         "</div>" +
         "<div class='qc-xp'>+" + quest.xp + "<small>XP</small></div>";
 
+    const swapButton = element.querySelector(".qc-swap");
+
+    if (swapButton) {
+        swapButton.onclick = function(event) {
+            event.stopPropagation();   // don't open the complete popup
+            swapQuest(rarity);
+        };
+    }
+
     updateQuestHeader();
+}
+
+function swapQuest(rarity) {
+
+    if (todaysQuests.swapUsed) return;
+
+    const current = todaysQuests[rarity];
+
+    if (completedQuests.includes(rarity + "-" + current.name)) return;
+
+    const options = quests[rarity].filter(function(q) {
+        return q.name !== current.name;
+    });
+
+    todaysQuests[rarity] = options[Math.floor(Math.random() * options.length)];
+    todaysQuests.swapUsed = true;
+
+    localStorage.setItem("todaysQuests", JSON.stringify(todaysQuests));
+    saveTodaysQuestsToCloud();
+
+    // Redraw every quest card (the swap button disappears from the other two)
+    ["common", "uncommon", "rare"].forEach(function(r) {
+        displayQuest(document.getElementById("page" + r.charAt(0).toUpperCase() + r.slice(1) + "Quest"), todaysQuests[r], r);
+        displayQuest(document.getElementById(r + "Quest"), todaysQuests[r], r);
+    });
+
+    const card = document.getElementById("page" + rarity.charAt(0).toUpperCase() + rarity.slice(1) + "Quest");
+
+    if (card) {
+        card.classList.remove("swapped");
+        void card.offsetWidth;          // restarts the animation
+        card.classList.add("swapped");
+    }
 }
 
 // Progress bar + countdown at the top of the Quests page
