@@ -426,45 +426,67 @@ if (savedQuests) {
     );
 }
 
+function displayQuest(element, quest, rarity) {
 
-function displayQuest(
-    element,
-    quest,
-    rarity
-) {
+    if (!element) return;
 
     element.classList.add(rarity);
 
-    let questName =
-        rarity + "-" + quest.name;
+    const done = completedQuests.includes(rarity + "-" + quest.name);
 
-
-    if (completedQuests.includes(questName)) {
-
-       element.innerHTML =
-    "✅ Quest completed! +" +
-    quest.xp +
-    " XP";
-
-element.classList.add(
-    "completed"
-);
-        return;
-    }
-
+    element.classList.toggle("completed", done);
 
     element.innerHTML =
-        "<strong>" +
-        rarity.toUpperCase() +
-        "</strong><br>" +
-        quest.emoji +
-        " " +
-        quest.name +
-        "<span class='xp-text'> +" +
-        quest.xp +
-        " XP</span>";
+        "<div class='qc-icon'>" + (done ? "✓" : quest.emoji) + "</div>" +
+        "<div class='qc-body'>" +
+            "<div class='qc-rarity'>" + rarity.toUpperCase() + "</div>" +
+            "<div class='qc-name'>" + escapeHTML(quest.name) + "</div>" +
+        "</div>" +
+        "<div class='qc-xp'>+" + quest.xp + "<small>XP</small></div>";
+
+    updateQuestHeader();
 }
 
+// Progress bar + countdown at the top of the Quests page
+function updateQuestHeader() {
+
+    if (!todaysQuests) return;
+
+    const segs = document.querySelectorAll(".qp-seg");
+    let done = 0;
+    let xpLeft = 0;
+
+    ["common", "uncommon", "rare"].forEach(function(rarity, i) {
+
+        const q = todaysQuests[rarity];
+
+        if (!q) return;
+
+        const isDone = completedQuests.includes(rarity + "-" + q.name);
+
+        if (isDone) done++;
+        else xpLeft += q.xp;
+
+        if (segs[i]) segs[i].classList.toggle("on", isDone);
+    });
+
+    const progressText = document.getElementById("qpProgressText");
+    const xpText = document.getElementById("qpXpLeft");
+    const countdown = document.getElementById("qpCountdown");
+
+    if (progressText) progressText.textContent = done + " of 3 complete";
+
+    if (xpText) {
+        xpText.textContent = done === 3 ? "All done. Nice work 🎉" : "+" + xpLeft + " XP up for grabs";
+    }
+
+    if (countdown) {
+        const now = new Date();
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0);
+        countdown.textContent = "New quests in " + formatCountdown(midnight - now);
+    }
+}
 
 displayQuest(
     commonQuest,
@@ -4828,3 +4850,6 @@ function runMapQuests() {
 }
 
 map.on("idle", runMapQuests);
+
+setInterval(updateQuestHeader, 30000);
+updateQuestHeader();

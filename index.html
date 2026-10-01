@@ -3,7 +3,7 @@
 <head>
     <title>Life Game</title>
 
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
 
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 
@@ -188,36 +188,66 @@
 
 </div>
 
-
 <div id="questPage" class="quest-page">
 
-    <h1>🎯 Quests</h1>
+    <div class="qp-header">
+        <div>
+            <div class="qp-title">Quests</div>
+            <div class="qp-sub" id="qpCountdown">New quests soon</div>
+        </div>
+        <button id="pastQuestsButton" class="qp-icon-btn" aria-label="Past quests">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>History</span>
+        </button>
+    </div>
 
-    <div class="quest" id="pageCommonQuest"></div>
+    <div class="qp-progress">
+        <div class="qp-progress-top">
+            <span id="qpProgressText">0 of 3 complete</span>
+            <span id="qpXpLeft"></span>
+        </div>
+        <div class="qp-segments">
+            <div class="qp-seg"></div>
+            <div class="qp-seg"></div>
+            <div class="qp-seg"></div>
+        </div>
+    </div>
 
-    <div class="quest" id="pageUncommonQuest"></div>
+    <div class="qp-label">Today</div>
 
-    <div class="quest" id="pageRareQuest"></div>
+    <div class="quest-card" id="pageCommonQuest"></div>
+    <div class="quest-card" id="pageUncommonQuest"></div>
+    <div class="quest-card" id="pageRareQuest"></div>
 
-    <button id="pastQuestsButton">
-    📜 Past Quests
-</button>
+    <div class="qp-label">Challenges</div>
 
-<button id="bossQuestsPageButton">
-    👑 Boss Quests
-</button>
+    <button id="bossQuestsPageButton" class="qp-tile qp-tile-wide">
+        <svg viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+        <div class="qp-tile-text">
+            <span class="qp-tile-title">Boss Quests</span>
+            <small>Multi-step challenges with big rewards</small>
+        </div>
+    </button>
 
-<button id="statsPageButton">
-    📊 Stats
-</button>
+    <div class="qp-tile-row">
+        <button id="statsPageButton" class="qp-tile">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            <div class="qp-tile-text">
+                <span class="qp-tile-title">Stats</span>
+                <small>Your skill levels</small>
+            </div>
+        </button>
 
-<button id="resetQuestsButton">
-    🔄 Reset Quests
-</button>
+        <button id="trophyCaseButton" class="qp-tile">
+            <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <div class="qp-tile-text">
+                <span class="qp-tile-title">Trophies</span>
+                <small>Your boss rewards</small>
+            </div>
+        </button>
+    </div>
 
-<button id="trophyCaseButton">
-    🏆 Trophy Case
-</button>
+    <button id="resetQuestsButton" class="qp-reset">Reset today's quests (testing)</button>
 
 </div>
 
@@ -434,7 +464,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=9"></script>
 
 <script type="module">
   // Import the functions you need from the SDKs you need

@@ -2096,3 +2096,304 @@ body {
 .post-location .rarity-badge {
     color: #2dd4bf;
 }
+
+/* ===== QUESTS PAGE REDESIGN ===== */
+#questPage {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    text-align: left;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(90px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Header */
+.qp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.qp-title {
+    font-size: clamp(26px, 8vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+}
+
+.qp-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+#questPage .qp-icon-btn {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: auto;
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--card);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#questPage .qp-icon-btn:active { transform: scale(0.95); }
+
+#questPage .qp-icon-btn svg,
+#questPage .qp-tile svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Daily progress */
+.qp-progress {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.qp-progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+#qpXpLeft {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    text-align: right;
+}
+
+.qp-segments {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.qp-seg {
+    height: 8px;
+    border-radius: 6px;
+    background: var(--bg);
+    transition: background 0.3s ease;
+}
+
+.qp-seg.on { background: var(--accent); }
+
+.qp-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 6px 2px 10px;
+}
+
+/* Quest cards */
+#questPage .quest-card {
+    --rc: var(--accent);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 10px;
+    padding: 14px 14px 14px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+#questPage .quest-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: var(--rc);
+}
+
+#questPage .quest-card.common   { --rc: #5f9e6e; }
+#questPage .quest-card.uncommon { --rc: #5b8fd1; }
+#questPage .quest-card.rare     { --rc: #9a74d6; }
+
+#questPage .quest-card:active { transform: scale(0.98); }
+
+#questPage .quest-card.completed {
+    opacity: 0.65;
+    cursor: default;
+    transform: none;
+}
+
+.qc-icon {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 14px;
+    background: var(--card-2);
+}
+
+.quest-card.completed .qc-icon {
+    background: var(--rc);
+    color: var(--bg);
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.qc-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.qc-rarity {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: var(--rc);
+}
+
+.qc-name {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text);
+    margin-top: 2px;
+}
+
+.quest-card.completed .qc-name {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.qc-xp {
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.qc-xp small {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+}
+
+/* Challenge tiles */
+.qp-tile-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#questPage .qp-tile {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 14px;
+    box-sizing: border-box;
+    text-align: left;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+#questPage .qp-tile svg {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+#questPage .qp-tile:hover {
+    background: var(--card);
+    color: var(--text);
+    border-color: var(--accent);
+    transform: none;
+}
+
+#questPage .qp-tile:active { transform: scale(0.97); }
+
+.qp-tile-text { min-width: 0; }
+
+.qp-tile-title {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.qp-tile small {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--muted);
+}
+
+#questPage .qp-tile-wide {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    border-color: rgba(217, 178, 95, 0.45);
+    background: linear-gradient(135deg, rgba(217, 178, 95, 0.14), var(--card) 70%);
+}
+
+#questPage .qp-tile-wide:hover {
+    background: linear-gradient(135deg, rgba(217, 178, 95, 0.14), var(--card) 70%);
+}
+
+#questPage .qp-reset {
+    display: block;
+    width: 100%;
+    margin: 18px 0 0;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+}
