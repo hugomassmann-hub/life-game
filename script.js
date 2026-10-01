@@ -4677,7 +4677,7 @@ const customMapQuests = [
         xp: 250,
         rarity: "rare",
         lat: 38.02337,
-        lng: 122.61249
+        lng: -122.61249
     }
 ];
 
