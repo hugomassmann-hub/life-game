@@ -380,6 +380,294 @@ const quests = {
 
 };
 
+// ===== TIMER QUESTS, DAILY BONUS, DAILY CHEST =====
+
+const DAILY_BONUS_XP = 100;
+
+// Minutes each timer runs. The name must match the quest name exactly.
+const questTimers = {
+    "Doodle for 10 minutes with no phone": 10,
+    "Get moving for 30 minutes: walk, run, ride, or play a sport": 30,
+    "Spend 30 minutes outside without your phone": 30,
+    "Practice an instrument or skill for 30 minutes": 30,
+    "Spend an hour making something you're proud of": 60
+};
+
+// Chest prizes. "chance" values add up to 100.
+const chestRewards = [
+    { chance: 40, xp: 25,  emoji: "🎁", title: "Small prize" },
+    { chance: 30, xp: 50,  emoji: "🎁", title: "Nice!" },
+    { chance: 20, xp: 100, emoji: "✨", title: "Great find!" },
+    { chance: 8,  xp: 250, emoji: "💎", title: "Big haul!" },
+    { chance: 2,  xp: 500, emoji: "👑", title: "JACKPOT!" }
+];
+
+function getQuestTimerMinutes(quest) {
+    return questTimers[quest.name] || 0;
+}
+
+function getTimers() {
+    try {
+        const saved = JSON.parse(localStorage.getItem("questTimerState"));
+        if (saved && saved.date === today) return saved.timers;
+    } catch (e) {}
+    return {};
+}
+
+function saveTimers(timers) {
+    localStorage.setItem("questTimerState", JSON.stringify({ date: today, timers: timers }));
+}
+
+function formatClock(ms) {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+function redrawQuestCards() {
+    ["common", "uncommon", "rare"].forEach(function(r) {
+        displayQuest(
+            document.getElementById("page" + r.charAt(0).toUpperCase() + r.slice(1) + "Quest"),
+            todaysQuests[r],
+            r
+        );
+    });
+}
+
+// Returns true if the tap was used up by a timer (started it, or still waiting)
+function handleTimerTap(questName, quest) {
+
+    const minutes = getQuestTimerMinutes(quest);
+
+    if (!minutes) return false;
+    if (completedQuests.includes(questName)) return false;
+
+    const timers = getTimers();
+    const end = timers[questName];
+
+    if (!end) {
+
+        if (confirm("Start the " + minutes + "-minute timer?\n\nThe quest unlocks when it hits zero.")) {
+            timers[questName] = Date.now() + minutes * 60000;
+            saveTimers(timers);
+            redrawQuestCards();
+        }
+
+        return true;
+    }
+
+    if (Date.now() < end) return true;   // still running
+
+    return false;                        // time's up, let the normal popup open
+}
+
+// Updates the countdown text on every card (runs once a second)
+function tickTimers() {
+
+    if (!todaysQuests) return;
+
+    document.querySelectorAll(".qc-timer").forEach(function(el) {
+
+        const rarity = el.dataset.rarity;
+        const q = todaysQuests[rarity];
+
+        if (!q) return;
+
+        const minutes = getQuestTimerMinutes(q);
+        const end = getTimers()[rarity + "-" + q.name];
+
+        let text;
+        let ready = false;
+
+        if (!end) {
+            text = "⏱ " + minutes + " min timer · tap to start";
+        } else if (Date.now() < end) {
+            text = "⏳ " + formatClock(end - Date.now()) + " left";
+        } else {
+            text = "✅ Time's up · tap to complete";
+            ready = true;
+        }
+
+        el.textContent = text;
+        el.classList.toggle("ready", ready);
+    });
+
+    renderChestCard();
+}
+
+setInterval(tickTimers, 1000);
+
+// ----- Daily bonus + chest -----
+
+function allDailyDone() {
+
+    if (!todaysQuests) return false;
+
+    return ["common", "uncommon", "rare"].every(function(r) {
+        return todaysQuests[r] && completedQuests.includes(r + "-" + todaysQuests[r].name);
+    });
+}
+
+// The chest result is remembered as a marker like "chest-Thu Oct 01 2026-50"
+function chestMarker() {
+    return completedQuests.find(function(m) {
+        return String(m).indexOf("chest-" + today + "-") === 0;
+    });
+}
+
+function saveXPAndProgress() {
+    localStorage.setItem("xp", xp);
+    localStorage.setItem("completedQuests", JSON.stringify(completedQuests));
+    saveXPToCloud();
+    saveCompletedQuestsToCloud();
+    updateGame();
+}
+
+function launchConfetti(container) {
+
+    const colors = ["#d9b25f", "#e8c97e", "#5f9e6e", "#5b8fd1", "#9a74d6", "#2dd4bf"];
+
+    for (let i = 0; i < 40; i++) {
+        const bit = document.createElement("span");
+        bit.className = "confetti";
+        bit.style.left = (Math.random() * 100) + "%";
+        bit.style.background = colors[i % colors.length];
+        bit.style.animationDelay = (Math.random() * 0.6) + "s";
+        bit.style.animationDuration = (1.6 + Math.random() * 1.4) + "s";
+        container.appendChild(bit);
+    }
+}
+
+function showRewardOverlay(emoji, title, text, buttonText, onButton) {
+
+    let overlay = document.getElementById("rewardOverlay");
+
+    if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "rewardOverlay";
+        document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML =
+        "<div class='ro-box'>" +
+            "<div class='ro-emoji'>" + emoji + "</div>" +
+            "<div class='ro-title'>" + escapeHTML(title) + "</div>" +
+            "<div class='ro-text'>" + escapeHTML(text) + "</div>" +
+            "<button class='ro-button'>" + escapeHTML(buttonText) + "</button>" +
+        "</div>";
+
+    overlay.style.display = "flex";
+
+    overlay.querySelector(".ro-button").onclick = function() {
+        overlay.style.display = "none";
+        if (onButton) onButton();
+    };
+
+    launchConfetti(overlay);
+}
+
+function checkDailyBonus() {
+
+    if (!allDailyDone()) return;
+
+    const marker = "bonus-" + today;
+
+    if (completedQuests.includes(marker)) return;
+
+    completedQuests.push(marker);
+    xp = xp + DAILY_BONUS_XP;
+    saveXPAndProgress();
+
+    renderChestCard();
+
+    showRewardOverlay(
+        "🎉",
+        "All 3 quests complete!",
+        "+" + DAILY_BONUS_XP + " XP daily bonus. Your chest is ready.",
+        "Open chest",
+        openChest
+    );
+}
+
+function rollChestReward() {
+
+    let roll = Math.random() * 100;
+
+    for (let i = 0; i < chestRewards.length; i++) {
+        roll -= chestRewards[i].chance;
+        if (roll < 0) return chestRewards[i];
+    }
+
+    return chestRewards[0];
+}
+
+function openChest() {
+
+    if (!allDailyDone()) return;
+
+    const existing = chestMarker();
+
+    if (existing) {
+        const amount = Number(String(existing).split("-").pop());
+        showRewardOverlay("🎁", "Already opened", "Today's chest gave you +" + amount + " XP. A new one unlocks tomorrow.", "Nice", null);
+        return;
+    }
+
+    const reward = rollChestReward();
+
+    completedQuests.push("chest-" + today + "-" + reward.xp);
+    xp = xp + reward.xp;
+    saveXPAndProgress();
+
+    renderChestCard();
+
+    showRewardOverlay(reward.emoji, reward.title, "+" + reward.xp + " XP", "Awesome", null);
+}
+
+function renderChestCard() {
+
+    const el = document.getElementById("dailyChest");
+
+    if (!el || !todaysQuests) return;
+
+    const opened = chestMarker();
+
+    let state, title, sub, icon;
+
+    if (opened) {
+        state = "opened";
+        icon = "🪙";
+        title = "Chest opened";
+        sub = "+" + String(opened).split("-").pop() + " XP today · new chest tomorrow";
+    } else if (allDailyDone()) {
+        state = "ready";
+        icon = "🎁";
+        title = "Your chest is ready!";
+        sub = "Tap to open";
+    } else {
+        state = "locked";
+        icon = "🎁";
+        title = "Daily chest";
+        sub = "Finish all 3 quests to unlock";
+    }
+
+    const signature = state + title + sub;
+
+    if (el.dataset.sig === signature) return;   // nothing changed, don't redraw
+
+    el.dataset.sig = signature;
+    el.className = "daily-chest " + state;
+
+    el.innerHTML =
+        "<div class='dc-icon'>" + icon + "</div>" +
+        "<div><div class='dc-title'>" + escapeHTML(title) + "</div>" +
+        "<div class='dc-sub'>" + escapeHTML(sub) + "</div></div>";
+
+    el.onclick = function() {
+        if (state !== "locked") openChest();
+    };
+}
 
 function getRandomQuest(category) {
 
@@ -432,8 +720,11 @@ function displayQuest(element, quest, rarity) {
 
     element.classList.add(rarity);
 
-    const done = completedQuests.includes(rarity + "-" + quest.name);
-    const canSwap = !done && !todaysQuests.swapUsed;
+    const key = rarity + "-" + quest.name;
+    const done = completedQuests.includes(key);
+    const hasTimer = getQuestTimerMinutes(quest) > 0;
+    const timerStarted = !!getTimers()[key];
+    const canSwap = !done && !todaysQuests.swapUsed && !timerStarted;
 
     element.classList.toggle("completed", done);
 
@@ -442,6 +733,7 @@ function displayQuest(element, quest, rarity) {
         "<div class='qc-body'>" +
             "<div class='qc-rarity'>" + rarity.toUpperCase() + "</div>" +
             "<div class='qc-name'>" + escapeHTML(quest.name) + "</div>" +
+            (hasTimer && !done ? "<div class='qc-timer' data-rarity='" + rarity + "'></div>" : "") +
             (canSwap ? "<button class='qc-swap'>↻ Swap</button>" : "") +
         "</div>" +
         "<div class='qc-xp'>+" + quest.xp + "<small>XP</small></div>";
@@ -450,12 +742,13 @@ function displayQuest(element, quest, rarity) {
 
     if (swapButton) {
         swapButton.onclick = function(event) {
-            event.stopPropagation();   // don't open the complete popup
+            event.stopPropagation();
             swapQuest(rarity);
         };
     }
 
     updateQuestHeader();
+    tickTimers();
 }
 
 function swapQuest(rarity) {
@@ -686,6 +979,7 @@ function completeQuest(
     questName,
     bossInfo
 ) {
+    if (!bossInfo && handleTimerTap(questName, quest)) return;
     if (
         !bossInfo &&
         completedQuests.includes(
@@ -1665,7 +1959,9 @@ function handleQuestCompletion(shouldPost) {
             "rare"
         );
 
-        popup.style.display = "none";
+            popup.style.display = "none";
+
+        checkDailyBonus();
     }
 
 
@@ -2148,6 +2444,8 @@ function resetQuests() {
     localStorage.removeItem("todaysQuests");
 
     completedQuests = [];
+
+    localStorage.removeItem("questTimerState");
 
     todaysQuests = {
 
