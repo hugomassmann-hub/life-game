@@ -4671,13 +4671,13 @@ const pinColors = { common: "#5f9e6e", uncommon: "#5b8fd1", rare: "#9a74d6" };
 // (In Google Maps, press and hold a spot and the numbers appear at the top of the screen.)
 const customMapQuests = [
     {
-        id: "example-lookout",
+        id: "Loma-Alta",
         name: "Reach the lookout",
         emoji: "⛰️",
         xp: 250,
         rarity: "rare",
-        lat: 37.8,
-        lng: -122.45
+        lat: 38.02337,
+        lng: 122.61249
     }
 ];
 
