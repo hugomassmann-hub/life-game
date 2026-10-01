@@ -4670,15 +4670,106 @@ const pinColors = { common: "#5f9e6e", uncommon: "#5b8fd1", rare: "#9a74d6" };
 // CUSTOM QUESTS: exact places you choose. Coordinates are latitude first, then longitude.
 // (In Google Maps, press and hold a spot and the numbers appear at the top of the screen.)
 const customMapQuests = [
+
     {
-        id: "Loma-Alta",
+        id: "loma-alta",
         name: "Reach the lookout",
         emoji: "⛰️",
         xp: 250,
         rarity: "rare",
         lat: 38.02337,
         lng: -122.61249
-    }
+    },
+{
+        id: "mount-tam",
+        name: "Reach the top of Mount Tam",
+        emoji: "⛰️",
+        xp: 400,
+        rarity: "rare",
+        lat: 37.9236,      // East Peak, approximate
+        lng: -122.5964
+    },
+    {
+        id: "bison-paddock",
+        name: "See the bison in Golden Gate Park",
+        emoji: "🦬",
+        xp: 150,
+        rarity: "uncommon",
+        lat: 37.7695,      // approximate, near 38th Ave
+        lng: -122.4945
+    },
+    {
+        id: "lands-end-labyrinth",
+        name: "Walk the Lands End labyrinth",
+        emoji: "🌀",
+        xp: 200,
+        rarity: "rare",
+        lat: 37.7803,      // approximate, at Eagle's Point
+        lng: -122.5117
+    },
+    {
+        id: "hawk-hill",
+        name: "Watch the view from Hawk Hill",
+        emoji: "🦅",
+        xp: 250,
+        rarity: "rare",
+        lat: 37.8307,      // approximate
+        lng: -122.4994
+    },
+    {
+        id: "twin-peaks",
+        name: "Reach the top of Twin Peaks",
+        emoji: "🏙️",
+        xp: 250,
+        rarity: "rare",
+        lat: 37.7544,
+        lng: -122.4477
+    },
+        {
+        id: "muir-woods",
+        name: "Walk among the redwoods at Muir Woods",
+        emoji: "🌲",
+        xp: 250,
+        rarity: "rare",
+        lat: 37.8912,      // approximate, near the main entrance
+        lng: -122.5714
+    },
+    {
+        id: "stinson-beach",
+        name: "Spend time at Stinson Beach",
+        emoji: "🏖️",
+        xp: 200,
+        rarity: "uncommon",
+        lat: 37.9003,      // approximate
+        lng: -122.6444
+    },
+    {
+        id: "muir-beach",
+        name: "Watch the waves at Muir Beach",
+        emoji: "🌊",
+        xp: 200,
+        rarity: "uncommon",
+        lat: 37.8601,      // approximate
+        lng: -122.5774
+    },
+    {
+        id: "grandview-park",
+        name: "Take in the city view at Grandview Park",
+        emoji: "🌇",
+        xp: 150,
+        rarity: "uncommon",
+        lat: 37.7586,      // approximate
+        lng: -122.4725
+    },
+    {
+        id: "phoenix-lake",
+        name: "Walk around Phoenix Lake",
+        emoji: "🦆",
+        xp: 150,
+        rarity: "common",
+        lat: 37.9783,      // approximate, check it's on the lake trail
+        lng: -122.5675
+    },
 ];
 
 // GENERIC QUESTS: appear near every player. "kind" says what place to look for.
