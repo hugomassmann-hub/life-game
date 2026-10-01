@@ -2542,3 +2542,23 @@ body {
     0%   { opacity: 1; transform: translateY(0) rotate(0); }
     100% { opacity: 1; transform: translateY(110vh) rotate(720deg); }
 }
+
+/* TIMER QUEST (orange) */
+#questPage .quest-card.timer { --rc: #f0883e; }
+
+#questPage .quest-card.timer:not(.completed) {
+    background: linear-gradient(135deg, rgba(240, 136, 62, 0.14), var(--card) 70%);
+    border-color: rgba(240, 136, 62, 0.4);
+    margin-top: 16px;
+}
+
+.quest-card.timer .qc-timer { color: #f0883e; }
+
+/* In the feed */
+.feed-post.post-timer {
+    border: 3px solid #f0883e;
+    background: linear-gradient(145deg, rgba(240, 136, 62, 0.22), var(--card) 65%);
+    box-shadow: 0 0 26px rgba(240, 136, 62, 0.45);
+}
+
+.post-timer .rarity-badge { color: #f0883e; }

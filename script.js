@@ -344,7 +344,6 @@ const uncommonQuest =
 const rareQuest =
     document.getElementById("rareQuest");
 
-
 const quests = {
 
     common: [
@@ -352,19 +351,15 @@ const quests = {
         { name: "Learn one weird fact and tell someone about it", emoji: "🧠", xp: 75, category: "mind" },
         { name: "Message someone you haven't talked to in a while", emoji: "💬", xp: 75, category: "social" },
         { name: "Step outside and name 5 things you can hear", emoji: "🌿", xp: 50, category: "outdoors" },
-        { name: "Doodle for 10 minutes with no phone", emoji: "✏️", xp: 75, category: "craft" },
         { name: "Reset your desk or backpack so it's actually organized", emoji: "🎒", xp: 50, category: "home" },
         { name: "Write down 3 things you want to get done this week", emoji: "📝", xp: 50, category: "mind" },
         { name: "Give someone a genuine compliment", emoji: "🌟", xp: 75, category: "social" }
     ],
 
     uncommon: [
-        { name: "Get moving for 30 minutes: walk, run, ride, or play a sport", emoji: "🏃", xp: 125, category: "body" },
-        { name: "Spend 30 minutes outside without your phone", emoji: "📵", xp: 150, category: "outdoors" },
         { name: "Read 20 pages of a book you chose yourself", emoji: "📖", xp: 125, category: "mind" },
         { name: "Cook or bake something from scratch", emoji: "🍳", xp: 150, category: "craft" },
         { name: "Invite a friend to do something, then actually do it", emoji: "🤝", xp: 150, category: "social" },
-        { name: "Practice an instrument or skill for 30 minutes", emoji: "🎸", xp: 125, category: "craft" },
         { name: "Deep clean one space you've been avoiding", emoji: "🧹", xp: 125, category: "home" },
         { name: "Teach someone something you know well", emoji: "🎓", xp: 150, category: "social" }
     ],
@@ -373,25 +368,29 @@ const quests = {
         { name: "Watch a sunrise or sunset from a spot you picked on purpose", emoji: "🌅", xp: 200, category: "outdoors" },
         { name: "Go somewhere in your area you've never been", emoji: "🗺️", xp: 250, category: "outdoors" },
         { name: "Finish something you've been putting off for weeks", emoji: "✅", xp: 250, category: "mind" },
-        { name: "Spend an hour making something you're proud of", emoji: "🎨", xp: 200, category: "craft" },
         { name: "Do something outside your comfort zone and post it", emoji: "🔥", xp: 250, category: "social" },
         { name: "Plan and host a hangout for 3 or more people", emoji: "🎉", xp: 250, category: "social" }
     ]
 
 };
 
+// TIMER QUESTS: one of these shows up every day on its own card.
+// "minutes" is how long the timer runs.
+const timerQuests = [
+    { name: "Doodle for 10 minutes with no phone", emoji: "✏️", xp: 75, minutes: 10, category: "craft" },
+    { name: "Get moving for 30 minutes: walk, run, ride, or play a sport", emoji: "🏃", xp: 125, minutes: 30, category: "body" },
+    { name: "Spend 30 minutes outside without your phone", emoji: "📵", xp: 150, minutes: 30, category: "outdoors" },
+    { name: "Practice an instrument or skill for 30 minutes", emoji: "🎸", xp: 125, minutes: 30, category: "craft" },
+    { name: "Spend an hour making something you're proud of", emoji: "🎨", xp: 200, minutes: 60, category: "craft" }
+];
+
 // ===== TIMER QUESTS, DAILY BONUS, DAILY CHEST =====
 
 const DAILY_BONUS_XP = 100;
 
-// Minutes each timer runs. The name must match the quest name exactly.
-const questTimers = {
-    "Doodle for 10 minutes with no phone": 10,
-    "Get moving for 30 minutes: walk, run, ride, or play a sport": 30,
-    "Spend 30 minutes outside without your phone": 30,
-    "Practice an instrument or skill for 30 minutes": 30,
-    "Spend an hour making something you're proud of": 60
-};
+function getQuestTimerMinutes(quest) {
+    return quest.minutes || 0;
+}
 
 // Chest prizes. "chance" values add up to 100.
 const chestRewards = [
@@ -425,8 +424,46 @@ function formatClock(ms) {
     return m + ":" + (s < 10 ? "0" : "") + s;
 }
 
+function displayQuest(element, quest, rarity) {
+
+    if (!element) return;
+
+    element.classList.add(rarity);
+
+    const key = rarity + "-" + quest.name;
+    const done = completedQuests.includes(key);
+    const hasTimer = getQuestTimerMinutes(quest) > 0;
+    const canSwap = rarity !== "timer" && !done && !todaysQuests.swapUsed && swapOptions(rarity).length > 0;
+    const label = rarity === "timer" ? "TIMER QUEST" : rarity.toUpperCase();
+
+    element.classList.toggle("completed", done);
+
+    element.innerHTML =
+        "<div class='qc-icon'>" + (done ? "✓" : quest.emoji) + "</div>" +
+        "<div class='qc-body'>" +
+            "<div class='qc-rarity'>" + label + "</div>" +
+            "<div class='qc-name'>" + escapeHTML(quest.name) + "</div>" +
+            (hasTimer && !done ? "<div class='qc-timer' data-rarity='" + rarity + "'></div>" : "") +
+            (canSwap ? "<button class='qc-swap'>↻ Swap</button>" : "") +
+        "</div>" +
+        "<div class='qc-xp'>+" + quest.xp + "<small>XP</small></div>";
+
+    const swapButton = element.querySelector(".qc-swap");
+
+    if (swapButton) {
+        swapButton.onclick = function(event) {
+            event.stopPropagation();
+            swapQuest(rarity);
+        };
+    }
+
+    updateQuestHeader();
+    tickTimers();
+}
+
 function redrawQuestCards() {
-    ["common", "uncommon", "rare"].forEach(function(r) {
+    ["common", "uncommon", "rare", "timer"].forEach(function(r) {
+        if (!todaysQuests[r]) return;
         displayQuest(
             document.getElementById("page" + r.charAt(0).toUpperCase() + r.slice(1) + "Quest"),
             todaysQuests[r],
@@ -682,29 +719,25 @@ function getRandomQuest(category) {
     return questList[randomIndex];
 }
 
-// Quests of a rarity, split into timer and non-timer
-function questPool(rarity, wantTimer) {
-    return quests[rarity].filter(function(q) {
-        return (getQuestTimerMinutes(q) > 0) === wantTimer;
-    });
-}
-
 function pickFrom(list) {
     return list[Math.floor(Math.random() * list.length)];
 }
 
-// One timer quest every day, in a random slot
 function generateDailyQuests() {
+    return {
+        common: pickFrom(quests.common),
+        uncommon: pickFrom(quests.uncommon),
+        rare: pickFrom(quests.rare),
+        timer: pickFrom(timerQuests)
+    };
+}
 
-    const rarities = ["common", "uncommon", "rare"];
-    const timerSlot = pickFrom(rarities);
-    const result = {};
-
-    rarities.forEach(function(r) {
-        result[r] = pickFrom(questPool(r, r === timerSlot));
-    });
-
-    return result;
+// Quests saved before this update have no timer quest yet, so add one
+function ensureTimerQuest() {
+    if (!todaysQuests.timer) {
+        todaysQuests.timer = pickFrom(timerQuests);
+        localStorage.setItem("todaysQuests", JSON.stringify(todaysQuests));
+    }
 }
 
 let savedQuests =
@@ -728,48 +761,13 @@ if (savedQuests) {
     );
 }
 
-function displayQuest(element, quest, rarity) {
+ensureTimerQuest();
 
-    if (!element) return;
 
-    element.classList.add(rarity);
 
-    const key = rarity + "-" + quest.name;
-    const done = completedQuests.includes(key);
-    const hasTimer = getQuestTimerMinutes(quest) > 0;
-    const timerStarted = !!getTimers()[key];
-    const canSwap = !done && !todaysQuests.swapUsed && !timerStarted && swapOptions(rarity).length > 0;
-
-    element.classList.toggle("completed", done);
-
-    element.innerHTML =
-        "<div class='qc-icon'>" + (done ? "✓" : quest.emoji) + "</div>" +
-        "<div class='qc-body'>" +
-            "<div class='qc-rarity'>" + rarity.toUpperCase() + "</div>" +
-            "<div class='qc-name'>" + escapeHTML(quest.name) + "</div>" +
-            (hasTimer && !done ? "<div class='qc-timer' data-rarity='" + rarity + "'></div>" : "") +
-            (canSwap ? "<button class='qc-swap'>↻ Swap</button>" : "") +
-        "</div>" +
-        "<div class='qc-xp'>+" + quest.xp + "<small>XP</small></div>";
-
-    const swapButton = element.querySelector(".qc-swap");
-
-    if (swapButton) {
-        swapButton.onclick = function(event) {
-            event.stopPropagation();
-            swapQuest(rarity);
-        };
-    }
-
-    updateQuestHeader();
-    tickTimers();
-}
-
-// Same rarity, same type (timer or not), different quest
 function swapOptions(rarity) {
     const current = todaysQuests[rarity];
-    const isTimer = getQuestTimerMinutes(current) > 0;
-    return questPool(rarity, isTimer).filter(function(q) {
+    return quests[rarity].filter(function(q) {
         return q.name !== current.name;
     });
 }
@@ -1983,7 +1981,8 @@ function handleQuestCompletion(shouldPost) {
         );
 
             popup.style.display = "none";
-
+        
+        redrawQuestCards();
         checkDailyBonus();
     }
 
@@ -2769,6 +2768,13 @@ async function loadTodaysQuestsFromCloud() {
 
 }
 
+        if (!todaysQuests.timer) {
+            ensureTimerQuest();
+            saveTodaysQuestsToCloud();
+        }
+
+        redrawQuestCards();
+
         displayQuest(
             commonQuest,
             todaysQuests.common,
@@ -3525,6 +3531,7 @@ async function finishBossStep(bossId, stepIndex, stepXP, popup, photoData, descr
 function getRarityLabel(rarity) {
     if (rarity === "bosscomplete") return "BOSS COMPLETE!";
     if (rarity === "location") return "LOCATION QUEST";
+    if (rarity === "timer") return "TIMER QUEST";
     return String(rarity || "common").toUpperCase();
 }
 
@@ -5210,3 +5217,9 @@ map.on("idle", runMapQuests);
 
 setInterval(updateQuestHeader, 30000);
 updateQuestHeader();
+
+document.getElementById("pageTimerQuest").addEventListener("click", function() {
+    completeQuest(this, todaysQuests.timer, "timer-" + todaysQuests.timer.name);
+});
+
+redrawQuestCards();
