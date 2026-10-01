@@ -682,6 +682,31 @@ function getRandomQuest(category) {
     return questList[randomIndex];
 }
 
+// Quests of a rarity, split into timer and non-timer
+function questPool(rarity, wantTimer) {
+    return quests[rarity].filter(function(q) {
+        return (getQuestTimerMinutes(q) > 0) === wantTimer;
+    });
+}
+
+function pickFrom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+// One timer quest every day, in a random slot
+function generateDailyQuests() {
+
+    const rarities = ["common", "uncommon", "rare"];
+    const timerSlot = pickFrom(rarities);
+    const result = {};
+
+    rarities.forEach(function(r) {
+        result[r] = pickFrom(questPool(r, r === timerSlot));
+    });
+
+    return result;
+}
+
 let savedQuests =
     localStorage.getItem("todaysQuests");
 
@@ -695,18 +720,7 @@ if (savedQuests) {
 
 } else {
 
-    todaysQuests = {
-
-        common:
-            getRandomQuest("common"),
-
-        uncommon:
-            getRandomQuest("uncommon"),
-
-        rare:
-            getRandomQuest("rare")
-
-    };
+    todaysQuests = generateDailyQuests();
 
     localStorage.setItem(
         "todaysQuests",
@@ -724,7 +738,7 @@ function displayQuest(element, quest, rarity) {
     const done = completedQuests.includes(key);
     const hasTimer = getQuestTimerMinutes(quest) > 0;
     const timerStarted = !!getTimers()[key];
-    const canSwap = !done && !todaysQuests.swapUsed && !timerStarted;
+    const canSwap = !done && !todaysQuests.swapUsed && !timerStarted && swapOptions(rarity).length > 0;
 
     element.classList.toggle("completed", done);
 
@@ -751,6 +765,15 @@ function displayQuest(element, quest, rarity) {
     tickTimers();
 }
 
+// Same rarity, same type (timer or not), different quest
+function swapOptions(rarity) {
+    const current = todaysQuests[rarity];
+    const isTimer = getQuestTimerMinutes(current) > 0;
+    return questPool(rarity, isTimer).filter(function(q) {
+        return q.name !== current.name;
+    });
+}
+
 function swapQuest(rarity) {
 
     if (todaysQuests.swapUsed) return;
@@ -759,9 +782,9 @@ function swapQuest(rarity) {
 
     if (completedQuests.includes(rarity + "-" + current.name)) return;
 
-    const options = quests[rarity].filter(function(q) {
-        return q.name !== current.name;
-    });
+    const options = swapOptions(rarity);
+
+    if (options.length === 0) return;
 
     todaysQuests[rarity] = options[Math.floor(Math.random() * options.length)];
     todaysQuests.swapUsed = true;
@@ -2447,15 +2470,7 @@ function resetQuests() {
 
     localStorage.removeItem("questTimerState");
 
-    todaysQuests = {
-
-    common: getRandomQuest("common"),
-
-    uncommon: getRandomQuest("uncommon"),
-
-    rare: getRandomQuest("rare")
-
-};
+        todaysQuests = generateDailyQuests();
 
 saveTodaysQuestsToCloud();
 
