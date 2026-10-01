@@ -304,7 +304,7 @@ background: var(--accent);
 transform: translateY(-2px);
 }
 
-@media (max-width: 600px) {
+@media all {
 
     html,
     body {
@@ -2038,4 +2038,40 @@ transform: translateY(-2px);
     height: 100%;
     background: var(--accent);
     border-radius: 4px;
+}
+
+/* PHONE FRAME: any phone fills its screen, bigger screens get a phone-shaped column */
+html {
+    background: #070b09;
+    height: 100%;
+}
+
+body {
+    width: min(100%, calc(100dvh * 0.48));
+    max-width: 440px;
+    height: 100dvh;
+    margin: 0 auto;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    /* Makes the tab bar and popups stay inside the frame instead of the whole window */
+    transform: translateZ(0);
+    box-shadow: 0 0 0 1px var(--border), 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* Popups can't be taller than the screen on short phones */
+.quest-popup-box {
+    max-height: 90dvh;
+    overflow-y: auto;
+}
+
+/* Short phones (iPhone SE, mini): smaller stats panel */
+@media (max-height: 740px) {
+    #statsPanel {
+        padding: 10px 14px;
+        bottom: 72px;
+    }
+    #panelSkills .ps-row:nth-child(n+3) {
+        display: none;
+    }
 }

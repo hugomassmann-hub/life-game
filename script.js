@@ -4631,3 +4631,11 @@ document.getElementById("tabHomeButton").onclick = function() {
 document.getElementById("statsPanel").onclick = function() {
     document.getElementById("statsPageButton").click();
 };
+
+window.addEventListener("resize", function() {
+    map.resize();
+});
+
+window.addEventListener("orientationchange", function() {
+    setTimeout(function() { map.resize(); }, 300);
+});
