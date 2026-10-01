@@ -2040,25 +2040,6 @@ transform: translateY(-2px);
     border-radius: 4px;
 }
 
-/* PHONE FRAME: any phone fills its screen, bigger screens get a phone-shaped column */
-html {
-    background: #070b09;
-    height: 100%;
-}
-
-body {
-    width: min(100%, calc(100dvh * 0.48));
-    max-width: 440px;
-    height: 100dvh;
-    margin: 0 auto;
-    padding: 0;
-    overflow: hidden;
-    position: relative;
-    /* Makes the tab bar and popups stay inside the frame instead of the whole window */
-    transform: translateZ(0);
-    box-shadow: 0 0 0 1px var(--border), 0 20px 60px rgba(0, 0, 0, 0.6);
-}
-
 /* Popups can't be taller than the screen on short phones */
 .quest-popup-box {
     max-height: 90dvh;
@@ -2074,4 +2055,66 @@ body {
     #panelSkills .ps-row:nth-child(n+3) {
         display: none;
     }
+}
+
+/* PHONE FRAME v2: pinned to the real screen edges */
+html {
+    background: #070b09;
+    height: 100%;
+}
+
+body {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: min(100vw, calc(100vh * 0.48));
+    max-width: 440px;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    transform: translateX(-50%);   /* also keeps the tab bar and popups inside the frame */
+    box-shadow: 0 0 0 1px var(--border), 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* Home fills the frame */
+#homePage,
+.character-card {
+    height: 100%;
+}
+
+/* Hide the old top card (the stats panel replaces it) */
+.mobile-top,
+.xp {
+    display: none;
+}
+
+/* Map fills everything above the tab bar */
+#map {
+    top: 0;
+    height: calc(100% - 64px - env(safe-area-inset-bottom, 0px));
+}
+
+/* Tab bar sits at the true bottom and clears the iPhone home bar */
+#bottomTabBar {
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+}
+
+/* Stats panel floats just above the tab bar */
+#statsPanel {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Keep the zoom buttons clear of the status bar / Dynamic Island */
+.maplibregl-ctrl-top-right {
+    margin-top: calc(env(safe-area-inset-top, 0px) + 10px);
+}
+
+/* Scrolling pages: start below the status bar */
+.quest-page,
+.customize-page {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 30px);
 }
