@@ -348,113 +348,34 @@ const rareQuest =
 const quests = {
 
     common: [
-
-        { name: "Read for 20 minutes", emoji: "📚", xp: 75 },
-
-        { name: "Make your bed", emoji: "🛏️", xp: 50 },
-
-        {
-            name: "Have a real conversation with a friend",
-            emoji: "💬",
-            xp: 75
-        },
-
-        { name: "Clean part of your room", emoji: "🧹", xp: 75 },
-
-        {
-            name: "Spend 15 minutes outside",
-            emoji: "🌿",
-            xp: 75
-        },
-
-        {
-            name: "Draw or create something",
-            emoji: "🎨",
-            xp: 75
-        }
-
+        { name: "Do 20 push-ups or squats, in as many sets as it takes", emoji: "💪", xp: 50, category: "body" },
+        { name: "Learn one weird fact and tell someone about it", emoji: "🧠", xp: 75, category: "mind" },
+        { name: "Message someone you haven't talked to in a while", emoji: "💬", xp: 75, category: "social" },
+        { name: "Step outside and name 5 things you can hear", emoji: "🌿", xp: 50, category: "outdoors" },
+        { name: "Doodle for 10 minutes with no phone", emoji: "✏️", xp: 75, category: "craft" },
+        { name: "Reset your desk or backpack so it's actually organized", emoji: "🎒", xp: 50, category: "home" },
+        { name: "Write down 3 things you want to get done this week", emoji: "📝", xp: 50, category: "mind" },
+        { name: "Give someone a genuine compliment", emoji: "🌟", xp: 75, category: "social" }
     ],
-
 
     uncommon: [
-
-        {
-            name: "Go for a bike ride",
-            emoji: "🚴",
-            xp: 150
-        },
-
-        {
-            name: "Go for a 30-minute walk or run",
-            emoji: "🏃",
-            xp: 125
-        },
-
-        {
-            name: "Play a sport for 30 minutes",
-            emoji: "🏀",
-            xp: 150
-        },
-
-        {
-            name: "Explore a new trail",
-            emoji: "🌳",
-            xp: 150
-        },
-
-        {
-            name: "Spend 30 minutes without your phone",
-            emoji: "📵",
-            xp: 125
-        },
-
-        {
-            name: "Practice an instrument for 30 minutes",
-            emoji: "🎸",
-            xp: 125
-        }
-
+        { name: "Get moving for 30 minutes: walk, run, ride, or play a sport", emoji: "🏃", xp: 125, category: "body" },
+        { name: "Spend 30 minutes outside without your phone", emoji: "📵", xp: 150, category: "outdoors" },
+        { name: "Read 20 pages of a book you chose yourself", emoji: "📖", xp: 125, category: "mind" },
+        { name: "Cook or bake something from scratch", emoji: "🍳", xp: 150, category: "craft" },
+        { name: "Invite a friend to do something, then actually do it", emoji: "🤝", xp: 150, category: "social" },
+        { name: "Practice an instrument or skill for 30 minutes", emoji: "🎸", xp: 125, category: "craft" },
+        { name: "Deep clean one space you've been avoiding", emoji: "🧹", xp: 125, category: "home" },
+        { name: "Teach someone something you know well", emoji: "🎓", xp: 150, category: "social" }
     ],
 
-
     rare: [
-
-        {
-            name: "Watch a sunset",
-            emoji: "🌅",
-            xp: 200
-        },
-
-        {
-            name: "Watch a sunrise",
-            emoji: "🌄",
-            xp: 250
-        },
-
-        {
-            name: "Visit somewhere you've never been",
-            emoji: "🗺️",
-            xp: 250
-        },
-
-        {
-            name: "Go on a bigger outdoor adventure",
-            emoji: "🏔️",
-            xp: 250
-        },
-
-        {
-            name: "Create something you're proud of",
-            emoji: "🎨",
-            xp: 200
-        },
-
-        {
-            name: "Spend an hour doing something you love without your phone",
-            emoji: "📵",
-            xp: 200
-        }
-
+        { name: "Watch a sunrise or sunset from a spot you picked on purpose", emoji: "🌅", xp: 200, category: "outdoors" },
+        { name: "Go somewhere in your area you've never been", emoji: "🗺️", xp: 250, category: "outdoors" },
+        { name: "Finish something you've been putting off for weeks", emoji: "✅", xp: 250, category: "mind" },
+        { name: "Spend an hour making something you're proud of", emoji: "🎨", xp: 200, category: "craft" },
+        { name: "Do something outside your comfort zone and post it", emoji: "🔥", xp: 250, category: "social" },
+        { name: "Plan and host a hangout for 3 or more people", emoji: "🎉", xp: 250, category: "social" }
     ]
 
 };
@@ -1310,26 +1231,34 @@ img.style.display = "block";
 // Show the character right away, then move it to your real location
 placeCharacterOnMap(37.7749, -122.4194);
 
+function onLocationFound(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    userPos = { lat: lat, lng: lng };
+
+    placeCharacterOnMap(lat, lng);
+
+    if (!window.didFlyToUser) {
+        window.didFlyToUser = true;
+        map.flyTo({ center: [lng, lat], zoom: 16 });
+    }
+}
+
 if (navigator.geolocation) {
 
+    // Fast, approximate fix first (works indoors)...
     navigator.geolocation.getCurrentPosition(
+        onLocationFound,
+        function(error) { console.log("Location problem:", error.message); },
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+    );
 
-        function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-                        userPos = { lat: lat, lng: lng };
-
-            placeCharacterOnMap(lat, lng);
-            map.flyTo({ center: [lng, lat], zoom: 16 });
-        },
-
-        function(error) {
-            // Temporary, so we can see why location fails. We'll remove it later.
-            console.log("Location problem:", error.message);
-        },
-
-        { enableHighAccuracy: true, timeout: 10000 }
-
+    // ...then keep refining while the app is open
+    navigator.geolocation.watchPosition(
+        onLocationFound,
+        function(error) { console.log("Location watch problem:", error.message); },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
     );
 }
 
