@@ -1994,3 +1994,48 @@ transform: translateY(-2px);
     font-size: 13px;
     color: var(--muted);
 }
+
+/* SKILLS INSIDE THE STATS PANEL */
+#panelSkills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+#panelSkills:empty {
+    display: none;
+}
+
+.ps-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ps-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.ps-label span:last-child {
+    color: var(--muted);
+}
+
+.ps-track {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.ps-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+}

@@ -4178,9 +4178,15 @@ async function loadTopSkillsWidget() {
 
     allLevels.sort(function(a, b) { return b.level - a.level; });
 
-        const panelSkill = document.getElementById("panelTopSkill");
-    if (panelSkill && allLevels.length > 0) {
-        panelSkill.textContent = allLevels[0].emoji + " " + allLevels[0].name + " Lv " + allLevels[0].level;
+        const panelSkills = document.getElementById("panelSkills");
+    if (panelSkills) {
+        panelSkills.innerHTML = allLevels.slice(0, 4).map(function(s) {
+            const pct = Math.min(100, Math.round((s.level / MAX_SKILL_LEVEL) * 100));
+            return "<div class='ps-row'>" +
+                "<div class='ps-label'><span>" + s.emoji + " " + escapeHTML(s.name) + "</span><span>Lv " + s.level + "</span></div>" +
+                "<div class='ps-track'><div class='ps-fill' style='width:" + pct + "%'></div></div>" +
+                "</div>";
+        }).join("");
     }
 
     widget.innerHTML = allLevels.slice(0, 4).map(function(s) {
@@ -4620,4 +4626,8 @@ document.getElementById("tabHomeButton").onclick = function() {
     document.getElementById("customizePage").style.display = "none";
     document.getElementById("homePage").style.display = "block";
     setActiveTab("tabHomeButton");
+};
+
+document.getElementById("statsPanel").onclick = function() {
+    document.getElementById("statsPageButton").click();
 };
