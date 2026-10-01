@@ -2118,3 +2118,5 @@ body {
 .customize-page {
     padding-top: calc(env(safe-area-inset-top, 0px) + 30px);
 }
+
+#bottomTabBar { background: red !important; }
