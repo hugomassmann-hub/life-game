@@ -58,6 +58,16 @@
 
     <div id="map"></div>
 
+<div id="mapCompass">
+    <svg viewBox="0 0 48 48" id="compassDial">
+        <circle cx="24" cy="24" r="22" class="cp-ring"/>
+        <polygon points="24,7 29,24 19,24" class="cp-north"/>
+        <polygon points="24,41 29,24 19,24" class="cp-south"/>
+        <circle cx="24" cy="24" r="2.2" class="cp-pin"/>
+    </svg>
+    <span class="cp-n">N</span>
+</div>
+
     <div id="statsPanel">
     <div class="sp-top">
         <div class="sp-level">Level <span id="panelLevel">1</span></div>

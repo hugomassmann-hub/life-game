@@ -844,7 +844,7 @@ const map = new maplibregl.Map({
     maxPitch: 70
 });
 
-map.addControl(new maplibregl.NavigationControl(), "top-right");
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
 // DARK GREEN FANTASY MAP COLORS
 function applyFantasyColors() {
@@ -4641,3 +4641,16 @@ window.addEventListener("orientationchange", function() {
 
 // Layout settles after the first paint, so resize once more
 setTimeout(function() { map.resize(); }, 300);
+
+// COMPASS: needle follows the map's rotation, tap to face north
+function updateCompass() {
+    document.getElementById("compassDial").style.transform =
+        "rotate(" + (-map.getBearing()) + "deg)";
+}
+
+map.on("rotate", updateCompass);
+map.on("load", updateCompass);
+
+document.getElementById("mapCompass").onclick = function() {
+    map.easeTo({ bearing: 0, duration: 600 });
+};
