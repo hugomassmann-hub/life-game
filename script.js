@@ -1757,13 +1757,13 @@ async function loadPastQuests() {
 
     container.innerHTML = "";
 
-    const quests = [];
+    const pastList = [];
 
     snapshot.forEach(function(doc) {
-        quests.push(doc.data());
+        pastList.push(doc.data());
     });
 
-    quests.reverse().forEach(function(quest) {
+    pastList.reverse().forEach(function(quest) {
 
         const questElement =
             document.createElement("div");
