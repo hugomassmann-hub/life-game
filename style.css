@@ -2650,3 +2650,71 @@ body {
 #questPage .qp-reset {
     display: none !important;
 }
+
+/* AVATAR EDITOR */
+#customizePage .customize-character { display: none; }
+
+#avatarEditor { max-width: 420px; margin: 10px auto 0; }
+
+#avatarPreview {
+    background: radial-gradient(circle at 50% 35%, var(--card-2), var(--card) 75%);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 16px 0 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+#avatarPreview svg {
+    display: block;
+    width: 62%;
+    max-width: 230px;
+    height: auto;
+    margin: 0 auto;
+}
+
+#avatarControls {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.av-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 16px 2px 8px;
+}
+
+.av-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.av-swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    padding: 0;
+}
+
+.av-swatch.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+
+.av-chip {
+    padding: 8px 14px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.av-chip.selected {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+}
