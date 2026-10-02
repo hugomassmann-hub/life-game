@@ -5355,7 +5355,7 @@ const avatarChoices = {
     skin:      ["#f6d5bd", "#eab98f", "#d09a6b", "#b0764a", "#8a5a38", "#5e3b24"],
     hairColor: ["#241a14", "#4e3220", "#8a5a32", "#d8b45e", "#a8452c", "#8d9099", "#3b6ea5", "#7a4a9e"],
     eyes:      ["#4a3320", "#3d7a4f", "#3b6ea5", "#6b6f78", "#7a4a9e"],
-    top:       ["#d9b25f", "#3b6ea5", "#a8452c", "#4e8f62", "#2a2f3a", "#e8e8e2", "#7a4a9e", "#c9788a"],
+    top:       ["#3d5a80", "#5b7553", "#8c4a3c", "#c9b98a", "#2a2f3a", "#e4e1d8", "#6b5b7b", "#b07a6a"],
     pants:     ["#2a3a52", "#2a2f3a", "#6b5a3e", "#4a5a40", "#8d9099"]
 };
 
@@ -5389,31 +5389,39 @@ function shadeColor(hex, amt) {
 
 function hairShapes(style) {
 
-    const fringe = '<path d="M57 92 C50 52 74 34 100 34 C126 34 150 52 143 92 C139 76 130 66 120 62 C108 70 88 72 74 64 C66 70 60 80 57 92 Z"/>';
+    const fringe = '<path d="M77 52 C73 28 86 16 101 16 C116 16 127 30 123 52 C122 45 119 39 113 35 C103 33 90 36 85 41 C80 44 78 48 77 52 Z"/>';
 
     if (style === "spiky") {
-        return { back: "", front: '<path d="M58 90 C52 60 62 44 70 40 L74 24 L86 40 L96 18 L106 38 L120 22 L124 42 L136 34 C146 56 144 74 142 90 C136 74 128 66 118 64 C108 72 88 72 74 66 C66 72 60 80 58 90 Z"/>' };
+        return { back: "", over: "", front: '<path d="M77 50 C74 38 77 30 82 26 L79 11 L90 21 L95 6 L101 20 L109 5 L111 21 L121 11 L119 27 C124 32 126 40 123 50 C122 43 119 38 113 36 C103 34 91 36 86 40 C81 43 78 46 77 50 Z"/>' };
     }
     if (style === "long") {
-        return { back: '<path d="M56 90 C52 40 80 30 100 30 C120 30 148 40 144 90 L148 172 C140 180 128 178 124 168 L76 168 C72 178 60 180 52 172 Z"/>', front: fringe };
+        return {
+            back: '<path d="M75 50 C71 26 86 14 100 14 C114 14 129 26 125 50 L128 112 C123 122 113 120 111 112 L89 112 C87 120 77 122 72 112 Z"/>',
+            over: '<path d="M79 48 C75 70 72 100 74 122 Q80 128 86 120 C86 100 86 80 86 60 Z"/><path d="M121 48 C125 70 128 100 126 122 Q120 128 114 120 C114 100 114 80 114 60 Z"/>',
+            front: fringe
+        };
     }
     if (style === "bob") {
-        return { back: '<path d="M56 92 C52 40 80 30 100 30 C120 30 148 40 144 92 L146 140 C140 148 130 148 126 142 L74 142 C70 148 60 148 54 140 Z"/>', front: fringe };
+        return {
+            back: '<path d="M75 50 C71 26 86 14 100 14 C114 14 129 26 125 50 L127 90 C123 98 114 98 112 91 L88 91 C86 98 77 98 73 90 Z"/>',
+            over: "", front: fringe
+        };
     }
     if (style === "bun") {
-        return { back: '<circle cx="100" cy="27" r="17"/>', front: fringe };
+        return { back: '<circle cx="100" cy="13" r="10"/>', over: "", front: fringe };
     }
     if (style === "curly") {
-        return { back: "", front:
-            '<circle cx="66" cy="68" r="16"/><circle cx="82" cy="50" r="17"/><circle cx="100" cy="44" r="18"/>' +
-            '<circle cx="118" cy="50" r="17"/><circle cx="134" cy="68" r="16"/>' +
-            '<circle cx="58" cy="88" r="11"/><circle cx="142" cy="88" r="11"/>' };
+        return { back: "", over: "", front:
+            '<circle cx="80" cy="38" r="10"/><circle cx="88" cy="28" r="11"/><circle cx="100" cy="24" r="11"/>' +
+            '<circle cx="112" cy="28" r="11"/><circle cx="120" cy="38" r="10"/>' +
+            '<circle cx="78" cy="50" r="7"/><circle cx="122" cy="50" r="7"/>' +
+            '<circle cx="92" cy="32" r="8"/><circle cx="108" cy="32" r="8"/>' };
     }
     if (style === "buzz") {
-        return { back: "", front: '<path d="M60 84 C56 54 78 42 100 42 C122 42 144 54 140 84 C134 66 120 58 100 58 C80 58 66 66 60 84 Z"/>' };
+        return { back: "", over: "", front: '<path d="M79 48 C78 32 88 22 100 22 C112 22 122 32 121 48 C120 40 116 35 100 34 C84 35 80 40 79 48 Z"/>' };
     }
 
-    return { back: "", front: fringe };   // "short"
+    return { back: "", over: "", front: fringe };   // "short"
 }
 
 let avatarCounter = 0;
@@ -5422,87 +5430,101 @@ function buildAvatarSVG(a) {
 
     const id = "av" + (avatarCounter++);
     const skin = a.skin;
-    const skinDark = shadeColor(skin, -0.3);
+    const skinDark = shadeColor(skin, -0.28);
     const hair = a.hairColor;
     const hairDark = shadeColor(hair, -0.4);
     const topDark = shadeColor(a.top, -0.35);
-    const hairParts = hairShapes(a.hairStyle);
+    const hp = hairShapes(a.hairStyle);
 
-    function eye(cx) {
-        return '<ellipse cx="' + cx + '" cy="96" rx="8.6" ry="9.6" fill="#fdfdfb"/>' +
-            '<circle cx="' + cx + '" cy="97.5" r="6.6" fill="' + a.eyes + '"/>' +
-            '<circle cx="' + cx + '" cy="97.5" r="6.6" fill="url(#' + id + '-iris)"/>' +
-            '<circle cx="' + cx + '" cy="98" r="3.3" fill="#14110f"/>' +
-            '<circle cx="' + (cx - 2.4) + '" cy="94.6" r="2.3" fill="#fff"/>' +
-            '<circle cx="' + (cx + 2.4) + '" cy="100.6" r="1.1" fill="#fff" opacity=".8"/>' +
-            '<path d="M' + (cx - 9) + ' 94 Q' + cx + ' 81 ' + (cx + 9) + ' 94" fill="none" stroke="' + hairDark + '" stroke-width="2.6" stroke-linecap="round"/>';
+    function lin(name, color, light, dark) {
+        return '<linearGradient id="' + id + '-' + name + '" x1="0" x2="1" y1="0" y2="0">' +
+            '<stop offset="0" stop-color="' + shadeColor(color, light) + '"/>' +
+            '<stop offset=".55" stop-color="' + color + '"/>' +
+            '<stop offset="1" stop-color="' + shadeColor(color, dark) + '"/></linearGradient>';
     }
 
-    const arm =
-        '<path d="M70 140 C60 142 55 154 53 172 L68 176 L77 152 Z" fill="url(#' + id + '-top)"/>' +
-        '<path d="M53 172 L68 176 L66 204 C65 213 54 213 53 204 Z" fill="url(#' + id + '-skin)"/>' +
-        '<circle cx="59.5" cy="208" r="7.5" fill="url(#' + id + '-skin)"/>';
+    function eyePath(cx) {
+        return 'M' + (cx - 5.5) + ' 52 Q' + cx + ' 47.5 ' + (cx + 5.5) + ' 52 Q' + cx + ' 55.5 ' + (cx - 5.5) + ' 52 Z';
+    }
 
-    return '<svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">' +
+    function eye(cx) {
+        return '<path d="' + eyePath(cx) + '" fill="#f4f2ee"/>' +
+            '<g clip-path="url(#' + id + '-eye' + cx + ')">' +
+                '<circle cx="' + cx + '" cy="51.8" r="2.9" fill="' + a.eyes + '"/>' +
+                '<circle cx="' + cx + '" cy="51.8" r="1.4" fill="#111"/>' +
+                '<circle cx="' + (cx - 0.9) + '" cy="51" r="0.7" fill="#fff"/>' +
+            '</g>' +
+            '<path d="M' + (cx - 6) + ' 52.2 Q' + cx + ' 47 ' + (cx + 6) + ' 52.2" fill="none" stroke="' + hairDark + '" stroke-width="1.5" stroke-linecap="round"/>';
+    }
+
+    function arm() {
+        return '<path d="M68 98 C58 98 53 106 53 120 L52 160 C52 178 53 190 55 200 L63 200 C64 190 64 178 65 160 L68 130 Z" fill="url(#' + id + '-skin)"/>' +
+            '<ellipse cx="59" cy="208" rx="6" ry="8.5" fill="url(#' + id + '-skin)"/>' +
+            '<path d="M68 96 C57 97 52 106 52 118 L51 142 L67 145 L69 100 Z" fill="url(#' + id + '-top)"/>' +
+            '<path d="M51 142 L67 145" stroke="' + topDark + '" stroke-width="1.4" opacity=".6"/>';
+    }
+
+    const shoe =
+        '<path d="M75 350 L96 350 L97 360 Q98 367 91 368 L72 368 Q66 367 68 361 Z" fill="#34353b"/>' +
+        '<rect x="67" y="364" width="31" height="4.5" rx="2" fill="#dcd9cf"/>';
+
+    return '<svg viewBox="0 0 200 385" xmlns="http://www.w3.org/2000/svg">' +
         '<defs>' +
-            '<linearGradient id="' + id + '-skin" x1="0" x2="1" y1="0" y2="0">' +
-                '<stop offset="0" stop-color="' + shadeColor(skin, 0.08) + '"/><stop offset=".5" stop-color="' + skin + '"/><stop offset="1" stop-color="' + shadeColor(skin, -0.15) + '"/></linearGradient>' +
-            '<radialGradient id="' + id + '-head" cx=".38" cy=".32" r=".8">' +
-                '<stop offset="0" stop-color="' + shadeColor(skin, 0.12) + '"/><stop offset=".55" stop-color="' + skin + '"/><stop offset="1" stop-color="' + shadeColor(skin, -0.18) + '"/></radialGradient>' +
-            '<linearGradient id="' + id + '-hair" x1="0" x2="1" y1="0" y2="1">' +
-                '<stop offset="0" stop-color="' + shadeColor(hair, 0.18) + '"/><stop offset=".5" stop-color="' + hair + '"/><stop offset="1" stop-color="' + shadeColor(hair, -0.25) + '"/></linearGradient>' +
-            '<linearGradient id="' + id + '-top" x1="0" x2="1" y1="0" y2="0">' +
-                '<stop offset="0" stop-color="' + shadeColor(a.top, 0.12) + '"/><stop offset=".55" stop-color="' + a.top + '"/><stop offset="1" stop-color="' + shadeColor(a.top, -0.22) + '"/></linearGradient>' +
-            '<linearGradient id="' + id + '-pants" x1="0" x2="1" y1="0" y2="0">' +
-                '<stop offset="0" stop-color="' + shadeColor(a.pants, 0.1) + '"/><stop offset=".5" stop-color="' + a.pants + '"/><stop offset="1" stop-color="' + shadeColor(a.pants, -0.25) + '"/></linearGradient>' +
-            '<linearGradient id="' + id + '-iris" x1="0" x2="0" y1="0" y2="1">' +
-                '<stop offset="0" stop-color="#000" stop-opacity=".4"/><stop offset=".6" stop-color="#000" stop-opacity="0"/></linearGradient>' +
-            '<clipPath id="' + id + '-clip">' + hairParts.front + hairParts.back + '</clipPath>' +
+            lin("skin", skin, 0.08, -0.16) +
+            lin("hair", hair, 0.18, -0.25) +
+            lin("top", a.top, 0.12, -0.25) +
+            lin("pants", a.pants, 0.1, -0.28) +
+            '<clipPath id="' + id + '-eye90"><path d="' + eyePath(90) + '"/></clipPath>' +
+            '<clipPath id="' + id + '-eye110"><path d="' + eyePath(110) + '"/></clipPath>' +
+            '<clipPath id="' + id + '-hclip">' + hp.front + '</clipPath>' +
         '</defs>' +
 
         // ground shadow
-        '<ellipse cx="100" cy="284" rx="50" ry="8" fill="#000" opacity=".3"/>' +
+        '<ellipse cx="100" cy="369" rx="46" ry="6" fill="#000" opacity=".3"/>' +
 
-        // hair behind the head
-        '<g fill="url(#' + id + '-hair)" stroke="' + hairDark + '" stroke-width="1.5" stroke-linejoin="round">' + hairParts.back + '</g>' +
+        // hair behind
+        '<g fill="url(#' + id + '-hair)" stroke="' + hairDark + '" stroke-width="1" stroke-linejoin="round">' + hp.back + '</g>' +
 
         // legs and shoes
-        '<path d="M70 202 L130 202 L127 268 L102 268 L100 228 L98 268 L73 268 Z" fill="url(#' + id + '-pants)"/>' +
-        '<rect x="68" y="200" width="64" height="8" rx="3" fill="' + shadeColor(a.pants, -0.3) + '"/>' +
-        '<ellipse cx="86" cy="272" rx="16" ry="8" fill="#eeeeea" stroke="#b9b9b2" stroke-width="1.5"/>' +
-        '<ellipse cx="114" cy="272" rx="16" ry="8" fill="#eeeeea" stroke="#b9b9b2" stroke-width="1.5"/>' +
-        '<path d="M72 276 Q86 281 100 276 M100 276 Q114 281 128 276" fill="none" stroke="#8d9099" stroke-width="2" stroke-linecap="round"/>' +
+        '<path d="M70 200 L130 200 L127 270 L124 352 L106 352 L102 236 L100 232 L98 236 L94 352 L76 352 L73 270 Z" fill="url(#' + id + '-pants)"/>' +
+        '<path d="M100 232 L100 340" stroke="' + shadeColor(a.pants, -0.45) + '" stroke-width="1" opacity=".5"/>' +
+        shoe + '<g transform="translate(200 0) scale(-1 1)">' + shoe + '</g>' +
 
-        // arms
-        '<g>' + arm + '</g>' +
-        '<g transform="translate(200 0) scale(-1 1)">' + arm + '</g>' +
+        // neck
+        '<path d="M92 72 L92 96 Q100 102 108 96 L108 72 Z" fill="' + shadeColor(skin, -0.12) + '"/>' +
 
         // torso
-        '<path d="M70 138 C78 132 90 132 100 134 C110 132 122 132 130 138 L134 206 C118 212 82 212 66 206 Z" fill="url(#' + id + '-top)"/>' +
-        '<path d="M84 188 Q90 196 86 206 M118 184 Q112 194 116 206" fill="none" stroke="' + topDark + '" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>' +
+        '<path d="M68 98 C74 95 84 94 92 93 Q100 99 108 93 C116 94 126 95 132 98 L130 150 L131 206 L69 206 L70 150 Z" fill="url(#' + id + '-top)"/>' +
+        '<path d="M91 93 Q100 103 109 93" fill="none" stroke="' + topDark + '" stroke-width="2.2" stroke-linecap="round"/>' +
+        '<path d="M82 168 Q88 182 84 200 M118 164 Q112 180 116 200" fill="none" stroke="' + topDark + '" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>' +
+        '<path d="M69 203 L131 203" stroke="' + topDark + '" stroke-width="1.4" opacity=".5"/>' +
 
-        // neck, collar, chin shadow
-        '<rect x="91" y="120" width="18" height="26" rx="6" fill="' + shadeColor(skin, -0.1) + '"/>' +
-        '<path d="M86 134 Q100 152 114 134 Q100 140 86 134 Z" fill="' + shadeColor(skin, -0.12) + '" stroke="' + topDark + '" stroke-width="2" stroke-linejoin="round"/>' +
-        '<ellipse cx="100" cy="134" rx="17" ry="7" fill="' + skinDark + '" opacity=".55"/>' +
+        // arms
+        arm() + '<g transform="translate(200 0) scale(-1 1)">' + arm() + '</g>' +
+
+        // long hair falling in front of the shoulders
+        '<g fill="url(#' + id + '-hair)" stroke="' + hairDark + '" stroke-width="1" stroke-linejoin="round">' + hp.over + '</g>' +
+
+        // chin shadow on the neck
+        '<ellipse cx="100" cy="80" rx="13" ry="5" fill="' + skinDark + '" opacity=".5"/>' +
 
         // ears
-        '<circle cx="60" cy="94" r="7.5" fill="url(#' + id + '-skin)"/><circle cx="60" cy="94" r="3.5" fill="' + shadeColor(skin, -0.18) + '" opacity=".6"/>' +
-        '<circle cx="140" cy="94" r="7.5" fill="url(#' + id + '-skin)"/><circle cx="140" cy="94" r="3.5" fill="' + shadeColor(skin, -0.18) + '" opacity=".6"/>' +
+        '<ellipse cx="79" cy="53" rx="3.4" ry="5.5" fill="url(#' + id + '-skin)"/>' +
+        '<ellipse cx="121" cy="53" rx="3.4" ry="5.5" fill="url(#' + id + '-skin)"/>' +
 
         // head
-        '<ellipse cx="100" cy="88" rx="40" ry="44" fill="url(#' + id + '-head)"/>' +
+        '<path d="M79 50 C79 32 88 22 100 22 C112 22 121 32 121 50 C121 62 118 70 112 75 C108 78 104 80 100 80 C96 80 92 78 88 75 C82 70 79 62 79 50 Z" fill="url(#' + id + '-skin)"/>' +
 
         // face
-        '<circle cx="77" cy="109" r="6.5" fill="#ff7f7f" opacity=".22"/><circle cx="123" cy="109" r="6.5" fill="#ff7f7f" opacity=".22"/>' +
-        eye(84) + eye(116) +
-        '<path d="M73 80 Q83 74 94 78 M106 78 Q117 74 127 80" fill="none" stroke="' + hairDark + '" stroke-width="3.2" stroke-linecap="round"/>' +
-        '<path d="M98 104 Q100 111 104 108" fill="none" stroke="' + skinDark + '" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>' +
-        '<path d="M91 117 Q100 125 109 117" fill="none" stroke="#8a3b3b" stroke-width="2.6" stroke-linecap="round"/>' +
+        eye(90) + eye(110) +
+        '<path d="M84 46 Q90 43 96 45 M104 45 Q110 43 116 46" fill="none" stroke="' + hairDark + '" stroke-width="2.2" stroke-linecap="round"/>' +
+        '<path d="M100 54 Q98.5 61 97.5 63 Q100 65 103 63" fill="none" stroke="' + skinDark + '" stroke-width="1.3" stroke-linecap="round" opacity=".55"/>' +
+        '<path d="M94 71 Q100 73.5 106 71" fill="none" stroke="#7d4440" stroke-width="1.7" stroke-linecap="round"/>' +
+        '<path d="M96.5 73.4 Q100 75 103.5 73.4" fill="none" stroke="' + skinDark + '" stroke-width="1.2" stroke-linecap="round" opacity=".35"/>' +
 
         // hair in front, with a soft highlight
-        '<g fill="url(#' + id + '-hair)" stroke="' + hairDark + '" stroke-width="1.5" stroke-linejoin="round">' + hairParts.front + '</g>' +
-        '<g clip-path="url(#' + id + '-clip)"><path d="M64 56 Q100 28 136 56" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".2"/></g>' +
+        '<g fill="url(#' + id + '-hair)" stroke="' + hairDark + '" stroke-width="1" stroke-linejoin="round">' + hp.front + '</g>' +
+        '<g clip-path="url(#' + id + '-hclip)"><path d="M82 30 Q100 15 118 30" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".16"/></g>' +
 
         '</svg>';
 }
