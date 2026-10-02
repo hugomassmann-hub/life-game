@@ -5225,7 +5225,18 @@ redrawQuestCards();
 
 // Fit the app frame to the real visible screen height (iPhone CSS heights can be wrong)
 function fitToScreen() {
-    document.body.style.height = window.innerHeight + "px";
+
+    const isApp = window.navigator.standalone === true ||
+        window.matchMedia("(display-mode: standalone)").matches;
+
+    if (isApp) {
+        // Home-screen app: no browser bars, so let the CSS pin the frame to the real screen edges
+        document.body.style.height = Math.max(window.innerHeight, screen.height) + "px";
+    } else {
+        // Safari tab: measure the visible area, since the toolbar changes it
+        document.body.style.height = window.innerHeight + "px";
+    }
+
     if (typeof map !== "undefined") map.resize();
 }
 
