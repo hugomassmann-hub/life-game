@@ -2563,8 +2563,6 @@ body {
 
 .post-timer .rarity-badge { color: #f0883e; }
 
-#resetQuestsButton { display: none; }
-
 /* SWIPE-UP QUEST SHEET */
 #spHandle {
     display: flex;
@@ -2647,3 +2645,8 @@ body {
 
 .pq-row.done { opacity: 0.55; }
 .pq-row.done .pq-name { text-decoration: line-through; color: var(--muted); }
+
+#questPage #resetQuestsButton,
+#questPage .qp-reset {
+    display: none !important;
+}
