@@ -2718,3 +2718,5 @@ body {
     color: var(--on-accent);
     border-color: var(--accent);
 }
+
+#avatarPreview svg { width: 78%; max-width: 300px; }
