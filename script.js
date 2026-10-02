@@ -1,3 +1,6 @@
+var sheet = document.getElementById("statsPanel");
+var sheetSignature = "";
+
 let xp = Number(localStorage.getItem("xp")) || 0;
 
 const items = [
@@ -5234,16 +5237,12 @@ window.addEventListener("orientationchange", function() {
 
 // ===== SWIPE-UP QUEST SHEET =====
 
-const sheet = document.getElementById("statsPanel");
-
 const sheetCardIds = {
     common: "pageCommonQuest",
     uncommon: "pageUncommonQuest",
     rare: "pageRareQuest",
     timer: "pageTimerQuest"
 };
-
-let sheetSignature = "";
 
 function renderPanelQuests() {
 
