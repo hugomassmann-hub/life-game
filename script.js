@@ -840,6 +840,9 @@ function updateQuestHeader() {
         midnight.setHours(24, 0, 0, 0);
         countdown.textContent = "New quests in " + formatCountdown(midnight - now);
     }
+
+    renderPanelQuests();
+
 }
 
 displayQuest(
@@ -4942,9 +4945,6 @@ document.getElementById("tabHomeButton").onclick = function() {
     setActiveTab("tabHomeButton");
 };
 
-document.getElementById("statsPanel").onclick = function() {
-    document.getElementById("statsPageButton").click();
-};
 window.addEventListener("resize", function() {
     map.resize();
 });
@@ -4971,7 +4971,7 @@ document.getElementById("mapCompass").onclick = function() {
 
 // ===== MAP QUESTS =====
 
-const MAP_QUEST_TEST_MODE = true;   // true = skip the "be there" check. Set to false when done testing.
+const MAP_QUEST_TEST_MODE = false;   // true = skip the "be there" check. Set to false when done testing.
 const MAP_QUEST_RADIUS = 60;        // meters you must be within to complete
 
 const pinColors = { common: "#5f9e6e", uncommon: "#5b8fd1", rare: "#9a74d6" };
@@ -5231,3 +5231,104 @@ window.addEventListener("resize", fitToScreen);
 window.addEventListener("orientationchange", function() {
     setTimeout(fitToScreen, 300);
 });
+
+// ===== SWIPE-UP QUEST SHEET =====
+
+const sheet = document.getElementById("statsPanel");
+
+const sheetCardIds = {
+    common: "pageCommonQuest",
+    uncommon: "pageUncommonQuest",
+    rare: "pageRareQuest",
+    timer: "pageTimerQuest"
+};
+
+let sheetSignature = "";
+
+function renderPanelQuests() {
+
+    const list = document.getElementById("pqList");
+
+    if (!list || !todaysQuests) return;
+
+    let html = "";
+    let doneCount = 0;
+
+    ["common", "uncommon", "rare", "timer"].forEach(function(r) {
+
+        const q = todaysQuests[r];
+
+        if (!q) return;
+
+        const done = completedQuests.includes(r + "-" + q.name);
+
+        if (done && r !== "timer") doneCount++;
+
+        html +=
+            "<div class='pq-row " + r + (done ? " done" : "") + "' data-rarity='" + r + "'>" +
+                "<div class='pq-emoji'>" + (done ? "✓" : q.emoji) + "</div>" +
+                "<div class='pq-name'>" + escapeHTML(q.name) + "</div>" +
+                "<div class='pq-xp'>+" + q.xp + "</div>" +
+            "</div>";
+    });
+
+    const hint = document.getElementById("spHint");
+
+    if (hint) {
+        hint.textContent = "Today's quests " + doneCount + "/3 " +
+            (sheet.classList.contains("open") ? "▼" : "▲");
+    }
+
+    if (html === sheetSignature) return;   // nothing changed, don't redraw
+
+    sheetSignature = html;
+    list.innerHTML = html;
+}
+
+// Tapping a row does exactly what tapping its card on the Quests page does
+// (timer confirm, completion popup, and so on)
+document.getElementById("pqList").onclick = function(event) {
+
+    const row = event.target.closest(".pq-row");
+
+    if (!row) return;
+
+    const card = document.getElementById(sheetCardIds[row.dataset.rarity]);
+
+    if (card) card.click();
+};
+
+function setSheet(open) {
+    sheet.classList.toggle("open", open);
+    renderPanelQuests();
+}
+
+document.getElementById("spHandle").onclick = function() {
+    setSheet(!sheet.classList.contains("open"));
+};
+
+// Swipe up to open, swipe down to close
+let sheetStartY = null;
+
+sheet.addEventListener("touchstart", function(event) {
+    // Don't treat scrolling the quest list as a swipe
+    sheetStartY = event.target.closest("#panelQuests") ? null : event.touches[0].clientY;
+}, { passive: true });
+
+sheet.addEventListener("touchend", function(event) {
+
+    if (sheetStartY === null) return;
+
+    const dy = event.changedTouches[0].clientY - sheetStartY;
+
+    sheetStartY = null;
+
+    if (dy < -40) setSheet(true);
+    if (dy > 40) setSheet(false);
+
+}, { passive: true });
+
+// Tapping the map closes the sheet
+map.on("click", function() { setSheet(false); });
+
+renderPanelQuests();

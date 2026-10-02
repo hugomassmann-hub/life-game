@@ -3,7 +3,7 @@
 <head>
     <title>Life Game</title>
 
-    <link rel="stylesheet" href="style.css?v=14">
+    <link rel="stylesheet" href="style.css?v=15">
 
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 
@@ -68,7 +68,11 @@
     <span class="cp-n">N</span>
 </div>
 
-    <div id="statsPanel">
+<div id="statsPanel">
+    <div id="spHandle">
+        <div class="sp-grip"></div>
+        <span id="spHint">Today's quests ▲</span>
+    </div>
     <div class="sp-top">
         <div class="sp-level">Level <span id="panelLevel">1</span></div>
         <div class="sp-streak">🔥 <span id="panelStreak">0</span> day streak</div>
@@ -78,6 +82,9 @@
         <span id="panelXPText">0 / 350 XP</span>
     </div>
     <div id="panelSkills"></div>
+    <div id="panelQuests">
+        <div id="pqList"></div>
+    </div>
 </div>
 
     <h2 id="levelText">Level 1</h2>
@@ -466,7 +473,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
-<script src="script.js?v=14"></script>
+<script src="script.js?v=15"></script>
 
 <script type="module">
   // Import the functions you need from the SDKs you need

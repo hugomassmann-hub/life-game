@@ -2562,3 +2562,88 @@ body {
 }
 
 .post-timer .rarity-badge { color: #f0883e; }
+
+#resetQuestsButton { display: none; }
+
+/* SWIPE-UP QUEST SHEET */
+#spHandle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: -6px 0 10px;
+    cursor: pointer;
+}
+
+.sp-grip {
+    width: 40px;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--border);
+}
+
+#spHint {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+#panelQuests {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+#statsPanel.open #panelQuests {
+    max-height: min(46vh, 340px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#pqList {
+    margin-top: 12px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+}
+
+.pq-row {
+    --rc: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--rc);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.pq-row:active { transform: scale(0.98); }
+
+.pq-row.common   { --rc: #5f9e6e; }
+.pq-row.uncommon { --rc: #5b8fd1; }
+.pq-row.rare     { --rc: #9a74d6; }
+.pq-row.timer    { --rc: #f0883e; }
+
+.pq-emoji { font-size: 20px; flex-shrink: 0; }
+
+.pq-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text);
+}
+
+.pq-xp {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+}
+
+.pq-row.done { opacity: 0.55; }
+.pq-row.done .pq-name { text-decoration: line-through; color: var(--muted); }
