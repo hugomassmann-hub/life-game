@@ -5219,3 +5219,15 @@ document.getElementById("pageTimerQuest").addEventListener("click", function() {
 });
 
 redrawQuestCards();
+
+// Fit the app frame to the real visible screen height (iPhone CSS heights can be wrong)
+function fitToScreen() {
+    document.body.style.height = window.innerHeight + "px";
+    if (typeof map !== "undefined") map.resize();
+}
+
+fitToScreen();
+window.addEventListener("resize", fitToScreen);
+window.addEventListener("orientationchange", function() {
+    setTimeout(fitToScreen, 300);
+});
