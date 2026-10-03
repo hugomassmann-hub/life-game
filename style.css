@@ -2720,3 +2720,24 @@ body {
 }
 
 #avatarPreview svg { width: 78%; max-width: 300px; }
+
+/* LAYERED AVATAR */
+.av-stack {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;      /* matches the 600 x 900 canvas */
+}
+
+.av-stack img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+}
+
+#avatarPreview .av-stack { width: 62%; max-width: 280px; margin: 0 auto; }
+
+.av-chip.locked { opacity: 0.45; cursor: not-allowed; }

@@ -5421,27 +5421,75 @@ map.on("click", function() { setSheet(false); });
 
 renderPanelQuests();
 
-// ===== AVATAR =====
-const avatarChoices = {
-    skin:      ["#f6d5bd", "#eab98f", "#d09a6b", "#b0764a", "#8a5a38", "#5e3b24"],
-    hairColor: ["#241a14", "#4e3220", "#8a5a32", "#d8b45e", "#a8452c", "#8d9099", "#3b6ea5", "#7a4a9e"],
-    eyes:      ["#4a3320", "#3d7a4f", "#3b6ea5", "#6b6f78", "#7a4a9e"],
-    top:       ["#9a3b3b", "#3d5a80", "#4e7a4a", "#6b4e8c", "#c28a2c", "#2a2f3a", "#b8b2a0", "#2f7a7a"],
-    pants:     ["#4a3a2e", "#2a2f3a", "#3d4a5a", "#5a4a30", "#6b6f78"]
+// ===== AVATAR (layered images) =====
+
+// Bottom-to-top stacking order
+const AVATAR_LAYERS = ["back", "body", "shoes", "bottom", "top", "face", "hair", "hat", "held"];
+
+const AVATAR_LABELS = {
+    body: "Skin", hair: "Hair", top: "Top", bottom: "Bottoms", shoes: "Shoes",
+    hat: "Headwear", face: "Face", back: "Backpack", held: "Held item"
 };
 
-const hairStyleNames = {
-    short: "Short", spiky: "Spiky", long: "Long", bob: "Bob", bun: "Bun", curly: "Curly", buzz: "Buzz"
+// Add an item by adding one line here. "unlock" is the level needed (leave it out for free items).
+// "none" entries need no file.
+const avatarCatalog = {
+    body: [
+        { id: "light", name: "Light", src: "avatar/body_light.png" },
+        { id: "tan",   name: "Tan",   src: "avatar/body_tan.png" },
+        { id: "dark",  name: "Dark",  src: "avatar/body_dark.png" }
+    ],
+    hair: [
+        { id: "none",  name: "None" },
+        { id: "messy", name: "Messy", src: "avatar/hair_messy.png" },
+        { id: "curly", name: "Curly", src: "avatar/hair_curly.png" },
+        { id: "spiky", name: "Spiky", src: "avatar/hair_spiky.png" }
+    ],
+    top: [
+        { id: "none",   name: "None" },
+        { id: "tshirt", name: "T-shirt", src: "avatar/top_tshirt.png" },
+        { id: "hoodie", name: "Hoodie",  src: "avatar/top_hoodie.png" },
+        { id: "denim",  name: "Denim jacket", src: "avatar/top_denim.png", unlock: 5 }
+    ],
+    bottom: [
+        { id: "none",  name: "None" },
+        { id: "jeans", name: "Jeans", src: "avatar/bottom_jeans.png" },
+        { id: "cargo", name: "Cargo pants", src: "avatar/bottom_cargo.png", unlock: 3 }
+    ],
+    shoes: [
+        { id: "none",     name: "None" },
+        { id: "sneakers", name: "Sneakers", src: "avatar/shoes_sneakers.png" },
+        { id: "boots",    name: "Boots", src: "avatar/shoes_boots.png", unlock: 4 }
+    ],
+    hat: [
+        { id: "none",   name: "None" },
+        { id: "beanie", name: "Beanie", src: "avatar/hat_beanie.png", unlock: 2 },
+        { id: "crown",  name: "Crown",  src: "avatar/hat_crown.png", unlock: 10 }
+    ],
+    face: [
+        { id: "none",    name: "None" },
+        { id: "glasses", name: "Glasses", src: "avatar/face_glasses.png", unlock: 3 }
+    ],
+    back: [
+        { id: "none",     name: "None" },
+        { id: "backpack", name: "Backpack", src: "avatar/back_backpack.png", unlock: 6 }
+    ],
+    held: [
+        { id: "none",  name: "None" },
+        { id: "sword", name: "Sword", src: "avatar/held_sword.png", unlock: 4 }
+    ]
 };
-const outfitNames = { tunic: "Tunic", armor: "Armor", robe: "Robe", ranger: "Ranger" };
-const hatNames = { none: "None", wizard: "Wizard hat", helmet: "Helmet", crown: "Crown" };
-const heldNames = { none: "None", sword: "Sword", staff: "Staff" };
 
 const defaultAvatar = {
-    skin: "#eab98f", hairStyle: "short", hairColor: "#4e3220",
-    eyes: "#3b6ea5", top: "#3d5a80", pants: "#4a3a2e",
-    outfit: "tunic", hat: "none", held: "none"
+    body: "light", hair: "messy", top: "tshirt", bottom: "jeans",
+    shoes: "sneakers", hat: "none", face: "none", back: "none", held: "none"
 };
+
+function avatarItem(slot, id) {
+    const list = avatarCatalog[slot] || [];
+    return list.find(function(i) { return i.id === id; }) ||
+        list.find(function(i) { return i.id === defaultAvatar[slot]; });
+}
 
 let avatar = Object.assign({}, defaultAvatar);
 
@@ -5450,166 +5498,15 @@ try {
     if (savedAvatar) avatar = Object.assign({}, defaultAvatar, savedAvatar);
 } catch (e) {}
 
-// amt from -1 (black) to 1 (white)
-function shadeColor(hex, amt) {
-    const n = parseInt(hex.slice(1), 16);
-    let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
-    const target = amt < 0 ? 0 : 255;
-    const p = Math.abs(amt);
-    r = Math.round((target - r) * p + r);
-    g = Math.round((target - g) * p + g);
-    b = Math.round((target - b) * p + b);
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-
-
-let avatarCounter = 0;
-
-function hairShapes(style) {
-
-    const cap = "M54 82 C50 52 74 34 100 34 C126 34 150 52 146 82 C142 66 134 58 126 56 C112 66 90 66 76 58 C66 62 58 72 54 82 Z";
-
-    if (style === "spiky") return { back: "", circles: [], front: "M54 82 C48 62 52 52 60 46 L58 28 L74 40 L82 22 L94 38 L104 20 L114 38 L128 24 L130 42 L142 34 L140 50 C148 60 148 72 146 82 C142 66 134 58 126 56 C112 66 90 66 76 58 C66 62 58 72 54 82 Z" };
-    if (style === "long")  return { back: "M52 80 C48 44 74 32 100 32 C126 32 152 44 148 80 L152 150 C152 160 140 162 136 152 L64 152 C60 162 48 160 48 150 Z", circles: [], front: cap };
-    if (style === "bob")   return { back: "M52 80 C48 44 74 32 100 32 C126 32 152 44 148 80 L150 122 C150 130 140 132 134 126 L66 126 C60 132 50 130 50 122 Z", circles: [], front: cap };
-    if (style === "bun")   return { back: "M86 30 A14 14 0 1 1 114 30 A14 14 0 1 1 86 30 Z", circles: [], front: cap };
-    if (style === "buzz")  return { back: "", circles: [], front: "M58 76 C58 52 76 40 100 40 C124 40 142 52 142 76 C136 62 124 58 100 58 C76 58 64 62 58 76 Z" };
-    if (style === "curly") return { back: "", front: "", circles: [[66,62,14],[80,46,16],[100,40,17],[120,46,16],[134,62,14],[58,82,10],[142,82,10]] };
-
-    return { back: "", circles: [], front: cap };   // short
-}
-
+// The character as stacked images. Works anywhere: Customize, profiles, feed.
 function buildAvatarSVG(a) {
-
-    const id = "av" + (avatarCounter++);
-    let n = 0;
-    const O = "#2a1c1f";                         // outline color
-    const skinDark = shadeColor(a.skin, -0.22);
-    const hairDark = shadeColor(a.hairColor, -0.35);
-    const steel = "#a9b4c2", steelDark = "#6f7b8a", gold = "#d9a93c", leather = "#6b4a2e";
-    const hp = hairShapes(a.hairStyle);
-
-    // one shape: flat color, a shadow on the right side, thick outline
-    function shaded(d, fill, dark, shadeX) {
-        const cid = id + "c" + (n++);
-        return '<clipPath id="' + cid + '"><path d="' + d + '"/></clipPath>' +
-            '<path d="' + d + '" fill="' + fill + '"/>' +
-            '<g clip-path="url(#' + cid + ')"><rect x="' + (shadeX || 106) + '" y="-30" width="120" height="320" fill="' + dark + '" opacity=".5"/></g>' +
-            '<path d="' + d + '" fill="none" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/>';
-    }
-
-    function flat(d, fill) {
-        return '<path d="' + d + '" fill="' + fill + '" stroke="' + O + '" stroke-width="3" stroke-linejoin="round"/>';
-    }
-
-    const topDark = shadeColor(a.top, -0.4);
-    const robe = a.outfit === "robe";
-    const armor = a.outfit === "armor";
-    const bodyColor = armor ? steel : a.top;
-    const bodyDark = armor ? steelDark : topDark;
-
-    let s = '<svg viewBox="0 -14 200 272" xmlns="http://www.w3.org/2000/svg">';
-
-    // ground shadow
-    s += '<ellipse cx="100" cy="238" rx="44" ry="6" fill="#000" opacity=".28"/>';
-
-    // hair behind the head
-    if (hp.back) s += shaded(hp.back, a.hairColor, hairDark, 104);
-
-    // held item (behind the hand)
-    if (a.held === "sword") {
-        s += '<g transform="translate(140 172)">' +
-            flat("M-4 -8 L-4 -66 L0 -74 L4 -66 L4 -8 Z", "#d5dce6") +
-            '<rect x="-12" y="-8" width="24" height="6" rx="2" fill="' + gold + '" stroke="' + O + '" stroke-width="3"/>' +
-            '<rect x="-3" y="-2" width="6" height="14" fill="' + leather + '" stroke="' + O + '" stroke-width="3"/>' +
-            '</g>';
-    } else if (a.held === "staff") {
-        s += '<rect x="137" y="92" width="6" height="140" rx="3" fill="' + leather + '" stroke="' + O + '" stroke-width="3"/>' +
-            '<circle cx="140" cy="84" r="10" fill="' + gold + '" stroke="' + O + '" stroke-width="3"/>' +
-            '<circle cx="137" cy="81" r="3" fill="#fff" opacity=".7"/>';
-    }
-
-    // legs and boots
-    s += flat("M78 190 L96 190 L95 226 L79 226 Z", a.pants) + flat("M104 190 L122 190 L121 226 L105 226 Z", a.pants);
-    s += flat("M74 220 L97 220 L98 234 L72 234 Z", "#4a3426") + flat("M103 220 L126 220 L128 234 L102 234 Z", "#4a3426");
-
-    // neck
-    s += '<rect x="92" y="108" width="16" height="24" fill="' + skinDark + '"/>';
-
-    // torso
-    const torsoD = robe
-        ? "M68 128 Q100 120 132 128 L144 214 L56 214 Z"
-        : "M70 128 Q100 120 130 128 L132 194 L68 194 Z";
-    s += shaded(torsoD, bodyColor, bodyDark);
-
-    if (armor) {
-        s += flat("M88 128 L112 128 L110 192 L90 192 Z", a.top);                       // tabard
-        s += flat("M100 144 L108 154 L100 166 L92 154 Z", gold);                       // emblem
-    }
-    if (a.outfit === "ranger") {
-        s += flat("M72 128 L92 126 L88 194 L70 194 Z", leather) + flat("M128 128 L108 126 L112 194 L130 194 Z", leather);
-    }
-    if (robe) {
-        s += flat("M62 176 L138 176 L140 188 L60 188 Z", gold);                        // sash
-    } else {
-        s += flat("M68 176 L132 176 L132 186 L68 186 Z", leather);                     // belt
-        s += flat("M94 174 L106 174 L106 188 L94 188 Z", gold);                        // buckle
-    }
-
-    // arms (right arm is the mirror of the left, hand lines up with held item)
-    const sleeve = armor ? steel : a.top;
-    function arm() {
-        return flat("M72 130 Q52 138 52 168 L66 170 Q68 152 80 142 Z", sleeve) +
-            '<circle cx="59" cy="174" r="8" fill="' + a.skin + '" stroke="' + O + '" stroke-width="3"/>';
-    }
-    s += arm() + '<g transform="translate(200 0) scale(-1 1)">' + arm() + '</g>';
-    if (armor) {
-        s += flat("M58 134 A14 12 0 0 1 82 126 L80 140 L60 144 Z", steelDark);
-        s += '<g transform="translate(200 0) scale(-1 1)">' + flat("M58 134 A14 12 0 0 1 82 126 L80 140 L60 144 Z", steelDark) + '</g>';
-    }
-
-    // head
-    s += '<ellipse cx="57" cy="86" rx="7" ry="9" fill="' + a.skin + '" stroke="' + O + '" stroke-width="3"/>' +
-         '<ellipse cx="143" cy="86" rx="7" ry="9" fill="' + a.skin + '" stroke="' + O + '" stroke-width="3"/>';
-    s += shaded("M56 80 C56 52 76 38 100 38 C124 38 144 52 144 80 C144 104 126 118 100 118 C74 118 56 104 56 80 Z", a.skin, skinDark, 118);
-
-    // face
-    function eye(cx) {
-        return '<ellipse cx="' + cx + '" cy="88" rx="6" ry="7" fill="#fbfaf6" stroke="' + O + '" stroke-width="2.4"/>' +
-            '<circle cx="' + cx + '" cy="89" r="3.8" fill="' + a.eyes + '"/>' +
-            '<circle cx="' + cx + '" cy="89" r="2" fill="' + O + '"/>' +
-            '<circle cx="' + (cx - 1.4) + '" cy="87.2" r="1.2" fill="#fff"/>';
-    }
-    s += eye(84) + eye(116);
-    s += '<path d="M74 76 L93 74 M107 74 L126 76" stroke="' + hairDark + '" stroke-width="3.4" stroke-linecap="round"/>';
-    s += '<path d="M100 94 Q96 101 101 102" fill="none" stroke="' + skinDark + '" stroke-width="2.2" stroke-linecap="round"/>';
-    s += '<path d="M92 108 Q100 113 108 108" fill="none" stroke="' + O + '" stroke-width="2.6" stroke-linecap="round"/>';
-
-    // hair in front (curly is drawn as one merged blob)
-    if (hp.circles.length) {
-        s += '<g fill="' + O + '" stroke="' + O + '" stroke-width="6" stroke-linejoin="round">' +
-            hp.circles.map(function(c) { return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '"/>'; }).join("") + '</g>';
-        s += '<g fill="' + a.hairColor + '">' +
-            hp.circles.map(function(c) { return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '"/>'; }).join("") + '</g>';
-    }
-    if (hp.front) s += shaded(hp.front, a.hairColor, hairDark, 104);
-
-    // headgear
-    if (a.hat === "wizard") {
-        s += shaded("M70 52 L96 8 Q108 -8 126 4 Q114 10 114 26 L132 52 Z", a.top, topDark, 104);
-        s += flat("M70 46 L132 46 L134 54 L68 54 Z", gold);
-        s += '<ellipse cx="101" cy="54" rx="54" ry="11" fill="' + a.top + '" stroke="' + O + '" stroke-width="3"/>';
-        s += '<path d="M72 50 Q101 62 130 50" fill="none" stroke="' + topDark + '" stroke-width="3" opacity=".5"/>';
-    } else if (a.hat === "helmet") {
-        s += shaded("M52 82 C48 48 72 28 100 28 C128 28 152 48 148 82 L138 82 L138 66 L62 66 L62 82 Z", steel, steelDark, 104);
-        s += flat("M95 64 L105 64 L105 94 L95 94 Z", steelDark);
-        s += flat("M96 28 C90 10 104 2 116 6 C108 12 106 20 106 28 Z", "#c0392b");
-    } else if (a.hat === "crown") {
-        s += flat("M68 46 L68 20 L84 34 L100 12 L116 34 L132 20 L132 46 Z", gold);
-        s += '<circle cx="100" cy="30" r="4" fill="#c0392b" stroke="' + O + '" stroke-width="2"/>';
-    }
-
-    return s + '</svg>';
+    return "<div class='av-stack'>" +
+        AVATAR_LAYERS.map(function(slot) {
+            const item = avatarItem(slot, a[slot]);
+            if (!item || !item.src) return "";
+            return "<img src='" + item.src + "' alt='' draggable='false' onerror=\"this.style.display='none'\">";
+        }).join("") +
+        "</div>";
 }
 
 function saveAvatar() {
@@ -5636,32 +5533,30 @@ function renderAvatarEditor() {
 
     preview.innerHTML = buildAvatarSVG(avatar);
 
-    function swatches(label, key) {
-        return "<div class='av-label'>" + label + "</div><div class='av-row'>" +
-            avatarChoices[key].map(function(color) {
-                return "<button class='av-swatch" + (avatar[key] === color ? " selected" : "") +
-                    "' data-key='" + key + "' data-value='" + color + "' style='background:" + color + "'></button>";
-            }).join("") + "</div>";
-    }
+    const level = getLevelFromXP(xp);
+    let html = "";
 
-    function chips(label, key, names) {
-        return "<div class='av-label'>" + label + "</div><div class='av-row'>" +
-            Object.keys(names).map(function(v) {
-                return "<button class='av-chip" + (avatar[key] === v ? " selected" : "") +
-                    "' data-key='" + key + "' data-value='" + v + "'>" + names[v] + "</button>";
-            }).join("") + "</div>";
-    }
+    ["hat", "hair", "face", "top", "bottom", "shoes", "back", "held", "body"].forEach(function(slot) {
 
-    controls.innerHTML =
-        chips("Outfit", "outfit", outfitNames) +
-        swatches("Outfit color", "top") +
-        chips("Headgear", "hat", hatNames) +
-        chips("Held item", "held", heldNames) +
-        swatches("Pants", "pants") +
-        swatches("Skin", "skin") +
-        chips("Hairstyle", "hairStyle", hairStyleNames) +
-        swatches("Hair color", "hairColor") +
-        swatches("Eyes", "eyes");
+        html += "<div class='av-label'>" + AVATAR_LABELS[slot] + "</div><div class='av-row'>";
+
+        avatarCatalog[slot].forEach(function(item) {
+
+            const locked = item.unlock && level < item.unlock;
+            const selected = avatar[slot] === item.id;
+
+            if (locked) {
+                html += "<button class='av-chip locked' disabled>🔒 " + item.name + " · Lv " + item.unlock + "</button>";
+            } else {
+                html += "<button class='av-chip" + (selected ? " selected" : "") +
+                    "' data-key='" + slot + "' data-value='" + item.id + "'>" + item.name + "</button>";
+            }
+        });
+
+        html += "</div>";
+    });
+
+    controls.innerHTML = html;
 }
 
 document.getElementById("avatarControls").onclick = function(event) {
