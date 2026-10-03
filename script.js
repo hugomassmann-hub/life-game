@@ -4991,7 +4991,7 @@ const customMapQuests = [
 
     {
         id: "loma-alta",
-        name: "Reach the lookout",
+        name: "Reach the top of Loma Alta",
         emoji: "⛰️",
         xp: 250,
         rarity: "rare",
@@ -5087,6 +5087,24 @@ const customMapQuests = [
         rarity: "common",
         lat: 37.95609,      // approximate, check it's on the lake trail
         lng: -122.57587
+    },
+    {
+        id: "deer-park",
+        name: "Have some fun at Deer Park",
+        emoji: "🦌",
+        xp: 100,
+        rarity: "rare",
+        lat: 37.97507,      // approximate, at Eagle's Point
+        lng: -122.58941
+    },
+    {
+        id: "academy-of-sciences",
+        name: "See some cool animals and watch a show at the Academy of Sciences",
+        emoji: "🦋",
+        xp: 100,
+        rarity: "rare",
+        lat: 37.77016,      // approximate, at Eagle's Point
+        lng: -122.46648
     },
 ];
 
