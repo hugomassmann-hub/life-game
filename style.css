@@ -2725,7 +2725,7 @@ body {
 .av-stack {
     position: relative;
     width: 100%;
-    aspect-ratio: 2 / 3;      /* matches the 600 x 900 canvas */
+    aspect-ratio: 3 / 5;      /* matches the 600 x 900 canvas */
 }
 
 .av-stack img {
@@ -2738,6 +2738,6 @@ body {
     user-select: none;
 }
 
-#avatarPreview .av-stack { width: 62%; max-width: 280px; margin: 0 auto; }
+#avatarPreview .av-stack { width: 62%; max-width: 240px; margin: 0 auto; }
 
 .av-chip.locked { opacity: 0.45; cursor: not-allowed; }
