@@ -2741,5 +2741,3 @@ body {
 #avatarPreview .av-stack { width: 62%; max-width: 240px; margin: 0 auto; }
 
 .av-chip.locked { opacity: 0.45; cursor: not-allowed; }
-
-#avatarPreview { background: #ff00ff !important; }
