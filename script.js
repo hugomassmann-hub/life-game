@@ -5106,6 +5106,42 @@ const customMapQuests = [
         lat: 37.77016,      // approximate, at Eagle's Point
         lng: -122.46648
     },
+    {
+        id: "golden-gate-bridge",
+        name: "Visit the Golden Gate Bridge",
+        emoji: "🌉",
+        xp: 200,
+        rarity: "rare",
+        lat: 37.80797,      // approximate, at Eagle's Point
+        lng: -122.47664
+    },
+    {
+        id: "larkspur-ferry",
+        name: "Take the Larkspur Ferry",
+        emoji: "⛴",
+        xp: 200,
+        rarity: "rare",
+        lat: 37.94480,      // approximate, at Eagle's Point
+        lng: -122.50883
+    },
+    {
+        id: "corte-madera-path",
+        name: "Take a walk along the Corte Madera Path",
+        emoji: "🚶",
+        xp: 200,
+        rarity: "rare",
+        lat: 37.94739,      // approximate, at Eagle's Point
+        lng: -122.53896
+    },
+    {
+        id: "scoop-icecream",
+        name: "Visit the Golden Gate Bridge",
+        emoji: "🌉",
+        xp: 200,
+        rarity: "rare",
+        lat: 37.98704,      // approximate, at Eagle's Point
+        lng: -122.58960
+    },
 ];
 
 let userPos = null;
