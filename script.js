@@ -5151,6 +5151,15 @@ const customMapQuests = [
         lat: 37.93698,      // approximate, at Eagle's Point
         lng: -122.53503
     },
+    {
+        id: "golden-gate-bridge",
+        name: "Visit the Golden Gate Bridge",
+        emoji: "🌉",
+        xp: 200,
+        rarity: "rare",
+        lat: 37.80797,      // approximate, at Eagle's Point
+        lng: -122.47664
+    },
 ];
 
 let userPos = null;
