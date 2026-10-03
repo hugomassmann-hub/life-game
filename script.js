@@ -5136,11 +5136,20 @@ const customMapQuests = [
     {
         id: "scoop-icecream",
         name: "Visit the Golden Gate Bridge",
-        emoji: "🌉",
+        emoji: "🍨",
         xp: 200,
         rarity: "rare",
         lat: 37.98704,      // approximate, at Eagle's Point
         lng: -122.58960
+    },
+    {
+        id: "larkspur-theatre-movie",
+        name: "Watch a movie at the Lark theatre instead of on your couch",
+        emoji: "🍿",
+        xp: 100,
+        rarity: "rare",
+        lat: 37.93698,      // approximate, at Eagle's Point
+        lng: -122.53503
     },
 ];
 
