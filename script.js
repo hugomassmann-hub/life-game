@@ -5504,7 +5504,7 @@ function buildAvatarSVG(a) {
         AVATAR_LAYERS.map(function(slot) {
             const item = avatarItem(slot, a[slot]);
             if (!item || !item.src) return "";
-            return "<img src='" + item.src + "' alt='' draggable='false' onerror=\"this.style.display='none'\">";
+            return "<img src='" + item.src + "' alt='' draggable='false' onerror=\"this.style.display='none';console.log('Missing avatar file:', this.getAttribute('src'))\">";
         }).join("") +
         "</div>";
 }
